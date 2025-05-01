@@ -88,6 +88,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Abstraxion React-Native Demo</Text>
+      <SpotifyProfile />
       {isConnected ? (
         <>
           <TouchableOpacity
@@ -103,9 +104,6 @@ export default function Index() {
             <Text style={styles.buttonText}>Sign Arb</Text>
           </TouchableOpacity>
         </>
-      ) : null}
-      {isConnected ? (
-          <SpotifyProfile />
       ) : null}
       {isConnected ? (
         <TouchableOpacity onPress={handleLogout} style={styles.button}>
