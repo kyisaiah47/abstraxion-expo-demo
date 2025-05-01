@@ -13,8 +13,7 @@ export function SpotifyProfile(): React.JSX.Element {
     const [result, setResult] = useState("")
 
     useEffect(() => {
-        console.log("api key: ", process.env.EXPO_PUBLIC_OPACITY_API_KEY)
-        init("example-app-e0604831-e8a1-4674-a098-6e85315984a2", false, OpacityEnvironment.Production, true).catch((reason): void => console.log("error: ", reason, ", api key: ", api_key))
+        init("example-app-e0604831-e8a1-4674-a098-6e85315984a2", false, OpacityEnvironment.Production, true)
     }, [])
 
 
