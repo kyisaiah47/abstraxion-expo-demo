@@ -4,6 +4,7 @@ import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
+import {SpotifyProfile} from "@/components/SpotifyProfile";
 
 export default function Index() {
   // Abstraxion hooks
@@ -102,6 +103,9 @@ export default function Index() {
             <Text style={styles.buttonText}>Sign Arb</Text>
           </TouchableOpacity>
         </>
+      ) : null}
+      {isConnected ? (
+          <SpotifyProfile />
       ) : null}
       {isConnected ? (
         <TouchableOpacity onPress={handleLogout} style={styles.button}>
