@@ -3,11 +3,11 @@ import {
     OpacityEnvironment,
     get as opacityGet,
 } from '@opacity-labs/react-native-opacity'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button } from 'react-native'
 import {ThemedText} from "@/components/ThemedText";
 
-init("example-app-e0604831-e8a1-4674-a098-6e85315984a2", false, OpacityEnvironment.Production, true)
+init({apiKey:process.env.EXPO_PUBLIC_OPACITY_API_KEY, dryRun: false, environment: OpacityEnvironment.Production, shouldShowErrorsInWebView: true})
 
 
 export function SpotifyProfile(): React.JSX.Element {
