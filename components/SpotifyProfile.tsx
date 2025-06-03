@@ -16,7 +16,11 @@ export function SpotifyProfile(): React.JSX.Element {
 
 
     const getSpotifyProfile = async evt => {
-        setResult(JSON.stringify(await opacityGet('flow:spotify:profile'), null, 2))
+        let result = await opacityGet('flow:github:profile')
+        console.log("result json: ", result)
+        console.log("result proof: ", result.proof)
+        console.log("result signature: ", result.signature)
+        setResult(JSON.stringify(result, null, 2))
     }
 
     return (
