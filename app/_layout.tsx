@@ -24,10 +24,10 @@ global.Buffer = Buffer;
 SplashScreen.preventAutoHideAsync();
 
 const treasuryConfig = {
-  treasury: "xion1r0tt64mdld2svywzeaf4pa7ezsg6agkyajk48ea398njywdl28rs3jhvry", // Example XION treasury instance
+  treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS, // Example XION treasury instance
   gasPrice: "0.001uxion", // If you feel the need to change the gasPrice when connecting to signer, set this value. Please stick to the string format seen in example
-  rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
-  restUrl: "https://api.xion-testnet-2.burnt.com:443",
+  rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
+  restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
   callbackUrl: "abstraxion-expo-demo://", // this comes from app.json scheme
 };
 
