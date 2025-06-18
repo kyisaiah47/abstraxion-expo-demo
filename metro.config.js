@@ -5,4 +5,5 @@ const {
 } = require("@burnt-labs/abstraxion-react-native/metro.libsodium");
 
 const config = getDefaultConfig(__dirname);
+config.resolver.unstable_enablePackageExports = false;
 module.exports = withLibsodiumResolver(config);
