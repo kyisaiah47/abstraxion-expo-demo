@@ -37,6 +37,4 @@ yarn-error.*
 
 app-example
 
-ios/
-
 .env*.local
