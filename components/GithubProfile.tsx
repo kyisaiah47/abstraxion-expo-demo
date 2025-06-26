@@ -22,10 +22,12 @@ export function GithubProfile(): React.JSX.Element {
 
     const getGithubProfile = async evt => {
         let result = await opacityGet('flow:github:profile')
-        console.log("result json: ", result)
+        console.log("result json: ", result.json)
+        console.log("result keys: ", Object.keys(result))
         console.log("result hash: ", result.hash)
         console.log("result signature: ", result.signature)
-        console.log("result string: ", JSON.stringify(result.json))
+        console.log("result message: ", result.message)
+        console.log("result payload: ", result.payload)
 
         // verify result before proceeding
         const verificationResult = await fetch('https://verifier.opacity.network/api/verify', {
