@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, Text, ScrollView } from "react-native";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
-import ReclaimComponent from "@/components/ReclaimComponent";
+import FlowSelector from "@/components/FlowSelector";
 
 export default function ZKtls() {
   const { isConnected } = useAbstraxionAccount();
@@ -23,24 +23,16 @@ export default function ZKtls() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <Text style={styles.title}>ZKtls / Reclaim</Text>
-
-      <View style={styles.descriptionContainer}>
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>ZKtls / Reclaim</Text>
         <Text style={styles.descriptionText}>
-          This tab provides zero-knowledge proof functionality using Reclaim
-          Protocol. You can verify your identity without revealing sensitive
-          data. This is a proof of concept and is not production ready.
+          Zero-knowledge proof functionality using Reclaim Protocol. Choose between the default flow 
+          with a pre-configured contract or create your own custom implementation.
         </Text>
       </View>
-
-      <View style={styles.componentContainer}>
-        <ReclaimComponent />
-      </View>
-    </ScrollView>
+      <FlowSelector />
+    </View>
   );
 }
 
@@ -54,10 +46,15 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
   },
+  headerContainer: {
+    padding: 20,
+    paddingTop: 60,
+    paddingBottom: 10,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
     color: "#ffffff",
     textAlign: "center",
   },
@@ -72,25 +69,11 @@ const styles = StyleSheet.create({
     color: "#cccccc",
     textAlign: "center",
   },
-  descriptionContainer: {
-    backgroundColor: "#111111",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#333333",
-  },
   descriptionText: {
     fontSize: 14,
     color: "#cccccc",
     lineHeight: 20,
-  },
-  componentContainer: {
-    backgroundColor: "#111111",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#333333",
+    textAlign: "center",
+    paddingHorizontal: 10,
   },
 });

@@ -28,7 +28,17 @@ type Status =
   | "complete"
   | "error";
 
-export default function ReclaimComponent() {
+interface ReclaimComponentProps {
+  isCustomFlow?: boolean;
+  customClaimKey?: string;
+  customRumContractAddress?: string;
+}
+
+export default function ReclaimComponent({ 
+  isCustomFlow = false, 
+  customClaimKey,
+  customRumContractAddress 
+}: ReclaimComponentProps) {
   const { client } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
 
@@ -39,40 +49,18 @@ export default function ReclaimComponent() {
   const [status, setStatus] = useState<Status>("idle");
   const [loading, setLoading] = useState(false);
 
-  // Separate function for instantiation
-  // const instantiateRUMContract = async () => {
-  //   if (!account?.bech32Address || !client) {
-  //     Alert.alert("Error", "Account or client not found");
-  //     return;
-  //   }
-
-  //   try {
-  //     const instantiateMsg = {
-  //       verification_addr: VERIFICATION_CONTRACT_ADDRESS, // this stays hardcoded to our verification contract
-  //       claim_key: currentProvider.claimKey, // Change this to whatever claim key you want to use
-  //     };
-
-  //     const instantiateResult = await client.instantiate(
-  //       account?.bech32Address,
-  //       CODE_ID,
-  //       instantiateMsg,
-  //       "test-init",
-  //       "auto"
-  //     );
-
-  //     console.log("RUM contract instantiated:", instantiateResult);
-  //     Alert.alert("Success", "RUM contract instantiated!");
-  //     return instantiateResult.contractAddress;
-  //   } catch (error) {
-  //     console.log("Error instantiating RUM contract:", error);
-  //     Alert.alert("Error", "Failed to instantiate RUM contract");
-  //     throw error;
-  //   }
-  // };
+  // Determine which contract address and claim key to use
+  const contractAddress = isCustomFlow && customRumContractAddress 
+    ? customRumContractAddress 
+    : RUM_CONTRACT_ADDRESS;
+  
+  const claimKey = isCustomFlow && customClaimKey 
+    ? customClaimKey 
+    : "followers_count"; // Default hardcoded claim key
 
   const queryRUMContract = async () => {
-    if (!client) {
-      console.log("Client not available for query");
+    if (!client || !contractAddress) {
+      console.log("Client or contract address not available for query");
       return;
     }
 
@@ -84,7 +72,7 @@ export default function ReclaimComponent() {
       };
 
       const result: string = await client.queryContractSmart(
-        RUM_CONTRACT_ADDRESS,
+        contractAddress,
         queryMsg
       );
 
@@ -98,12 +86,12 @@ export default function ReclaimComponent() {
     }
   };
 
-  // Query on mount when client is available
+  // Query on mount when client is available and we have a contract address
   useEffect(() => {
-    if (client) {
+    if (client && contractAddress) {
       queryRUMContract();
     }
-  }, [client]);
+  }, [client, contractAddress]);
 
   const startVerificationFlow = async () => {
     if (!account?.bech32Address) {
@@ -113,6 +101,11 @@ export default function ReclaimComponent() {
 
     if (!client) {
       Alert.alert("Error", "Client not found");
+      return;
+    }
+
+    if (!contractAddress) {
+      Alert.alert("Error", "No RUM contract address available. Please deploy a contract first.");
       return;
     }
 
@@ -168,7 +161,7 @@ export default function ReclaimComponent() {
 
       const executeResult = await client.execute(
         account?.bech32Address,
-        RUM_CONTRACT_ADDRESS,
+        contractAddress,
         executeMsg,
         "auto"
       );
@@ -253,10 +246,13 @@ export default function ReclaimComponent() {
   };
 
   const isButtonDisabled = () => {
-    return loading || status === "complete";
+    return loading || status === "complete" || !contractAddress;
   };
 
   const getButtonText = () => {
+    if (!contractAddress) {
+      return "No Contract Available";
+    }
     if (loading) {
       return "Processing...";
     }
@@ -271,6 +267,21 @@ export default function ReclaimComponent() {
 
   return (
     <View style={styles.container}>
+      {/* Flow type indicator */}
+      <View style={styles.flowIndicatorContainer}>
+        <Text style={styles.flowIndicatorText}>
+          {isCustomFlow ? "Custom Flow" : "Default Flow"}
+        </Text>
+        {isCustomFlow && customClaimKey && (
+          <Text style={styles.claimKeyText}>
+            Claim Key: {customClaimKey}
+          </Text>
+        )}
+        <Text style={styles.contractAddressText}>
+          Contract: {contractAddress ? `${contractAddress.slice(0, 20)}...` : "Not set"}
+        </Text>
+      </View>
+
       <TouchableOpacity
         style={[styles.button, isButtonDisabled() && styles.disabledButton]}
         onPress={startVerificationFlow}
@@ -288,7 +299,9 @@ export default function ReclaimComponent() {
 
       {queryResult !== undefined && (
         <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Verified Followers:</Text>
+          <Text style={styles.infoTitle}>
+            Verified {isCustomFlow ? (customClaimKey || "Value") : "Followers"}:
+          </Text>
           <Text style={styles.infoText}>{queryResult}</Text>
         </View>
       )}
@@ -299,6 +312,28 @@ export default function ReclaimComponent() {
 const styles = StyleSheet.create({
   container: {
     gap: 15,
+  },
+  flowIndicatorContainer: {
+    backgroundColor: "#1a1a1a",
+    padding: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#444444",
+  },
+  flowIndicatorText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginBottom: 2,
+  },
+  claimKeyText: {
+    fontSize: 12,
+    color: "#cccccc",
+    marginBottom: 2,
+  },
+  contractAddressText: {
+    fontSize: 10,
+    color: "#888888",
   },
   button: {
     backgroundColor: "#ffffff",
