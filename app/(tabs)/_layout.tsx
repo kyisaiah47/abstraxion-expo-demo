@@ -58,6 +58,10 @@ export default function TabLayout() {
 				name="proof-submission"
 				options={{ title: "Submit Proof" }}
 			/>
+			<Tabs.Screen
+				name="payment-received"
+				options={{ title: "Payment Received" }}
+			/>
 		</Tabs>
 	);
 }
