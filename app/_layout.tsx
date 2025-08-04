@@ -3,9 +3,9 @@ import "react-native-get-random-values";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
+	DarkTheme,
+	DefaultTheme,
+	ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -17,6 +17,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
+// @ts-ignore
 global.crypto = crypto;
 global.Buffer = Buffer;
 
@@ -24,38 +25,41 @@ global.Buffer = Buffer;
 SplashScreen.preventAutoHideAsync();
 
 const treasuryConfig = {
-  treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS, // Example XION treasury instance
-  gasPrice: "0.001uxion", // If you feel the need to change the gasPrice when connecting to signer, set this value. Please stick to the string format seen in example
-  rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
-  restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
-  callbackUrl: "abstraxion-expo-demo://", // this comes from app.json scheme
+	treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS, // Example XION treasury instance
+	gasPrice: "0.001uxion", // If you feel the need to change the gasPrice when connecting to signer, set this value. Please stick to the string format seen in example
+	rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
+	restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
+	callbackUrl: "abstraxion-expo-demo://", // this comes from app.json scheme
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
+	const colorScheme = useColorScheme();
+	const [loaded] = useFonts({
+		SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+	});
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+	useEffect(() => {
+		if (loaded) {
+			SplashScreen.hideAsync();
+		}
+	}, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+	if (!loaded) {
+		return null;
+	}
 
-  return (
-    <AbstraxionProvider config={treasuryConfig}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </AbstraxionProvider>
-  );
+	return (
+		<AbstraxionProvider config={treasuryConfig}>
+			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+				<Stack>
+					<Stack.Screen
+						name="(tabs)"
+						options={{ headerShown: false }}
+					/>
+					<Stack.Screen name="+not-found" />
+				</Stack>
+				<StatusBar style="auto" />
+			</ThemeProvider>
+		</AbstraxionProvider>
+	);
 }
