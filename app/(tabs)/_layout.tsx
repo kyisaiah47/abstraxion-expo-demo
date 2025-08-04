@@ -54,6 +54,10 @@ export default function TabLayout() {
 					),
 				}}
 			/>
+			<Tabs.Screen
+				name="proof-submission"
+				options={{ title: "Submit Proof" }}
+			/>
 		</Tabs>
 	);
 }
