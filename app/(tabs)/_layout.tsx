@@ -27,6 +27,19 @@ export default function TabLayout() {
 			}}
 		>
 			<Tabs.Screen
+				name="index"
+				options={{
+					title: "Activity",
+					tabBarIcon: ({ color }) => (
+						<IconSymbol
+							size={28}
+							name="clock.fill"
+							color={color}
+						/>
+					),
+				}}
+			/>
+			<Tabs.Screen
 				name="job-details"
 				options={{
 					title: "Job Details",

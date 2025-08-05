@@ -16,6 +16,7 @@ const MAPPING = {
 	"briefcase.fill": "work",
 	"checkmark.seal.fill": "verified",
 	"creditcard.fill": "credit-card",
+	"clock.fill": "access-time",
 } as Partial<
 	Record<
 		import("expo-symbols").SymbolViewProps["name"],
