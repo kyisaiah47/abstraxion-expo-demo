@@ -17,25 +17,27 @@ export default function PaymentReceivedScreen() {
 		<SafeAreaView style={styles.safeArea}>
 			<Stack.Screen options={{ title: "Payment Received" }} />
 			<View style={styles.wrapper}>
-				<View style={styles.content}>
-					<Text style={styles.title}>Payment Received</Text>
-					<Text style={styles.description}>
-						Your payment has been successfully received for the task.
-					</Text>
-
-					<View style={styles.section}>
-						<Text style={styles.label}>Task</Text>
-						<Text style={styles.value}>Design landing page</Text>
-
-						<Text style={[styles.label, { marginTop: 16 }]}>Amount</Text>
-						<Text style={styles.value}>$500</Text>
-
-						<Text style={[styles.label, { marginTop: 16 }]}>
-							Proof of Completion
+				<View style={styles.centeredContent}>
+					<View style={styles.card}>
+						<Text style={styles.title}>Payment Received</Text>
+						<Text style={styles.description}>
+							Your payment has been successfully received for the task.
 						</Text>
-						<Text style={styles.value}>
-							Zero-Knowledge TLS Session Proof (zkTLS)
-						</Text>
+
+						<View style={styles.section}>
+							<Text style={styles.label}>Task</Text>
+							<Text style={styles.value}>Design landing page</Text>
+
+							<Text style={[styles.label, { marginTop: 16 }]}>Amount</Text>
+							<Text style={styles.value}>$500</Text>
+
+							<Text style={[styles.label, { marginTop: 16 }]}>
+								Proof of Completion
+							</Text>
+							<Text style={styles.value}>
+								Zero-Knowledge TLS Session Proof (zkTLS)
+							</Text>
+						</View>
 					</View>
 				</View>
 
@@ -55,53 +57,63 @@ export default function PaymentReceivedScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#fff",
+		backgroundColor: "#F4F4F5",
 	},
 	wrapper: {
 		flex: 1,
-		paddingHorizontal: 24,
-		paddingBottom: 24,
+		paddingHorizontal: 20,
+		paddingBottom: 20,
 		justifyContent: "space-between",
 	},
-	content: {
+	centeredContent: {
 		flexGrow: 1,
 		justifyContent: "center",
+	},
+	card: {
+		backgroundColor: "#FFFFFF",
+		padding: 20,
+		borderRadius: 12,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.05,
+		shadowRadius: 4,
+		elevation: 2,
 	},
 	title: {
 		fontSize: 22,
 		fontWeight: "700",
-		color: "#111",
+		color: "#111827",
 		marginBottom: 12,
 	},
 	description: {
 		fontSize: 16,
-		color: "#555",
+		color: "#4B5563",
 		marginBottom: 24,
 	},
 	section: {
-		marginBottom: 24,
+		marginBottom: 8,
 	},
 	label: {
 		fontSize: 14,
-		color: "#666",
-		marginBottom: 6,
+		color: "#6B7280",
+		marginBottom: 4,
 	},
 	value: {
 		fontSize: 16,
-		color: "#111",
-		lineHeight: 20,
+		color: "#111827",
+		lineHeight: 22,
 	},
 	footer: {
 		paddingTop: 12,
 	},
 	button: {
-		backgroundColor: "#2563EB",
+		backgroundColor: "#6366F1",
 		paddingVertical: 16,
 		borderRadius: 10,
 		alignItems: "center",
 	},
 	buttonText: {
-		color: "#fff",
+		color: "#FFFFFF",
 		fontSize: 16,
 		fontWeight: "600",
 	},

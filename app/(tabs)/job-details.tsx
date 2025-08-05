@@ -1,3 +1,4 @@
+import React from "react";
 import {
 	View,
 	Text,
@@ -21,49 +22,51 @@ export default function JobDetailsScreen() {
 		<SafeAreaView style={styles.safeArea}>
 			<Stack.Screen options={{ title: "Job Details" }} />
 			<KeyboardAvoidingView
-				style={{ flex: 1 }}
+				style={styles.keyboardAvoiding}
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 			>
 				<View style={styles.wrapper}>
-					<View style={styles.content}>
-						<Text style={styles.sectionTitle}>Task</Text>
+					<View style={styles.centeredContent}>
+						<View style={styles.card}>
+							<Text style={styles.sectionTitle}>Task</Text>
 
-						<View style={{ gap: 8 }}>
-							<Text style={styles.jobTitle}>Design landing page</Text>
-							<Text style={styles.description}>
-								Create a modern, responsive landing page for client
-							</Text>
-						</View>
-
-						<View style={{ marginTop: 24 }}>
-							<View style={styles.row}>
-								<View>
-									<Text style={styles.label}>Budget</Text>
-									<Text style={styles.value}>$500</Text>
-								</View>
-								<View>
-									<Text style={styles.label}>Due</Text>
-									<Text style={styles.value}>Aug 9</Text>
-								</View>
+							<View style={{ gap: 8 }}>
+								<Text style={styles.jobTitle}>Design landing page</Text>
+								<Text style={styles.description}>
+									Create a modern, responsive landing page for client
+								</Text>
 							</View>
 
-							<Text style={styles.label}>Client</Text>
-							<View style={styles.clientRow}>
-								<View style={styles.avatar}>
-									<Text style={styles.avatarText}>D</Text>
+							<View style={{ marginTop: 24 }}>
+								<View style={styles.row}>
+									<View>
+										<Text style={styles.label}>Budget</Text>
+										<Text style={styles.value}>$500</Text>
+									</View>
+									<View>
+										<Text style={styles.label}>Due</Text>
+										<Text style={styles.value}>Aug 9</Text>
+									</View>
 								</View>
-								<Text style={styles.clientName}>David Smith</Text>
+
+								<Text style={styles.label}>Client</Text>
+								<View style={styles.clientRow}>
+									<View style={styles.avatar}>
+										<Text style={styles.avatarText}>D</Text>
+									</View>
+									<Text style={styles.clientName}>David Smith</Text>
+								</View>
 							</View>
 						</View>
 					</View>
 
-					<View>
-						<View style={styles.separator} />
-						<View style={styles.buttonContainer}>
-							<TouchableOpacity style={styles.button}>
-								<Text style={styles.buttonText}>ACCEPT TASK</Text>
-							</TouchableOpacity>
-						</View>
+					<View style={styles.footer}>
+						<TouchableOpacity
+							style={styles.button}
+							onPress={openExplorer}
+						>
+							<Text style={styles.buttonText}>ACCEPT TASK</Text>
+						</TouchableOpacity>
 					</View>
 				</View>
 			</KeyboardAvoidingView>
@@ -74,52 +77,65 @@ export default function JobDetailsScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#fff",
+		backgroundColor: "#F4F4F5",
+	},
+	keyboardAvoiding: {
+		flex: 1,
 	},
 	wrapper: {
 		flex: 1,
-		justifyContent: "space-between",
-		paddingHorizontal: 24,
-		paddingBottom: 24,
+		paddingHorizontal: 20,
+		paddingBottom: 20,
 	},
-	content: {
+	centeredContent: {
 		flexGrow: 1,
 		justifyContent: "center",
 	},
+	card: {
+		backgroundColor: "#FFFFFF",
+		padding: 20,
+		borderRadius: 12,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.05,
+		shadowRadius: 4,
+		elevation: 2,
+	},
 	sectionTitle: {
-		fontSize: 18,
+		fontSize: 14,
 		fontWeight: "500",
-		color: "#444",
+		color: "#6B7280",
 		marginBottom: 12,
 	},
 	jobTitle: {
-		fontSize: 22,
+		fontSize: 20,
 		fontWeight: "700",
-		color: "#111",
+		color: "#111827",
 	},
 	description: {
-		fontSize: 16,
-		color: "#555",
+		fontSize: 15,
+		color: "#4B5563",
 	},
 	row: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		marginBottom: 16,
+		marginTop: 8,
 	},
 	label: {
-		fontSize: 14,
-		color: "#666",
-		marginBottom: 6,
+		fontSize: 13,
+		color: "#6B7280",
+		marginBottom: 4,
 	},
 	value: {
-		fontSize: 14,
-		color: "#111",
-		lineHeight: 20,
+		fontSize: 15,
+		color: "#111827",
+		fontWeight: "500",
 	},
 	clientRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		marginTop: 4,
+		marginTop: 8,
 	},
 	avatar: {
 		width: 36,
@@ -137,25 +153,19 @@ const styles = StyleSheet.create({
 	},
 	clientName: {
 		fontSize: 16,
-		color: "#111",
+		color: "#111827",
 	},
-	separator: {
-		height: 1,
-		backgroundColor: "#eee",
-		marginBottom: 12,
-	},
-	buttonContainer: {
-		paddingTop: 12,
-		backgroundColor: "#fff",
+	footer: {
+		paddingTop: 16,
 	},
 	button: {
-		backgroundColor: "#2563EB",
+		backgroundColor: "#6366F1",
 		paddingVertical: 16,
 		borderRadius: 10,
 		alignItems: "center",
 	},
 	buttonText: {
-		color: "#fff",
+		color: "#FFFFFF",
 		fontSize: 16,
 		fontWeight: "600",
 	},
