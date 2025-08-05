@@ -10,6 +10,7 @@ import {
 	Linking,
 } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function JobDetailsScreen() {
 	const { jobId } = useLocalSearchParams();
@@ -28,7 +29,15 @@ export default function JobDetailsScreen() {
 				<View style={styles.wrapper}>
 					<View style={styles.centeredContent}>
 						<View style={styles.card}>
-							<Text style={styles.sectionTitle}>Task</Text>
+							<View style={[styles.iconRow, { marginTop: 0 }]}>
+								<MaterialCommunityIcons
+									name="clipboard-text-outline"
+									size={20}
+									color="#6B7280"
+									style={styles.icon}
+								/>
+								<Text style={styles.sectionTitle}>Task</Text>
+							</View>
 
 							<View style={{ gap: 8 }}>
 								<Text style={styles.jobTitle}>Design landing page</Text>
@@ -37,25 +46,41 @@ export default function JobDetailsScreen() {
 								</Text>
 							</View>
 
-							<View style={{ marginTop: 24 }}>
-								<View style={styles.row}>
+							<View style={styles.gridRow}>
+								<View style={styles.gridItem}>
+									<MaterialCommunityIcons
+										name="wallet-outline"
+										size={18}
+										color="#6B7280"
+										style={styles.icon}
+									/>
 									<View>
 										<Text style={styles.label}>Budget</Text>
 										<Text style={styles.value}>$500</Text>
 									</View>
+								</View>
+								<View style={styles.gridItem}>
+									<MaterialCommunityIcons
+										name="calendar-blank-outline"
+										size={18}
+										color="#6B7280"
+										style={styles.icon}
+									/>
 									<View>
 										<Text style={styles.label}>Due</Text>
 										<Text style={styles.value}>Aug 9</Text>
 									</View>
 								</View>
+							</View>
 
+							<View style={styles.iconRow}>
 								<Text style={styles.label}>Client</Text>
-								<View style={styles.clientRow}>
-									<View style={styles.avatar}>
-										<Text style={styles.avatarText}>D</Text>
-									</View>
-									<Text style={styles.clientName}>David Smith</Text>
+							</View>
+							<View style={styles.clientRow}>
+								<View style={styles.avatar}>
+									<Text style={styles.avatarText}>D</Text>
 								</View>
+								<Text style={styles.clientName}>David Smith</Text>
 							</View>
 						</View>
 					</View>
@@ -101,47 +126,62 @@ const styles = StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 2,
 	},
+	iconRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 12,
+		marginTop: 32,
+	},
+	icon: {
+		marginRight: 6,
+		marginTop: 2,
+	},
 	sectionTitle: {
-		fontSize: 14,
+		fontSize: 13,
 		fontWeight: "500",
 		color: "#6B7280",
-		marginBottom: 12,
 	},
 	jobTitle: {
-		fontSize: 20,
+		fontSize: 18,
 		fontWeight: "700",
 		color: "#111827",
 	},
 	description: {
 		fontSize: 15,
 		color: "#4B5563",
+		lineHeight: 22,
 	},
-	row: {
+	gridRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		marginBottom: 16,
-		marginTop: 8,
+		gap: 16,
+		marginTop: 16,
+	},
+	gridItem: {
+		flexDirection: "row",
+		alignItems: "flex-start",
+		gap: 8,
+		width: "48%",
 	},
 	label: {
 		fontSize: 13,
 		color: "#6B7280",
-		marginBottom: 4,
+		marginBottom: 2,
 	},
 	value: {
 		fontSize: 15,
+		fontWeight: "600",
 		color: "#111827",
-		fontWeight: "500",
 	},
 	clientRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		marginTop: 8,
 	},
 	avatar: {
 		width: 36,
 		height: 36,
 		borderRadius: 18,
-		backgroundColor: "#E0D5FA",
+		backgroundColor: "#EDE9FE",
 		alignItems: "center",
 		justifyContent: "center",
 		marginRight: 10,
@@ -149,7 +189,7 @@ const styles = StyleSheet.create({
 	avatarText: {
 		fontSize: 16,
 		fontWeight: "600",
-		color: "#3A1E78",
+		color: "#7C3AED",
 	},
 	clientName: {
 		fontSize: 16,

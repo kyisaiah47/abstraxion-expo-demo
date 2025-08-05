@@ -1,11 +1,9 @@
 import { Tabs } from "expo-router";
-import React from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
@@ -15,7 +13,7 @@ export default function TabLayout() {
 		<Tabs
 			initialRouteName="index"
 			screenOptions={{
-				tabBarActiveTintColor: "#2563EB",
+				tabBarActiveTintColor: "#6366F1", // Updated to match the purple button color
 				headerShown: false,
 				tabBarButton: HapticTab,
 				tabBarBackground: TabBarBackground,
