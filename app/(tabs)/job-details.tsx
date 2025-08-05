@@ -19,7 +19,7 @@ export default function JobDetailsScreen() {
 
 	return (
 		<SafeAreaView style={styles.safeArea}>
-			<Stack.Screen options={{ title: "Proof of Work" }} />
+			<Stack.Screen options={{ title: "Job Details" }} />
 			<KeyboardAvoidingView
 				style={{ flex: 1 }}
 				behavior={Platform.OS === "ios" ? "padding" : "height"}

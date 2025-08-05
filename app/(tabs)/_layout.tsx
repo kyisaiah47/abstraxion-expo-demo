@@ -29,26 +29,13 @@ export default function TabLayout() {
 			}}
 		>
 			<Tabs.Screen
-				name="index"
+				name="job-details"
 				options={{
-					title: "Home",
+					title: "Job Details",
 					tabBarIcon: ({ color }) => (
 						<IconSymbol
 							size={28}
-							name="house.fill"
-							color={color}
-						/>
-					),
-				}}
-			/>
-			<Tabs.Screen
-				name="explore"
-				options={{
-					title: "Explore",
-					tabBarIcon: ({ color }) => (
-						<IconSymbol
-							size={28}
-							name="paperplane.fill"
+							name="briefcase.fill"
 							color={color}
 						/>
 					),
@@ -56,11 +43,29 @@ export default function TabLayout() {
 			/>
 			<Tabs.Screen
 				name="proof-submission"
-				options={{ title: "Submit Proof" }}
+				options={{
+					title: "Submit Proof",
+					tabBarIcon: ({ color }) => (
+						<IconSymbol
+							size={28}
+							name="checkmark.seal.fill"
+							color={color}
+						/>
+					),
+				}}
 			/>
 			<Tabs.Screen
 				name="payment-received"
-				options={{ title: "Payment Received" }}
+				options={{
+					title: "Payment Received",
+					tabBarIcon: ({ color }) => (
+						<IconSymbol
+							size={28}
+							name="creditcard.fill"
+							color={color}
+						/>
+					),
+				}}
 			/>
 		</Tabs>
 	);
