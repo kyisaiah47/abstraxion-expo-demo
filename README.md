@@ -1,50 +1,86 @@
-# Welcome to your Expo app 👋
+# Abstraxion Expo Demo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This project is a mobile application built with React Native and Expo Router. It integrates XION's Dave SDK for zkTLS, on-chain payments, and verification flows.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **XION Dave SDK Integration**: Secure communication and on-chain payment flows.
+- **zkTLS Integration**: Ensures secure proof of completion.
+- **On-Chain Payments**: Verify and process payments directly on the blockchain.
+- **Navigation**: Tab-based navigation using Expo Router.
+- **Custom UI Components**: Includes reusable components like `IconSymbol`.
+
+## Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/burnt-labs/abstraxion-expo-demo.git
+   ```
+
+2. Navigate to the project directory:
+
+   ```bash
+   cd abstraxion-expo-demo
+   ```
+
+3. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
-
+4. Start the development server:
    ```bash
-    npx expo start
+   npm start
    ```
 
-In the output, you'll find options to open the app in a
+## Configuration
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### XION Dave SDK
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+1. Add your API key and user credentials in `_layout.tsx`:
 
-## Get a fresh project
+   ```tsx
+   const dave = new Dave({
+   	apiKey: "YOUR_API_KEY", // Replace with your actual API key
+   	network: "mainnet", // or "testnet"
+   });
 
-When you're ready, run:
+   dave.authenticate({
+   	userId: "USER_ID", // Replace with the actual user ID
+   	token: "USER_TOKEN", // Replace with the actual token
+   });
+   ```
 
-```bash
-npm run reset-project
-```
+2. Ensure the SDK is properly initialized before using its features.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Project Structure
 
-## Learn more
+- `app/`: Contains the main screens and navigation setup.
+- `components/`: Reusable UI components.
+- `constants/`: App-wide constants like colors.
+- `hooks/`: Custom React hooks.
+- `scripts/`: Utility scripts for project management.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Scripts
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `npm start`: Start the development server.
+- `npm run android`: Build and run the app on an Android device/emulator.
+- `npm run ios`: Build and run the app on an iOS device/simulator.
+- `npm run reset-project`: Reset the project to its initial state.
 
-## Join the community
+## Dependencies
 
-Join our community of developers creating universal apps.
+- React Native
+- Expo Router
+- XION Dave SDK
+- Material Icons
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+For more information, visit the [XION documentation](https://xion.io/docs).
