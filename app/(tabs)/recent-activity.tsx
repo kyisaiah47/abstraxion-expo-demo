@@ -11,6 +11,9 @@ import * as Clipboard from "expo-clipboard";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { Platform, ToastAndroid } from "react-native";
 import Toast from "react-native-toast-message";
+import { useRouter } from "expo-router";
+
+const router = useRouter();
 
 const recentActivities = [
 	{
@@ -18,18 +21,21 @@ const recentActivities = [
 		title: "Accepted task",
 		subtitle: "Design landing page",
 		icon: "check-circle",
+		timestamp: "2h ago",
 	},
 	{
 		id: "2",
 		title: "Submitted proof",
 		subtitle: "Logo design",
 		icon: "upload-file",
+		timestamp: "4h ago",
 	},
 	{
 		id: "3",
 		title: "Received payment",
 		subtitle: "$500 for Web App",
 		icon: "attach-money",
+		timestamp: "1d ago",
 	},
 ];
 
@@ -80,7 +86,10 @@ export default function RecentActivityScreen() {
 					<Text style={styles.balanceValue}>$1,200</Text>
 				</View>
 
-				<TouchableOpacity style={styles.primaryButton}>
+				<TouchableOpacity
+					style={styles.primaryButton}
+					onPress={() => router.push("/jobs")}
+				>
 					<Text style={styles.primaryButtonText}>Start New Task</Text>
 				</TouchableOpacity>
 
@@ -103,6 +112,9 @@ export default function RecentActivityScreen() {
 								<View style={styles.textWrapper}>
 									<Text style={styles.activityTitle}>{item.title}</Text>
 									<Text style={styles.activitySubtitle}>{item.subtitle}</Text>
+								</View>
+								<View style={styles.timestampWrapper}>
+									<Text style={styles.timestamp}>{item.timestamp}</Text>
 								</View>
 							</View>
 						)}
@@ -207,6 +219,15 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginRight: 12,
+	},
+	timestampWrapper: {
+		position: "absolute",
+		top: 12,
+		right: 16,
+	},
+	timestamp: {
+		fontSize: 12,
+		color: "#9CA3AF",
 	},
 	textWrapper: {
 		flex: 1,
