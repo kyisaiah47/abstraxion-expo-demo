@@ -12,7 +12,6 @@ import Toast from "react-native-toast-message";
 import { useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { Modalize } from "react-native-modalize";
-import TestModalize from "./test-modalize";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
 
 // Example for current/active job (replace with your logic or Redux/store/etc)
@@ -23,7 +22,7 @@ const activeJob = {
 
 const proofEvents = [
 	{ description: "Accessed figma.com", time: "10:22 AM", verified: true },
-	{ description: "Deployed to vercel.com", time: "1:10 AM", verified: false }, // disables check for demo
+	{ description: "Deployed to vercel.com", time: "1:10 AM", verified: true }, // disables check for demo
 	{
 		description: "Uploaded assets to figma.com",
 		time: "9:00 AM",

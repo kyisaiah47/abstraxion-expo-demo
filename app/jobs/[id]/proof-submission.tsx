@@ -69,7 +69,7 @@ export default function ProofSubmissionSheet({ job, proofEvents, onSubmit }) {
 				onPress={onSubmit}
 				disabled={!allChecked}
 			>
-				<Text style={styles.buttonText}>SUBMIT PROOF</Text>
+				<Text style={styles.buttonText}>Submit Proof</Text>
 			</TouchableOpacity>
 		</View>
 	);
@@ -132,17 +132,18 @@ const styles = StyleSheet.create({
 		marginLeft: 8,
 	},
 	button: {
-		backgroundColor: "#111",
+		backgroundColor: "#191919",
 		paddingVertical: 17,
 		borderRadius: 16,
 		alignItems: "center",
-		marginTop: 18,
-		marginBottom: 6,
+		justifyContent: "center",
+		marginBottom: 28,
+		flexDirection: "row", // <-- to align icon + text
 	},
 	buttonText: {
-		color: "#FFF",
-		fontSize: 18,
+		color: "#fff",
+		fontSize: 17,
 		fontWeight: "700",
-		letterSpacing: 1,
+		letterSpacing: 0.1,
 	},
 });
