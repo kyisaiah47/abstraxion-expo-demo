@@ -10,6 +10,21 @@ import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useLocalSearchParams } from "expo-router";
+
+// Your jobs data (copy from JobDetailsScreen for now)
+const jobs = {
+	"1": {
+		title: "Design landing page",
+		clientName: "David Smith",
+		description: "Create a modern, responsive landing page for Acme Inc.",
+	},
+	"2": {
+		title: "Build mobile prototype",
+		clientName: "Emily Zhao",
+		description: "Develop a high-fidelity mobile UI for ZenFlow.",
+	},
+};
 
 const proofEvents = [
 	{ description: "Accessed figma.com", time: "10:22 AM" },
@@ -20,6 +35,8 @@ const proofEvents = [
 export default function ProofSubmissionScreen() {
 	const insets = useSafeAreaInsets();
 	const tabBarHeight = useBottomTabBarHeight();
+	const { id } = useLocalSearchParams();
+	const job = jobs[id];
 
 	const handleSubmit = () => {
 		console.log("Proof submitted!");
@@ -36,6 +53,14 @@ export default function ProofSubmissionScreen() {
 					},
 				]}
 			>
+				{/* JOB HEADER */}
+				{job && (
+					<View style={styles.header}>
+						<Text style={styles.jobTitle}>{job.title}</Text>
+						<Text style={styles.jobClient}>for {job.clientName}</Text>
+					</View>
+				)}
+
 				<View style={styles.centeredContent}>
 					<View style={styles.card}>
 						<Text style={styles.title}>Submit proof{"\n"}of work</Text>
@@ -79,6 +104,20 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		paddingBottom: 20,
 		justifyContent: "space-between",
+	},
+	header: {
+		alignItems: "center",
+		marginBottom: 20,
+	},
+	jobTitle: {
+		fontSize: 18,
+		fontWeight: "700",
+		color: "#6366F1",
+	},
+	jobClient: {
+		fontSize: 15,
+		color: "#6B7280",
+		marginTop: 2,
 	},
 	centeredContent: {
 		flexGrow: 1,
