@@ -21,9 +21,9 @@ export default function WelcomeScreen() {
 
 	return (
 		<View style={styles.container}>
-			<View style={styles.centerColumn}>
-				<View style={styles.logoWrapper}>
-					<View style={styles.logoGlow} />
+			{/* Top logo */}
+			{/* <View style={styles.logoRow}>
+				<View style={styles.logoCircle}>
 					<Image
 						source={{
 							uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/proof-of-work-logo",
@@ -32,13 +32,26 @@ export default function WelcomeScreen() {
 						resizeMode="contain"
 					/>
 				</View>
-				<Text style={styles.headline}>Proof of Work</Text>
-				<Text style={styles.tagline}>Verifiable Work. Trustless Payments.</Text>
+			</View> */}
+
+			{/* Main content vertically centered */}
+			<View style={styles.centerContent}>
+				<Text style={styles.headline}>
+					Verifiable work.{" "}
+					<Text style={{ fontWeight: "400" }}>Trustless payments.</Text>
+				</Text>
+				<Text style={styles.subtext}>
+					Submit your work, get paid instantly and securely. Powered by XION.
+				</Text>
+			</View>
+
+			{/* Bottom area */}
+			<View style={styles.bottom}>
 				<TouchableOpacity
 					onPress={login}
 					style={[styles.connectButton, isConnecting && styles.disabledButton]}
 					disabled={isConnecting}
-					activeOpacity={0.9}
+					activeOpacity={0.92}
 				>
 					{isConnecting ? (
 						<ActivityIndicator color="#fff" />
@@ -46,100 +59,91 @@ export default function WelcomeScreen() {
 						<Text style={styles.connectText}>Connect Wallet</Text>
 					)}
 				</TouchableOpacity>
+				<Text style={styles.footer}>Powered by XION • Burnt</Text>
 			</View>
-			<Text style={styles.footer}>Powered by XION • Burnt</Text>
 		</View>
 	);
 }
-
-const CIRCLE_SIZE = 92;
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: "#fff",
-		justifyContent: "space-between",
-	},
-	centerColumn: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
 		paddingHorizontal: 32,
+		paddingTop: 56,
+		paddingBottom: 0, // Let bottom be fully pinned
+		justifyContent: "space-between", // Main trick!
 	},
-	logoWrapper: {
-		width: CIRCLE_SIZE,
-		height: CIRCLE_SIZE,
-		borderRadius: CIRCLE_SIZE / 2,
-		backgroundColor: "#6675FF",
+	logoRow: {
+		marginBottom: 0,
+		marginTop: 8,
+	},
+	logoCircle: {
+		width: 100,
+		height: 100,
+		borderRadius: 50,
+		backgroundColor: "#6366F1",
 		alignItems: "center",
 		justifyContent: "center",
-		marginBottom: 32,
-		overflow: "visible",
-		// iOS only
-		shadowColor: "#6675FF",
-		shadowOpacity: 0.18,
-		shadowRadius: 30,
-		shadowOffset: { width: 0, height: 7 },
-		// Android
-		elevation: 12,
-		position: "relative",
-	},
-	logoGlow: {
-		position: "absolute",
-		top: -20,
-		left: -20,
-		right: -20,
-		bottom: -20,
-		borderRadius: CIRCLE_SIZE,
-		backgroundColor: "#6675FF30", // transparent blue glow
-		opacity: 0.6,
-		zIndex: 0,
+		shadowColor: "#6366F1",
+		shadowOpacity: 0.1,
+		shadowRadius: 14,
+		shadowOffset: { width: 0, height: 3 },
+		elevation: 6,
 	},
 	logo: {
-		width: 50,
-		height: 50,
-		zIndex: 1,
+		width: 70,
+		height: 70,
+	},
+	centerContent: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "flex-start", // keep text left-aligned
+		marginTop: 8,
+		marginBottom: 8,
 	},
 	headline: {
-		fontSize: 34,
-		fontWeight: "800",
+		fontSize: 36, // try 40 for more drama
+		fontWeight: "700",
 		color: "#191919",
-		textAlign: "center",
-		marginBottom: 8,
-		letterSpacing: -1,
+		textAlign: "left",
+		marginBottom: 12,
+		lineHeight: 42,
 	},
-	tagline: {
+	subtext: {
 		fontSize: 16,
-		color: "#444",
-		textAlign: "center",
-		marginBottom: 36,
-		marginTop: 0,
-		lineHeight: 22,
+		color: "#555",
+		marginBottom: 0,
+		textAlign: "left",
 		fontWeight: "400",
+		lineHeight: 22,
+	},
+	bottom: {
+		width: "100%",
+		paddingBottom: 38,
 	},
 	connectButton: {
-		width: "100%",
 		backgroundColor: "#191919",
-		borderRadius: 16,
 		paddingVertical: 17,
+		borderRadius: 16,
 		alignItems: "center",
-		marginBottom: 0,
+		width: "100%",
+		marginBottom: 12,
 	},
 	connectText: {
 		color: "#fff",
 		fontSize: 18,
-		fontWeight: "700",
-		letterSpacing: 0.5,
+		fontWeight: "600",
+		letterSpacing: 0.2,
 	},
 	disabledButton: {
 		backgroundColor: "#888",
 		opacity: 0.7,
 	},
 	footer: {
-		fontSize: 14,
+		fontSize: 15,
 		color: "#BBB",
-		textAlign: "center",
-		marginBottom: 38,
-		marginTop: 12,
+		textAlign: "left",
+		marginTop: 0,
 	},
 });
