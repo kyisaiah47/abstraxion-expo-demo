@@ -3,52 +3,26 @@ import {
 	Text,
 	StyleSheet,
 	SafeAreaView,
-	FlatList,
 	TouchableOpacity,
 } from "react-native";
-import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import Toast from "react-native-toast-message";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 
-const jobs = [
-	{
-		id: "1",
-		title: "Design landing page",
-		client: "Acme Inc.",
-		status: "open",
-		timestamp: "2h ago",
-	},
-	{
-		id: "2",
-		title: "Logo design",
-		client: "Self",
-		status: "completed",
-		timestamp: "4h ago",
-	},
-	{
-		id: "3",
-		title: "Web App Dev",
-		client: "Zebra Corp.",
-		status: "archived",
-		timestamp: "1d ago",
-	},
-];
-
-const statusColors = {
-	open: "#191919", // Black
-	completed: "#22c55e", // Keep green for contrast
-	archived: "#9CA3AF", // Gray for archived
+// Example for current/active job (replace with your logic or Redux/store/etc)
+const activeJob = {
+	title: "Design landing page",
+	client: "Acme Inc.",
 };
 
 export default function JobsDashboardScreen() {
 	const { data, logout } = useAbstraxionAccount();
-	const [selectedStatus, setSelectedStatus] = useState("open");
 	const router = useRouter();
 
-	const filteredJobs = jobs.filter((j) => j.status === selectedStatus);
+	const [showResume, setShowResume] = useState(Boolean(activeJob)); // true if there's an active job
 
 	const truncateAddress = (address) => {
 		if (!address) return "";
@@ -75,7 +49,20 @@ export default function JobsDashboardScreen() {
 			text2: "You have been disconnected.",
 			position: "bottom",
 		});
-		router.replace("/"); // This is the index route (WelcomeScreen)
+		router.replace("/"); // Back to WelcomeScreen
+	};
+
+	const openJobsCount = 3; // Replace with your data logic
+	const jobsScanned = 8; // Replace with your data logic
+
+	const handleResumeJob = () => {
+		// Navigate to current job detail or work screen
+		router.push("/job-detail"); // Adjust route as needed
+	};
+
+	const handleScanQR = () => {
+		// Navigate to QR scanner screen
+		router.push("/scan-qr"); // Adjust route as needed
 	};
 
 	return (
@@ -83,7 +70,7 @@ export default function JobsDashboardScreen() {
 			<View style={styles.container}>
 				{/* Profile row */}
 				<View style={styles.profileRow}>
-					<Text style={styles.greeting}>Welcome back 👋</Text>
+					<Text style={styles.greeting}>Welcome back</Text>
 					<TouchableOpacity onPress={handleLogout}>
 						<MaterialIcons
 							name="logout"
@@ -105,87 +92,50 @@ export default function JobsDashboardScreen() {
 						<MaterialIcons
 							name="content-copy"
 							size={14}
-							color="#6366F1"
+							color="#191919"
 							style={{ marginLeft: 5 }}
 						/>
 					</TouchableOpacity>
 				)}
 
-				{/* Balance */}
-				<View style={styles.balanceCard}>
-					<Text style={styles.balanceLabel}>Total Earned</Text>
-					<Text style={styles.balanceValue}>$1,200</Text>
+				{/* Metrics Row */}
+				<View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
+					<View style={[styles.balanceCard, { flex: 1 }]}>
+						<Text style={styles.balanceLabel}>Total Earned</Text>
+						<Text style={styles.balanceValue}>$1,200</Text>
+					</View>
+					<View style={[styles.balanceCard, { flex: 1 }]}>
+						<Text style={styles.balanceLabel}>Jobs Open</Text>
+						<Text style={styles.balanceValue}>{openJobsCount}</Text>
+					</View>
 				</View>
 
-				{/* Start Task */}
-				<TouchableOpacity style={styles.primaryButton}>
-					<Text style={styles.primaryButtonText}>Start New Task</Text>
-				</TouchableOpacity>
-
-				{/* Job Filters */}
-				<View style={styles.chipRow}>
-					{["open", "completed", "archived"].map((status) => (
-						<TouchableOpacity
-							key={status}
-							style={[
-								styles.chip,
-								selectedStatus === status && {
-									backgroundColor: "#191919",
-									borderColor: "#191919",
-								},
-							]}
-							onPress={() => setSelectedStatus(status)}
-						>
-							<Text
-								style={{
-									color: selectedStatus === status ? "#fff" : "#191919",
-									fontWeight: "600",
-								}}
+				<View style={{ flex: 1, width: "100%" }}>
+					{/* Only show if an active job exists */}
+					{showResume && activeJob && (
+						<View style={styles.activeJobCard}>
+							<View style={styles.activeJobText}>
+								<Text style={styles.activeJobLabel}>Resume work</Text>
+								<Text style={styles.activeJobTitle}>{activeJob.title}</Text>
+								<Text style={styles.activeJobClient}>{activeJob.client}</Text>
+							</View>
+							<TouchableOpacity
+								style={styles.resumeButton}
+								onPress={handleResumeJob}
 							>
-								{status.charAt(0).toUpperCase() + status.slice(1)}
-							</Text>
-						</TouchableOpacity>
-					))}
-				</View>
-
-				{/* Jobs List */}
-				<FlatList
-					data={filteredJobs}
-					keyExtractor={(item) => item.id}
-					renderItem={({ item }) => (
-						<View style={styles.activityItem}>
-							<View
-								style={[
-									styles.iconWrapper,
-									{ backgroundColor: statusColors[item.status] + "22" },
-								]}
-							>
-								<MaterialCommunityIcons
-									name={
-										item.status === "open"
-											? "clock-outline"
-											: item.status === "completed"
-											? "check-circle-outline"
-											: "archive-outline"
-									}
-									size={24}
-									color={statusColors[item.status]}
-								/>
-							</View>
-							<View style={styles.textWrapper}>
-								<Text style={styles.activityTitle}>{item.title}</Text>
-								<Text style={styles.activitySubtitle}>{item.client}</Text>
-							</View>
-							<View style={styles.timestampWrapper}>
-								<Text style={styles.timestamp}>{item.timestamp}</Text>
-							</View>
+								<Text style={styles.resumeButtonText}>Resume</Text>
+							</TouchableOpacity>
 						</View>
 					)}
-					ListEmptyComponent={
-						<Text style={styles.emptyState}>No jobs yet.</Text>
-					}
-					contentContainerStyle={{ paddingBottom: 24 }}
-				/>
+				</View>
+
+				{/* Main CTA */}
+				<TouchableOpacity
+					style={styles.primaryButton}
+					onPress={handleScanQR}
+				>
+					<Text style={styles.primaryButtonText}>Scan Job QR</Text>
+				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
 	);
@@ -194,7 +144,7 @@ export default function JobsDashboardScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#fafafa", // Lightest gray (or "#fff")
+		backgroundColor: "#fafafa",
 	},
 	container: {
 		flex: 1,
@@ -205,6 +155,12 @@ const styles = StyleSheet.create({
 		fontSize: 22,
 		fontWeight: "800",
 		color: "#191919",
+		marginBottom: 12,
+	},
+	profileRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
 		marginBottom: 12,
 	},
 	walletBadge: {
@@ -227,14 +183,10 @@ const styles = StyleSheet.create({
 		backgroundColor: "#fff",
 		padding: 20,
 		borderRadius: 16,
-		marginBottom: 20,
 		borderWidth: 1,
 		borderColor: "#ededed",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.03,
-		shadowRadius: 2,
-		elevation: 0,
+		alignItems: "flex-start",
+		flex: 1,
 	},
 	balanceLabel: {
 		fontSize: 15,
@@ -246,6 +198,52 @@ const styles = StyleSheet.create({
 		fontSize: 28,
 		fontWeight: "700",
 		color: "#191919",
+	},
+	activeJobCard: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		backgroundColor: "#fff",
+		borderRadius: 14,
+		borderWidth: 1,
+		borderColor: "#ededed",
+		padding: 18,
+		marginBottom: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.03,
+		shadowRadius: 2,
+		elevation: 0,
+	},
+	activeJobText: {
+		flex: 1,
+	},
+	activeJobLabel: {
+		color: "#8e8e8e",
+		fontSize: 14,
+		fontWeight: "600",
+		marginBottom: 2,
+	},
+	activeJobTitle: {
+		fontSize: 17,
+		fontWeight: "700",
+		color: "#191919",
+	},
+	activeJobClient: {
+		fontSize: 15,
+		color: "#8e8e8e",
+	},
+	resumeButton: {
+		backgroundColor: "#191919",
+		paddingVertical: 8,
+		paddingHorizontal: 18,
+		borderRadius: 100,
+		marginLeft: 18,
+	},
+	resumeButtonText: {
+		color: "#fff",
+		fontWeight: "700",
+		fontSize: 15,
 	},
 	primaryButton: {
 		backgroundColor: "#191919",
@@ -259,78 +257,5 @@ const styles = StyleSheet.create({
 		fontSize: 17,
 		fontWeight: "700",
 		letterSpacing: 0.1,
-	},
-	profileRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: 12,
-	},
-	chipRow: {
-		flexDirection: "row",
-		gap: 10,
-		marginBottom: 20,
-		justifyContent: "center",
-	},
-	chip: {
-		paddingHorizontal: 16,
-		paddingVertical: 7,
-		borderRadius: 100,
-		backgroundColor: "#eee",
-		borderWidth: 1,
-		borderColor: "#eee",
-		marginHorizontal: 2,
-	},
-	activityItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#fff",
-		padding: 16,
-		borderRadius: 14,
-		marginBottom: 12,
-		borderWidth: 1,
-		borderColor: "#ededed",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.03,
-		shadowRadius: 2,
-		elevation: 0,
-	},
-	iconWrapper: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
-		backgroundColor: "#fafafa",
-		alignItems: "center",
-		justifyContent: "center",
-		marginRight: 12,
-	},
-	timestampWrapper: {
-		position: "absolute",
-		top: 12,
-		right: 16,
-	},
-	timestamp: {
-		fontSize: 12,
-		color: "#b0b0b0",
-	},
-	textWrapper: {
-		flex: 1,
-	},
-	activityTitle: {
-		fontSize: 16,
-		fontWeight: "700",
-		color: "#191919",
-	},
-	activitySubtitle: {
-		fontSize: 14,
-		color: "#8e8e8e",
-	},
-	emptyState: {
-		textAlign: "center",
-		color: "#8e8e8e",
-		marginTop: 40,
-		fontSize: 14,
-		fontStyle: "italic",
 	},
 });
