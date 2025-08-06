@@ -7,11 +7,16 @@ import {
 	ActivityIndicator,
 } from "react-native";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import { useRouter } from "expo-router";
 
 export default function WelcomeScreen() {
 	const { login, isConnected, isConnecting } = useAbstraxionAccount();
+	const router = useRouter();
 
-	if (isConnected) return null; // or navigate to main app if already connected
+	if (isConnected) {
+		router.replace("/recent-activity"); // or whatever your main route is
+		return null;
+	}
 
 	return (
 		<View style={styles.container}>
