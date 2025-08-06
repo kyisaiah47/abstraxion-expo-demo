@@ -15,6 +15,7 @@ const jobs = [
 		client: "Acme Inc",
 		payout: "$400",
 		due: "in 3 days",
+		tags: ["Remote", "Fixed-price", "Urgent"],
 	},
 	{
 		id: "2",
@@ -22,6 +23,7 @@ const jobs = [
 		client: "ZenFlow",
 		payout: "$700",
 		due: "in 5 days",
+		tags: ["Remote", "Milestone", "New"],
 	},
 ];
 
@@ -48,7 +50,6 @@ export default function JobMarketplaceScreen() {
 
 			<Text style={styles.subheading}>{jobs.length} open tasks</Text>
 
-			{/* Optional search bar */}
 			<View style={styles.searchBar}>
 				<Text style={styles.searchPlaceholder}>🔍 Search tasks</Text>
 			</View>
@@ -63,6 +64,16 @@ export default function JobMarketplaceScreen() {
 						onPress={() => router.push(`/jobs/${item.id}`)}
 					>
 						<Text style={styles.title}>{item.title}</Text>
+						<View style={styles.badgeRow}>
+							{item.tags.map((tag) => (
+								<View
+									style={styles.badge}
+									key={tag}
+								>
+									<Text style={styles.badgeText}>{tag}</Text>
+								</View>
+							))}
+						</View>
 						<Text style={styles.meta}>
 							{item.client} • {item.payout}
 						</Text>
@@ -117,11 +128,28 @@ const styles = StyleSheet.create({
 	meta: {
 		fontSize: 14,
 		color: "#6B7280",
-		marginTop: 4,
+		marginTop: 8,
 	},
 	due: {
 		fontSize: 12,
 		color: "#9CA3AF",
 		marginTop: 2,
+	},
+	badgeRow: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: 8,
+		marginTop: 8,
+	},
+	badge: {
+		backgroundColor: "#E0E7FF",
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 999,
+	},
+	badgeText: {
+		fontSize: 12,
+		color: "#4338CA",
+		fontWeight: "500",
 	},
 });
