@@ -47,10 +47,7 @@ export default function JobDetailsScreen() {
 
 	const handleAcceptTask = () => {
 		// Pass job ID to proof submission page
-		router.push({
-			pathname: "/proof-submission",
-			params: { id }, // Passing the current job ID as a route param
-		});
+		router.push(`/jobs/${id}/proof-submission`);
 	};
 
 	if (!job) {

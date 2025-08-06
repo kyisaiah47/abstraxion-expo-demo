@@ -1,4 +1,3 @@
-import React from "react";
 import {
 	View,
 	Text,
@@ -9,7 +8,6 @@ import {
 import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useLocalSearchParams } from "expo-router";
 
 // Your jobs data (copy from JobDetailsScreen for now)
@@ -34,7 +32,6 @@ const proofEvents = [
 
 export default function ProofSubmissionScreen() {
 	const insets = useSafeAreaInsets();
-	const tabBarHeight = useBottomTabBarHeight();
 	const { id } = useLocalSearchParams();
 	const job = jobs[id];
 
@@ -49,7 +46,7 @@ export default function ProofSubmissionScreen() {
 				style={[
 					styles.wrapper,
 					{
-						paddingBottom: Math.max(insets.bottom, tabBarHeight) + 16,
+						paddingBottom: insets.bottom + 16,
 					},
 				]}
 			>
