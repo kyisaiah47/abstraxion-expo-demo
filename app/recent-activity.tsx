@@ -9,8 +9,10 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import Toast from "react-native-toast-message";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "expo-router";
+import { Modalize } from "react-native-modalize";
+import TestModalize from "./test-modalize";
 
 // Example for current/active job (replace with your logic or Redux/store/etc)
 const activeJob = {
@@ -21,10 +23,11 @@ const activeJob = {
 export default function JobsDashboardScreen() {
 	const { data, logout } = useAbstraxionAccount();
 	const router = useRouter();
+	const modalRef = useRef<Modalize>(null);
 
 	const [showResume, setShowResume] = useState(Boolean(activeJob)); // true if there's an active job
 
-	const truncateAddress = (address) => {
+	const truncateAddress = (address: string | undefined | null) => {
 		if (!address) return "";
 		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
@@ -120,7 +123,7 @@ export default function JobsDashboardScreen() {
 							</View>
 							<TouchableOpacity
 								style={styles.resumeButton}
-								onPress={handleResumeJob}
+								onPress={() => modalRef.current?.open()}
 							>
 								<Text style={styles.resumeButtonText}>Submit</Text>
 							</TouchableOpacity>
@@ -141,6 +144,8 @@ export default function JobsDashboardScreen() {
 					/>
 					<Text style={styles.primaryButtonText}>Scan Job QR</Text>
 				</TouchableOpacity>
+
+				<Modalize ref={modalRef}>...your content</Modalize>
 			</View>
 		</SafeAreaView>
 	);
@@ -165,7 +170,7 @@ const styles = StyleSheet.create({
 	profileRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		alignItems: "bottom",
+		alignItems: "flex-end",
 		marginBottom: 12,
 	},
 	walletBadge: {

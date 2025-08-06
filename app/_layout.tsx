@@ -11,7 +11,7 @@ import {
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -52,27 +52,29 @@ export default function RootLayout() {
 
 	return (
 		<>
-			<AbstraxionProvider config={treasuryConfig}>
-				<ThemeProvider
-					value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-				>
-					<Stack
-						screenOptions={{
-							headerShown: false, // Hide headers for all screens
-						}}
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<AbstraxionProvider config={treasuryConfig}>
+					<ThemeProvider
+						value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
 					>
-						{/* No more "(tabs)" route! */}
-						{/* Just your pages, Expo Router will pick up /index, /recent-activity, /jobs, etc. */}
-					</Stack>
-					<StatusBar style="auto" />
-				</ThemeProvider>
-			</AbstraxionProvider>
-			<Toast
-				config={{
-					success: (props) => <CustomToast {...props} />,
-					// You can also override 'error', 'info', etc if you want
-				}}
-			/>
+						<Stack
+							screenOptions={{
+								headerShown: false, // Hide headers for all screens
+							}}
+						>
+							{/* No more "(tabs)" route! */}
+							{/* Just your pages, Expo Router will pick up /index, /recent-activity, /jobs, etc. */}
+						</Stack>
+						<StatusBar style="auto" />
+					</ThemeProvider>
+				</AbstraxionProvider>
+				<Toast
+					config={{
+						success: (props) => <CustomToast {...props} />,
+						// You can also override 'error', 'info', etc if you want
+					}}
+				/>
+			</GestureHandlerRootView>
 		</>
 	);
 }
