@@ -12,7 +12,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PaymentReceivedScreen() {
 	const insets = useSafeAreaInsets();
-	const tabBarHeight = useBottomTabBarHeight();
+	let tabBarHeight = 0;
+	try {
+		tabBarHeight = useBottomTabBarHeight();
+	} catch (e) {
+		tabBarHeight = 0;
+	}
 
 	const handleShareProof = () => {
 		console.log("Proof of completion shared");

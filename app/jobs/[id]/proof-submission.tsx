@@ -5,7 +5,7 @@ import {
 	TouchableOpacity,
 	SafeAreaView,
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
@@ -34,9 +34,10 @@ export default function ProofSubmissionScreen() {
 	const insets = useSafeAreaInsets();
 	const { id } = useLocalSearchParams();
 	const job = jobs[id];
+	const router = useRouter();
 
 	const handleSubmit = () => {
-		console.log("Proof submitted!");
+		router.push(`/jobs/${id}/payment-received`);
 	};
 
 	return (
