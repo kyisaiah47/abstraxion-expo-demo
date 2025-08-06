@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useRef } from "react";
 import {
 	View,
 	Text,
@@ -6,27 +6,20 @@ import {
 	TouchableOpacity,
 	ActivityIndicator,
 } from "react-native";
-import { Camera } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function QRScanner({ onScanned, onCancel }) {
-	const [hasPermission, setHasPermission] = useState<null | boolean>(null);
+	const [permission, requestPermission] = useCameraPermissions();
 	const [scanned, setScanned] = useState(false);
-	const cameraRef = useRef<Camera>(null);
-
-	useEffect(() => {
-		(async () => {
-			const { status } = await Camera.requestCameraPermissionsAsync();
-			setHasPermission(status === "granted");
-		})();
-	}, []);
+	const cameraRef = useRef(null);
 
 	const handleBarCodeScanned = ({ type, data }) => {
 		setScanned(true);
-		onScanned?.(data); // Callback to parent
+		onScanned?.(data);
 	};
 
-	if (hasPermission === null) {
+	if (!permission) {
 		return (
 			<View style={styles.centered}>
 				<ActivityIndicator
@@ -37,7 +30,8 @@ export default function QRScanner({ onScanned, onCancel }) {
 			</View>
 		);
 	}
-	if (hasPermission === false) {
+
+	if (!permission.granted) {
 		return (
 			<View style={styles.centered}>
 				<Ionicons
@@ -48,7 +42,7 @@ export default function QRScanner({ onScanned, onCancel }) {
 				<Text style={styles.permissionText}>No access to camera</Text>
 				<TouchableOpacity
 					style={styles.retryBtn}
-					onPress={() => Camera.requestCameraPermissionsAsync()}
+					onPress={requestPermission}
 				>
 					<Text style={styles.retryText}>Try Again</Text>
 				</TouchableOpacity>
@@ -58,11 +52,13 @@ export default function QRScanner({ onScanned, onCancel }) {
 
 	return (
 		<View style={styles.container}>
-			<Camera
+			<CameraView
 				ref={cameraRef}
 				style={StyleSheet.absoluteFillObject}
-				onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-				ratio="16:9"
+				onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+				barCodeScannerSettings={{
+					barCodeTypes: ["qr"], // Only QR codes
+				}}
 			>
 				<View style={styles.overlay}>
 					<View style={styles.frame} />
@@ -77,7 +73,7 @@ export default function QRScanner({ onScanned, onCancel }) {
 						/>
 					</TouchableOpacity>
 				</View>
-			</Camera>
+			</CameraView>
 			{scanned && (
 				<View style={styles.resultBox}>
 					<Text style={styles.resultText}>QR code scanned!</Text>
