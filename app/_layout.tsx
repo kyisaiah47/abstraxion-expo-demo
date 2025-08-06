@@ -1,3 +1,4 @@
+// app/_layout.tsx
 import "react-native-reanimated";
 import "react-native-get-random-values";
 import * as SplashScreen from "expo-splash-screen";
@@ -22,15 +23,14 @@ import crypto from "react-native-quick-crypto";
 global.crypto = crypto;
 global.Buffer = Buffer;
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const treasuryConfig = {
-	treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS, // Example XION treasury instance
-	gasPrice: "0.001uxion", // If you feel the need to change the gasPrice when connecting to signer, set this value. Please stick to the string format seen in example
+	treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS,
+	gasPrice: "0.001uxion",
 	rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
 	restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
-	callbackUrl: "abstraxion-expo-demo://", // this comes from app.json scheme
+	callbackUrl: "abstraxion-expo-demo://",
 };
 
 export default function RootLayout() {
@@ -55,12 +55,13 @@ export default function RootLayout() {
 				<ThemeProvider
 					value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
 				>
-					<Stack>
-						<Stack.Screen
-							name="(tabs)"
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen name="+not-found" />
+					<Stack
+						screenOptions={{
+							headerShown: false, // Hide headers for all screens
+						}}
+					>
+						{/* No more "(tabs)" route! */}
+						{/* Just your pages, Expo Router will pick up /index, /recent-activity, /jobs, etc. */}
 					</Stack>
 					<StatusBar style="auto" />
 				</ThemeProvider>
