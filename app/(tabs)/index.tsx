@@ -81,11 +81,12 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 	},
 	tagline: {
-		fontSize: 13,
-		color: "#e0e0e0",
+		fontSize: 14,
+		color: "#ddd", // instead of #ccc or #aaa
 		textAlign: "center",
-		paddingHorizontal: 10,
-		marginTop: 20,
+		marginTop: 8,
+		fontStyle: "italic",
+		fontWeight: "300",
 		lineHeight: 20,
 	},
 	connectButton: {
