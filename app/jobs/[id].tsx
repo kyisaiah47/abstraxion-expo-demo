@@ -6,6 +6,7 @@ import {
 	SafeAreaView,
 	ScrollView,
 	TouchableOpacity,
+	Platform,
 } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -43,9 +44,13 @@ export default function JobDetailsScreen() {
 	const router = useRouter();
 
 	// Replace this with your wallet/contract logic
+
 	const handleAcceptTask = () => {
-		alert("Task accepted! (hook up wallet logic here)");
-		router.push("/proof-submission");
+		// Pass job ID to proof submission page
+		router.push({
+			pathname: "/proof-submission",
+			params: { id }, // Passing the current job ID as a route param
+		});
 	};
 
 	if (!job) {
@@ -120,10 +125,28 @@ export default function JobDetailsScreen() {
 						onUnlock={handleAcceptTask}
 					/>
 				</View> */}
-				<View style={styles.footer}>
+				<View
+					style={[
+						styles.footer,
+						{
+							paddingBottom: insets.bottom + (Platform.OS === "ios" ? 12 : 20),
+							backgroundColor: "#F4F4F5",
+							position: "absolute",
+							left: 0,
+							right: 0,
+							bottom: 0,
+							shadowColor: "#000",
+							shadowOffset: { width: 0, height: -3 },
+							shadowOpacity: 0.06,
+							shadowRadius: 8,
+							elevation: 10,
+						},
+					]}
+				>
 					<TouchableOpacity
 						style={styles.button}
 						onPress={handleAcceptTask}
+						activeOpacity={0.85}
 					>
 						<Text style={styles.buttonText}>ACCEPT TASK</Text>
 					</TouchableOpacity>
@@ -260,18 +283,27 @@ const styles = StyleSheet.create({
 		letterSpacing: 0.2,
 	},
 	footer: {
-		paddingTop: 16,
+		paddingTop: 10,
+		paddingHorizontal: 20,
+		// Remove old paddingBottom, it's now in the component inline
 	},
 	button: {
 		backgroundColor: "#6366F1",
 		paddingVertical: 16,
 		borderRadius: 10,
 		alignItems: "center",
+		width: "100%",
+		shadowColor: "#4F46E5",
+		shadowOpacity: 0.18,
+		shadowOffset: { width: 0, height: 2 },
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	buttonText: {
 		color: "#FFFFFF",
-		fontSize: 16,
-		fontWeight: "600",
+		fontSize: 17,
+		fontWeight: "700",
+		letterSpacing: 0.2,
 	},
 	thumbIcon: {
 		width: 32,
