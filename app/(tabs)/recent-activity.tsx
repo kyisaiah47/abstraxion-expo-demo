@@ -1,4 +1,3 @@
-import React from "react";
 import {
 	View,
 	Text,
@@ -10,7 +9,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
-import { Alert } from "react-native";
+import { Platform, ToastAndroid } from "react-native";
+import Toast from "react-native-toast-message";
 
 const recentActivities = [
 	{
@@ -33,6 +33,10 @@ const recentActivities = [
 	},
 ];
 
+if (Platform.OS === "android") {
+	ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT);
+}
+
 export default function RecentActivityScreen() {
 	const hasActivity = recentActivities.length > 0;
 
@@ -45,8 +49,13 @@ export default function RecentActivityScreen() {
 
 	const copyToClipboard = async () => {
 		if (data?.bech32Address) {
-			await Clipboard.setStringAsync(data.bech32Address);
-			Alert.alert("Copied", "Wallet address copied to clipboard");
+			await Clipboard.setStringAsync(data?.bech32Address);
+			Toast.show({
+				type: "success",
+				text1: "Copied",
+				text2: "Wallet address copied to clipboard",
+				position: "bottom",
+			});
 		}
 	};
 

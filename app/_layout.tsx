@@ -14,6 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import Toast from "react-native-toast-message";
 
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
@@ -49,17 +50,22 @@ export default function RootLayout() {
 	}
 
 	return (
-		<AbstraxionProvider config={treasuryConfig}>
-			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-				<Stack>
-					<Stack.Screen
-						name="(tabs)"
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen name="+not-found" />
-				</Stack>
-				<StatusBar style="auto" />
-			</ThemeProvider>
-		</AbstraxionProvider>
+		<>
+			<AbstraxionProvider config={treasuryConfig}>
+				<ThemeProvider
+					value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+				>
+					<Stack>
+						<Stack.Screen
+							name="(tabs)"
+							options={{ headerShown: false }}
+						/>
+						<Stack.Screen name="+not-found" />
+					</Stack>
+					<StatusBar style="auto" />
+				</ThemeProvider>
+			</AbstraxionProvider>
+			<Toast />
+		</>
 	);
 }
