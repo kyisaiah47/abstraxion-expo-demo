@@ -21,6 +21,16 @@ const activeJob = {
 	client: "Acme Inc.",
 };
 
+const proofEvents = [
+	{ description: "Accessed figma.com", time: "10:22 AM", verified: true },
+	{ description: "Deployed to vercel.com", time: "1:10 AM", verified: false }, // disables check for demo
+	{
+		description: "Uploaded assets to figma.com",
+		time: "9:00 AM",
+		verified: true,
+	},
+];
+
 export default function JobsDashboardScreen() {
 	const { data, logout } = useAbstraxionAccount();
 	const router = useRouter();
@@ -157,6 +167,7 @@ export default function JobsDashboardScreen() {
 				>
 					<ProofSubmissionSheet
 						job={activeJob}
+						proofEvents={proofEvents}
 						onSubmit={handleSubmitProof}
 					/>
 				</Modalize>{" "}
