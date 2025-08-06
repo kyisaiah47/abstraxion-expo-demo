@@ -11,9 +11,13 @@ import {
 } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function JobDetailsScreen() {
 	const { jobId } = useLocalSearchParams();
+	const insets = useSafeAreaInsets();
+	const tabBarHeight = useBottomTabBarHeight();
 
 	const openExplorer = () => {
 		Linking.openURL("https://xion.explorer/tx/0x123");
@@ -26,7 +30,14 @@ export default function JobDetailsScreen() {
 				style={styles.keyboardAvoiding}
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 			>
-				<View style={styles.wrapper}>
+				<View
+					style={[
+						styles.wrapper,
+						{
+							paddingBottom: Math.max(insets.bottom, tabBarHeight) + 16,
+						},
+					]}
+				>
 					<View style={styles.centeredContent}>
 						<View style={styles.card}>
 							<View style={[styles.iconRow, { marginTop: 0 }]}>

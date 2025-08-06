@@ -7,8 +7,13 @@ import {
 	TouchableOpacity,
 } from "react-native";
 import { Stack } from "expo-router";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PaymentReceivedScreen() {
+	const insets = useSafeAreaInsets();
+	const tabBarHeight = useBottomTabBarHeight();
+
 	const handleShareProof = () => {
 		console.log("Proof of completion shared");
 	};
@@ -16,7 +21,14 @@ export default function PaymentReceivedScreen() {
 	return (
 		<SafeAreaView style={styles.safeArea}>
 			<Stack.Screen options={{ title: "Payment Received" }} />
-			<View style={styles.wrapper}>
+			<View
+				style={[
+					styles.wrapper,
+					{
+						paddingBottom: Math.max(insets.bottom, tabBarHeight) + 16,
+					},
+				]}
+			>
 				<View style={styles.centeredContent}>
 					<View style={styles.card}>
 						<Text style={styles.title}>Payment Received</Text>

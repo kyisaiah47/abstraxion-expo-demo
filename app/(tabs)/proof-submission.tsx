@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 const proofEvents = [
 	{ description: "Accessed figma.com", time: "10:22 AM" },
@@ -16,6 +18,9 @@ const proofEvents = [
 ];
 
 export default function ProofSubmissionScreen() {
+	const insets = useSafeAreaInsets();
+	const tabBarHeight = useBottomTabBarHeight();
+
 	const handleSubmit = () => {
 		console.log("Proof submitted!");
 	};
@@ -23,7 +28,14 @@ export default function ProofSubmissionScreen() {
 	return (
 		<SafeAreaView style={styles.safeArea}>
 			<Stack.Screen options={{ title: "Proof of Work" }} />
-			<View style={styles.wrapper}>
+			<View
+				style={[
+					styles.wrapper,
+					{
+						paddingBottom: Math.max(insets.bottom, tabBarHeight) + 16,
+					},
+				]}
+			>
 				<View style={styles.centeredContent}>
 					<View style={styles.card}>
 						<Text style={styles.title}>Submit proof{"\n"}of work</Text>
@@ -44,7 +56,6 @@ export default function ProofSubmissionScreen() {
 						))}
 					</View>
 				</View>
-
 				<View style={styles.footer}>
 					<TouchableOpacity
 						style={styles.button}
