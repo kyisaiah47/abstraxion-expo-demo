@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { Modalize } from "react-native-modalize";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
+import QRScanner from "./qr-scanner";
 
 // Example for current/active job (replace with your logic or Redux/store/etc)
 const activeJob = {
@@ -31,6 +32,7 @@ const proofEvents = [
 ];
 
 export default function JobsDashboardScreen() {
+	const [showScanner, setShowScanner] = useState(false);
 	const { data, logout } = useAbstraxionAccount();
 	const router = useRouter();
 	const modalRef = useRef<Modalize>(null);
@@ -77,15 +79,22 @@ export default function JobsDashboardScreen() {
 	const openJobsCount = 3; // Replace with your data logic
 	const jobsScanned = 8; // Replace with your data logic
 
-	const handleResumeJob = () => {
-		// Navigate to current job detail or work screen
-		router.push("/job-detail"); // Adjust route as needed
+	const handleScanQR = () => setShowScanner(true);
+
+	const handleScanned = (data) => {
+		alert(`QR Code: ${data}`);
+		setShowScanner(false);
+		// You can route, toast, or do something with data here.
 	};
 
-	const handleScanQR = () => {
-		// Navigate to QR scanner screen
-		router.push("/scan-qr"); // Adjust route as needed
-	};
+	if (showScanner) {
+		return (
+			<QRScanner
+				onScanned={handleScanned}
+				onCancel={() => setShowScanner(false)}
+			/>
+		);
+	}
 
 	return (
 		<SafeAreaView style={styles.safeArea}>

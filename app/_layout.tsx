@@ -31,7 +31,7 @@ const treasuryConfig = {
 	gasPrice: "0.001uxion",
 	rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
 	restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
-	callbackUrl: "abstraxion-expo-demo://",
+	callbackUrl: "proof-of-work://",
 };
 
 export default function RootLayout() {

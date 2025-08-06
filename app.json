@@ -10,7 +10,10 @@
 		"newArchEnabled": true,
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.anonymous.proof-of-work"
+			"bundleIdentifier": "com.anonymous.proof-of-work",
+			"infoPlist": {
+				"NSCameraUsageDescription": "This app needs camera access to scan QR codes."
+			}
 		},
 		"android": {
 			"adaptiveIcon": {
@@ -28,6 +31,14 @@
 					"imageWidth": 200,
 					"resizeMode": "contain",
 					"backgroundColor": "#ffffff"
+				}
+			],
+			[
+				"expo-camera",
+				{
+					"cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+					"microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+					"recordAudioAndroid": true
 				}
 			]
 		],

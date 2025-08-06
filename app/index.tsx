@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
 	View,
 	Text,
@@ -14,8 +14,14 @@ export default function WelcomeScreen() {
 	const { login, isConnected, isConnecting } = useAbstraxionAccount();
 	const router = useRouter();
 
+	useEffect(() => {
+		if (isConnected) {
+			router.replace("/recent-activity");
+		}
+	}, [isConnected, router]);
+
 	if (isConnected) {
-		router.replace("/recent-activity");
+		// Optionally show a loader or nothing
 		return null;
 	}
 
