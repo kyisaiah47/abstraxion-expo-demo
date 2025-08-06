@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message";
 
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
+import CustomToast from "@/components/CustomToast";
 // @ts-ignore
 global.crypto = crypto;
 global.Buffer = Buffer;
@@ -66,7 +67,12 @@ export default function RootLayout() {
 					<StatusBar style="auto" />
 				</ThemeProvider>
 			</AbstraxionProvider>
-			<Toast />
+			<Toast
+				config={{
+					success: (props) => <CustomToast {...props} />,
+					// You can also override 'error', 'info', etc if you want
+				}}
+			/>
 		</>
 	);
 }

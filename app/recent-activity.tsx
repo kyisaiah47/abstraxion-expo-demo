@@ -5,7 +5,7 @@ import {
 	SafeAreaView,
 	TouchableOpacity,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import Toast from "react-native-toast-message";
@@ -70,7 +70,22 @@ export default function JobsDashboardScreen() {
 			<View style={styles.container}>
 				{/* Profile row */}
 				<View style={styles.profileRow}>
-					<Text style={styles.greeting}>Welcome back</Text>
+					{data?.bech32Address && (
+						<TouchableOpacity
+							style={styles.walletBadge}
+							onPress={copyToClipboard}
+						>
+							<Text style={styles.walletText}>
+								{truncateAddress(data.bech32Address)}
+							</Text>
+							<MaterialIcons
+								name="content-copy"
+								size={14}
+								color="#191919"
+								style={{ marginLeft: 5 }}
+							/>
+						</TouchableOpacity>
+					)}
 					<TouchableOpacity onPress={handleLogout}>
 						<MaterialIcons
 							name="logout"
@@ -81,22 +96,6 @@ export default function JobsDashboardScreen() {
 				</View>
 
 				{/* Wallet */}
-				{data?.bech32Address && (
-					<TouchableOpacity
-						style={styles.walletBadge}
-						onPress={copyToClipboard}
-					>
-						<Text style={styles.walletText}>
-							{truncateAddress(data.bech32Address)}
-						</Text>
-						<MaterialIcons
-							name="content-copy"
-							size={14}
-							color="#191919"
-							style={{ marginLeft: 5 }}
-						/>
-					</TouchableOpacity>
-				)}
 
 				{/* Metrics Row */}
 				<View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
@@ -123,7 +122,7 @@ export default function JobsDashboardScreen() {
 								style={styles.resumeButton}
 								onPress={handleResumeJob}
 							>
-								<Text style={styles.resumeButtonText}>Resume</Text>
+								<Text style={styles.resumeButtonText}>Submit</Text>
 							</TouchableOpacity>
 						</View>
 					)}
@@ -134,6 +133,12 @@ export default function JobsDashboardScreen() {
 					style={styles.primaryButton}
 					onPress={handleScanQR}
 				>
+					<MaterialCommunityIcons
+						name="qrcode-scan"
+						size={22}
+						color="#fff"
+						style={{ marginRight: 8 }}
+					/>
 					<Text style={styles.primaryButtonText}>Scan Job QR</Text>
 				</TouchableOpacity>
 			</View>
@@ -160,7 +165,7 @@ const styles = StyleSheet.create({
 	profileRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		alignItems: "center",
+		alignItems: "bottom",
 		marginBottom: 12,
 	},
 	walletBadge: {
@@ -210,10 +215,10 @@ const styles = StyleSheet.create({
 		padding: 18,
 		marginBottom: 20,
 		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
 		shadowOpacity: 0.03,
-		shadowRadius: 2,
-		elevation: 0,
+		shadowOffset: { width: 0, height: 2 },
+		shadowRadius: 8,
+		elevation: 2,
 	},
 	activeJobText: {
 		flex: 1,
@@ -250,7 +255,9 @@ const styles = StyleSheet.create({
 		paddingVertical: 16,
 		borderRadius: 100,
 		alignItems: "center",
+		justifyContent: "center",
 		marginBottom: 28,
+		flexDirection: "row", // <-- to align icon + text
 	},
 	primaryButtonText: {
 		color: "#fff",
