@@ -1,111 +1,54 @@
-import {
-	View,
-	Text,
-	StyleSheet,
-	TouchableOpacity,
-	SafeAreaView,
-} from "react-native";
-import { Stack, useRouter } from "expo-router";
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
 
-// Your jobs data (copy from JobDetailsScreen for now)
-const jobs = {
-	"1": {
-		title: "Design landing page",
-		clientName: "David Smith",
-		description: "Create a modern, responsive landing page for Acme Inc.",
-	},
-	"2": {
-		title: "Build mobile prototype",
-		clientName: "Emily Zhao",
-		description: "Develop a high-fidelity mobile UI for ZenFlow.",
-	},
-};
-
+// You can pass these as props if you want dynamic data
 const proofEvents = [
 	{ description: "Accessed figma.com", time: "10:22 AM" },
 	{ description: "Deployed to vercel.com", time: "1:10 AM" },
 	{ description: "Uploaded assets to figma.com", time: "9:00 AM" },
 ];
 
-export default function ProofSubmissionScreen() {
-	const insets = useSafeAreaInsets();
-	const { id } = useLocalSearchParams();
-	const job = jobs[id];
-	const router = useRouter();
-
-	const handleSubmit = () => {
-		router.push(`/jobs/${id}/payment-received`);
-	};
-
+export default function ProofSubmissionSheet({ job, onSubmit }) {
 	return (
-		<SafeAreaView style={styles.safeArea}>
-			<Stack.Screen options={{ title: "Proof of Work" }} />
-			<View
-				style={[
-					styles.wrapper,
-					{
-						paddingBottom: insets.bottom + 16,
-					},
-				]}
-			>
-				{/* JOB HEADER */}
-				{job && (
-					<View style={styles.header}>
-						<Text style={styles.jobTitle}>{job.title}</Text>
-						<Text style={styles.jobClient}>for {job.clientName}</Text>
-					</View>
-				)}
-
-				<View style={styles.centeredContent}>
-					<View style={styles.card}>
-						<Text style={styles.title}>Submit proof{"\n"}of work</Text>
-
-						{proofEvents.map((item, idx) => (
-							<View
-								key={idx}
-								style={styles.proofRow}
-							>
-								<Ionicons
-									name="checkmark-circle"
-									size={20}
-									color="#10B981"
-								/>
-								<Text style={styles.proofText}>{item.description}</Text>
-								<Text style={styles.proofTime}>{item.time}</Text>
-							</View>
-						))}
-					</View>
+		<View style={{ paddingHorizontal: 24, paddingTop: 20, paddingBottom: 16 }}>
+			{job && (
+				<View style={styles.header}>
+					<Text style={styles.jobTitle}>{job.title}</Text>
+					<Text style={styles.jobClient}>for {job.clientName}</Text>
 				</View>
-				<View style={styles.footer}>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={handleSubmit}
+			)}
+			<View style={styles.card}>
+				<Text style={styles.title}>Submit proof{"\n"}of work</Text>
+				{proofEvents.map((item, idx) => (
+					<View
+						key={idx}
+						style={styles.proofRow}
 					>
-						<Text style={styles.buttonText}>SUBMIT PROOF</Text>
-					</TouchableOpacity>
-				</View>
+						<Ionicons
+							name="checkmark-circle"
+							size={20}
+							color="#10B981"
+						/>
+						<Text style={styles.proofText}>{item.description}</Text>
+						<Text style={styles.proofTime}>{item.time}</Text>
+					</View>
+				))}
 			</View>
-		</SafeAreaView>
+			<TouchableOpacity
+				style={styles.button}
+				onPress={onSubmit}
+			>
+				<Text style={styles.buttonText}>SUBMIT PROOF</Text>
+			</TouchableOpacity>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	safeArea: {
-		flex: 1,
-		backgroundColor: "#F4F4F5",
-	},
-	wrapper: {
-		flex: 1,
-		paddingHorizontal: 20,
-		paddingBottom: 20,
-		justifyContent: "space-between",
-	},
 	header: {
 		alignItems: "center",
-		marginBottom: 20,
+		marginBottom: 16,
 	},
 	jobTitle: {
 		fontSize: 18,
@@ -117,14 +60,11 @@ const styles = StyleSheet.create({
 		color: "#6B7280",
 		marginTop: 2,
 	},
-	centeredContent: {
-		flexGrow: 1,
-		justifyContent: "center",
-	},
 	card: {
 		backgroundColor: "#FFFFFF",
-		padding: 20,
+		padding: 16,
 		borderRadius: 12,
+		marginBottom: 16,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 1 },
 		shadowOpacity: 0.05,
@@ -154,12 +94,9 @@ const styles = StyleSheet.create({
 		color: "#6B7280",
 		marginLeft: 8,
 	},
-	footer: {
-		paddingTop: 12,
-	},
 	button: {
 		backgroundColor: "#6366F1",
-		paddingVertical: 16,
+		paddingVertical: 14,
 		borderRadius: 10,
 		alignItems: "center",
 	},

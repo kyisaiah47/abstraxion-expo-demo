@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { Modalize } from "react-native-modalize";
 import TestModalize from "./test-modalize";
+import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
 
 // Example for current/active job (replace with your logic or Redux/store/etc)
 const activeJob = {
@@ -53,6 +54,15 @@ export default function JobsDashboardScreen() {
 			position: "bottom",
 		});
 		router.replace("/"); // Back to WelcomeScreen
+	};
+
+	const handleSubmitProof = () => {
+		Toast.show({
+			type: "success",
+			text1: "Proof submitted!",
+			position: "bottom",
+		});
+		modalRef.current?.close();
 	};
 
 	const openJobsCount = 3; // Replace with your data logic
@@ -97,9 +107,7 @@ export default function JobsDashboardScreen() {
 						/>
 					</TouchableOpacity>
 				</View>
-
 				{/* Wallet */}
-
 				{/* Metrics Row */}
 				<View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
 					<View style={[styles.balanceCard, { flex: 1 }]}>
@@ -111,7 +119,6 @@ export default function JobsDashboardScreen() {
 						<Text style={styles.balanceValue}>{openJobsCount}</Text>
 					</View>
 				</View>
-
 				<View style={{ flex: 1, width: "100%" }}>
 					{/* Only show if an active job exists */}
 					{showResume && activeJob && (
@@ -130,7 +137,6 @@ export default function JobsDashboardScreen() {
 						</View>
 					)}
 				</View>
-
 				{/* Main CTA */}
 				<TouchableOpacity
 					style={styles.primaryButton}
@@ -144,8 +150,16 @@ export default function JobsDashboardScreen() {
 					/>
 					<Text style={styles.primaryButtonText}>Scan Job QR</Text>
 				</TouchableOpacity>
-
-				<Modalize ref={modalRef}>...your content</Modalize>
+				<Modalize
+					ref={modalRef}
+					adjustToContentHeight
+					handlePosition="inside"
+				>
+					<ProofSubmissionSheet
+						job={activeJob}
+						onSubmit={handleSubmitProof}
+					/>
+				</Modalize>{" "}
 			</View>
 		</SafeAreaView>
 	);
