@@ -1,4 +1,3 @@
-import React from "react";
 import {
 	View,
 	Text,
@@ -7,20 +6,56 @@ import {
 	SafeAreaView,
 	KeyboardAvoidingView,
 	Platform,
-	Linking,
+	Alert,
 } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
 
 export default function JobDetailsScreen() {
 	const { jobId } = useLocalSearchParams();
 	const insets = useSafeAreaInsets();
 	const tabBarHeight = useBottomTabBarHeight();
+	const router = useRouter();
 
-	const openExplorer = () => {
-		Linking.openURL("https://xion.explorer/tx/0x123");
+	const { data: account, isConnected, login } = useAbstraxionAccount();
+	const { client: signingClient } = useAbstraxionSigningClient();
+
+	const handleAcceptTask = async () => {
+		try {
+			if (!isConnected) {
+				await login();
+			}
+
+			if (!signingClient || !account?.address) {
+				throw new Error("Wallet not ready");
+			}
+
+			const result = await signingClient.execute(
+				account.address, // sender (freelancer)
+				"xion1trustcontract...", // your deployed trust contract address
+				{
+					create_trust: {
+						job_id: jobId,
+						amount: "500000", // 500 XION in uxion
+						client: "xion1client...", // client wallet address
+						task: "Design landing page",
+					},
+				},
+				"auto" // fee
+			);
+
+			console.log("✅ Trust created:", result);
+			router.push("/proof-submission");
+		} catch (err: any) {
+			console.error("❌ Error creating trust:", err);
+			Alert.alert("Error", err.message || "Failed to create trust.");
+		}
 	};
 
 	return (
@@ -33,9 +68,7 @@ export default function JobDetailsScreen() {
 				<View
 					style={[
 						styles.wrapper,
-						{
-							paddingBottom: Math.max(insets.bottom, tabBarHeight) + 16,
-						},
+						{ paddingBottom: Math.max(insets.bottom, tabBarHeight) + 16 },
 					]}
 				>
 					<View style={styles.centeredContent}>
@@ -99,7 +132,7 @@ export default function JobDetailsScreen() {
 					<View style={styles.footer}>
 						<TouchableOpacity
 							style={styles.button}
-							onPress={openExplorer}
+							onPress={handleAcceptTask}
 						>
 							<Text style={styles.buttonText}>ACCEPT TASK</Text>
 						</TouchableOpacity>

@@ -1,117 +1,113 @@
-import React from "react";
-import { View, Text, StyleSheet, SafeAreaView, FlatList } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import {
+	View,
+	Text,
+	StyleSheet,
+	Image,
+	TouchableOpacity,
+	ActivityIndicator,
+} from "react-native";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 
-const recentActivities = [
-	{
-		id: "1",
-		title: "Accepted task",
-		subtitle: "Design landing page",
-		icon: "check-circle",
-	},
-	{
-		id: "2",
-		title: "Submitted proof",
-		subtitle: "Logo design",
-		icon: "upload-file",
-	},
-	{
-		id: "3",
-		title: "Received payment",
-		subtitle: "$500 for Web App",
-		icon: "attach-money",
-	},
-];
+export default function WelcomeScreen() {
+	const { login, isConnected, isConnecting } = useAbstraxionAccount();
 
-export default function RecentActivityScreen() {
+	if (isConnected) return null; // or navigate to main app if already connected
+
 	return (
-		<SafeAreaView style={styles.safeArea}>
-			<View style={styles.container}>
-				<View style={styles.listWrapper}>
-					<FlatList
-						data={recentActivities}
-						keyExtractor={(item) => item.id}
-						contentContainerStyle={{
-							flexGrow: 1,
-							justifyContent: "center",
-							paddingBottom: 24,
-						}}
-						ListHeaderComponent={
-							<Text style={styles.title}>Recent Activity</Text>
-						}
-						renderItem={({ item }) => (
-							<View style={styles.activityItem}>
-								<View style={styles.iconWrapper}>
-									<MaterialIcons
-										name={item.icon}
-										size={24}
-										color="#6366F1"
-									/>
-								</View>
-								<View style={styles.textWrapper}>
-									<Text style={styles.activityTitle}>{item.title}</Text>
-									<Text style={styles.activitySubtitle}>{item.subtitle}</Text>
-								</View>
-							</View>
-						)}
-					/>
-				</View>
+		<View style={styles.container}>
+			{/* Logo placeholder */}
+			<View style={styles.logoContainer}>
+				<Image
+					source={{
+						uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/proof-of-work-logo",
+					}}
+					style={{ width: 150, height: 150, borderRadius: 20 }}
+					resizeMode="contain"
+				/>
+				{/* <Text style={styles.title}>Proof of Work</Text> */}
+				<Text style={styles.tagline}>
+					Verifiable Work.{"\n"}Trustless Payments.
+				</Text>
 			</View>
-		</SafeAreaView>
+
+			{/* Connect Wallet */}
+			<TouchableOpacity
+				onPress={login}
+				style={[styles.connectButton, isConnecting && styles.disabledButton]}
+				disabled={isConnecting}
+			>
+				{isConnecting ? (
+					<ActivityIndicator color="#fff" />
+				) : (
+					<Text style={styles.connectText}>Connect Wallet</Text>
+				)}
+			</TouchableOpacity>
+
+			{/* Footer */}
+			<Text style={styles.footer}>Powered by XION • Burnt</Text>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	safeArea: {
-		flex: 1,
-		backgroundColor: "#F4F4F5",
-	},
 	container: {
 		flex: 1,
-		paddingHorizontal: 20,
-	},
-	title: {
-		fontSize: 20,
-		fontWeight: "600",
-		color: "#111827",
-		marginTop: 16,
-		marginBottom: 16,
-	},
-	listWrapper: {
-		flex: 1,
-	},
-	activityItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#FFFFFF",
-		padding: 16,
-		borderRadius: 12,
-		marginBottom: 12,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.05,
-		shadowRadius: 4,
-		elevation: 1,
-	},
-	iconWrapper: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
-		backgroundColor: "#EEF2FF",
+		backgroundColor: "#6366F1",
 		alignItems: "center",
 		justifyContent: "center",
-		marginRight: 12,
+		paddingHorizontal: 24,
 	},
-	textWrapper: {
-		flex: 1,
+	logoContainer: {
+		alignItems: "center",
+		marginBottom: 40,
 	},
-	activityTitle: {
+	logoPlaceholder: {
+		width: 100,
+		height: 100,
+		borderRadius: 20,
+		backgroundColor: "#e0e0e0",
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: 16,
+	},
+	logoText: {
+		color: "#555",
+		fontWeight: "bold",
+	},
+	title: {
+		fontSize: 28,
+		fontWeight: "700",
+		color: "#fff",
+		marginBottom: 8,
+	},
+	tagline: {
+		fontSize: 13,
+		color: "#e0e0e0",
+		textAlign: "center",
+		paddingHorizontal: 10,
+		marginTop: 20,
+		lineHeight: 20,
+	},
+	connectButton: {
+		backgroundColor: "#ffffff",
+		paddingVertical: 16,
+		borderRadius: 100,
+		alignItems: "center",
+		width: "100%",
+		marginTop: 20,
+	},
+	connectText: {
+		color: "#6366F1",
 		fontSize: 16,
 		fontWeight: "600",
-		color: "#111827",
 	},
-	activitySubtitle: {
-		fontSize: 14,
-		color: "#6B7280",
+	disabledButton: {
+		backgroundColor: "#ccc",
+		opacity: 0.7,
+	},
+	footer: {
+		marginTop: 40,
+		fontSize: 12,
+		color: "#d0cde1",
 	},
 });

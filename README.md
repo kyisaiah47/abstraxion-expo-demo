@@ -15,13 +15,13 @@ This project is a mobile application built with React Native and Expo Router. It
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/burnt-labs/abstraxion-expo-demo.git
+   git clone https://github.com/burnt-labs/proof-of-work.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd abstraxion-expo-demo
+   cd proof-of-work
    ```
 
 3. Install dependencies:
