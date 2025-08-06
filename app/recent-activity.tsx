@@ -38,9 +38,9 @@ const jobs = [
 ];
 
 const statusColors = {
-	open: "#6366F1",
-	completed: "#10B981",
-	archived: "#9CA3AF",
+	open: "#191919", // Black
+	completed: "#22c55e", // Keep green for contrast
+	archived: "#9CA3AF", // Gray for archived
 };
 
 export default function JobsDashboardScreen() {
@@ -130,16 +130,15 @@ export default function JobsDashboardScreen() {
 							style={[
 								styles.chip,
 								selectedStatus === status && {
-									backgroundColor: statusColors[status],
-									color: "#fff",
+									backgroundColor: "#191919",
+									borderColor: "#191919",
 								},
 							]}
 							onPress={() => setSelectedStatus(status)}
 						>
 							<Text
 								style={{
-									color:
-										selectedStatus === status ? "#fff" : statusColors[status],
+									color: selectedStatus === status ? "#fff" : "#191919",
 									fontWeight: "600",
 								}}
 							>
@@ -195,7 +194,7 @@ export default function JobsDashboardScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#F4F4F5",
+		backgroundColor: "#fafafa", // Lightest gray (or "#fff")
 	},
 	container: {
 		flex: 1,
@@ -203,76 +202,63 @@ const styles = StyleSheet.create({
 		paddingTop: 16,
 	},
 	greeting: {
-		fontSize: 20,
-		fontWeight: "600",
-		color: "#111827",
+		fontSize: 22,
+		fontWeight: "800",
+		color: "#191919",
 		marginBottom: 12,
 	},
 	walletBadge: {
 		alignSelf: "flex-start",
-		backgroundColor: "#E0E7FF",
+		backgroundColor: "#e5e5e5",
 		paddingHorizontal: 12,
 		paddingVertical: 6,
 		borderRadius: 100,
 		marginBottom: 16,
+		flexDirection: "row",
+		alignItems: "center",
 	},
 	walletText: {
-		fontSize: 12,
-		color: "#4338CA",
+		fontSize: 13,
+		color: "#191919",
 		fontWeight: "600",
 		letterSpacing: 0.4,
 	},
 	balanceCard: {
-		backgroundColor: "#EEF2FF",
+		backgroundColor: "#fff",
 		padding: 20,
-		borderRadius: 12,
+		borderRadius: 16,
 		marginBottom: 20,
+		borderWidth: 1,
+		borderColor: "#ededed",
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.08,
-		shadowRadius: 4,
-		elevation: 2,
+		shadowOpacity: 0.03,
+		shadowRadius: 2,
+		elevation: 0,
 	},
 	balanceLabel: {
-		fontSize: 14,
-		color: "#6B7280",
+		fontSize: 15,
+		color: "#8e8e8e",
 		marginBottom: 4,
+		fontWeight: "500",
 	},
 	balanceValue: {
-		fontSize: 24,
+		fontSize: 28,
 		fontWeight: "700",
-		color: "#4F46E5",
+		color: "#191919",
 	},
 	primaryButton: {
-		backgroundColor: "#6366F1",
-		paddingVertical: 14,
+		backgroundColor: "#191919",
+		paddingVertical: 16,
 		borderRadius: 100,
 		alignItems: "center",
-		marginBottom: 24,
+		marginBottom: 28,
 	},
 	primaryButtonText: {
-		color: "#FFFFFF",
-		fontSize: 16,
-		fontWeight: "600",
-	},
-	sectionTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#111827",
-		marginBottom: 12,
-	},
-	activityItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#FFFFFF",
-		padding: 16,
-		borderRadius: 12,
-		marginBottom: 12,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.05,
-		shadowRadius: 4,
-		elevation: 1,
+		color: "#fff",
+		fontSize: 17,
+		fontWeight: "700",
+		letterSpacing: 0.1,
 	},
 	profileRow: {
 		flexDirection: "row",
@@ -283,20 +269,38 @@ const styles = StyleSheet.create({
 	chipRow: {
 		flexDirection: "row",
 		gap: 10,
-		marginBottom: 16,
+		marginBottom: 20,
 		justifyContent: "center",
 	},
 	chip: {
-		paddingHorizontal: 14,
-		paddingVertical: 6,
+		paddingHorizontal: 16,
+		paddingVertical: 7,
 		borderRadius: 100,
-		backgroundColor: "#F1F5F9",
+		backgroundColor: "#eee",
+		borderWidth: 1,
+		borderColor: "#eee",
+		marginHorizontal: 2,
+	},
+	activityItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#fff",
+		padding: 16,
+		borderRadius: 14,
+		marginBottom: 12,
+		borderWidth: 1,
+		borderColor: "#ededed",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.03,
+		shadowRadius: 2,
+		elevation: 0,
 	},
 	iconWrapper: {
 		width: 40,
 		height: 40,
 		borderRadius: 20,
-		backgroundColor: "#EEF2FF",
+		backgroundColor: "#fafafa",
 		alignItems: "center",
 		justifyContent: "center",
 		marginRight: 12,
@@ -308,23 +312,23 @@ const styles = StyleSheet.create({
 	},
 	timestamp: {
 		fontSize: 12,
-		color: "#9CA3AF",
+		color: "#b0b0b0",
 	},
 	textWrapper: {
 		flex: 1,
 	},
 	activityTitle: {
 		fontSize: 16,
-		fontWeight: "600",
-		color: "#111827",
+		fontWeight: "700",
+		color: "#191919",
 	},
 	activitySubtitle: {
 		fontSize: 14,
-		color: "#6B7280",
+		color: "#8e8e8e",
 	},
 	emptyState: {
 		textAlign: "center",
-		color: "#6B7280",
+		color: "#8e8e8e",
 		marginTop: 40,
 		fontSize: 14,
 		fontStyle: "italic",
