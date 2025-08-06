@@ -69,6 +69,12 @@ export default function JobsDashboardScreen() {
 
 	const handleLogout = async () => {
 		await logout();
+		Toast.show({
+			type: "success",
+			text1: "Logged out",
+			text2: "You have been disconnected.",
+			position: "bottom",
+		});
 		router.replace("/"); // This is the index route (WelcomeScreen)
 	};
 
