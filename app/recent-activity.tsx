@@ -170,7 +170,7 @@ export default function JobsDashboardScreen() {
 						proofEvents={proofEvents}
 						onSubmit={handleSubmitProof}
 					/>
-				</Modalize>{" "}
+				</Modalize>
 			</View>
 		</SafeAreaView>
 	);
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
 	profileRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		alignItems: "flex-end",
+		alignItems: "baseline",
 		marginBottom: 12,
 	},
 	walletBadge: {
