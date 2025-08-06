@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#191919",
 		paddingVertical: 8,
 		paddingHorizontal: 18,
-		borderRadius: 100,
+		borderRadius: 8,
 		marginLeft: 18,
 	},
 	resumeButtonText: {
@@ -282,8 +282,8 @@ const styles = StyleSheet.create({
 	},
 	primaryButton: {
 		backgroundColor: "#191919",
-		paddingVertical: 16,
-		borderRadius: 100,
+		paddingVertical: 17,
+		borderRadius: 16,
 		alignItems: "center",
 		justifyContent: "center",
 		marginBottom: 28,
