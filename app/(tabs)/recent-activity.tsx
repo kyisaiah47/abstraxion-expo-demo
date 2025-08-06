@@ -6,52 +6,54 @@ import {
 	FlatList,
 	TouchableOpacity,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
-import { Platform, ToastAndroid } from "react-native";
 import Toast from "react-native-toast-message";
+import { useState } from "react";
 import { useRouter } from "expo-router";
 
-const router = useRouter();
-
-const recentActivities = [
+const jobs = [
 	{
 		id: "1",
-		title: "Accepted task",
-		subtitle: "Design landing page",
-		icon: "check-circle",
+		title: "Design landing page",
+		client: "Acme Inc.",
+		status: "open",
 		timestamp: "2h ago",
 	},
 	{
 		id: "2",
-		title: "Submitted proof",
-		subtitle: "Logo design",
-		icon: "upload-file",
+		title: "Logo design",
+		client: "Self",
+		status: "completed",
 		timestamp: "4h ago",
 	},
 	{
 		id: "3",
-		title: "Received payment",
-		subtitle: "$500 for Web App",
-		icon: "attach-money",
+		title: "Web App Dev",
+		client: "Zebra Corp.",
+		status: "archived",
 		timestamp: "1d ago",
 	},
 ];
 
-if (Platform.OS === "android") {
-	ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT);
-}
+const statusColors = {
+	open: "#6366F1",
+	completed: "#10B981",
+	archived: "#9CA3AF",
+};
 
-export default function RecentActivityScreen() {
-	const hasActivity = recentActivities.length > 0;
+export default function JobsDashboardScreen() {
+	const { data, logout } = useAbstraxionAccount();
+	const [selectedStatus, setSelectedStatus] = useState("open");
+	const router = useRouter();
 
-	const truncateAddress = (address: string) => {
+	const filteredJobs = jobs.filter((j) => j.status === selectedStatus);
+
+	const truncateAddress = (address) => {
 		if (!address) return "";
 		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
-
-	const { data } = useAbstraxionAccount();
 
 	const copyToClipboard = async () => {
 		if (data?.bech32Address) {
@@ -59,17 +61,33 @@ export default function RecentActivityScreen() {
 			Toast.show({
 				type: "success",
 				text1: "Copied",
-				text2: "Wallet address copied to clipboard",
+				text2: "Wallet address copied",
 				position: "bottom",
 			});
 		}
 	};
 
+	const handleLogout = async () => {
+		await logout();
+		router.replace("/"); // This is the index route (WelcomeScreen)
+	};
+
 	return (
 		<SafeAreaView style={styles.safeArea}>
 			<View style={styles.container}>
-				<Text style={styles.greeting}>Welcome back 👋</Text>
+				{/* Profile row */}
+				<View style={styles.profileRow}>
+					<Text style={styles.greeting}>Welcome back 👋</Text>
+					<TouchableOpacity onPress={handleLogout}>
+						<MaterialIcons
+							name="logout"
+							size={22}
+							color="#64748B"
+						/>
+					</TouchableOpacity>
+				</View>
 
+				{/* Wallet */}
 				{data?.bech32Address && (
 					<TouchableOpacity
 						style={styles.walletBadge}
@@ -78,52 +96,91 @@ export default function RecentActivityScreen() {
 						<Text style={styles.walletText}>
 							{truncateAddress(data.bech32Address)}
 						</Text>
+						<MaterialIcons
+							name="content-copy"
+							size={14}
+							color="#6366F1"
+							style={{ marginLeft: 5 }}
+						/>
 					</TouchableOpacity>
 				)}
 
+				{/* Balance */}
 				<View style={styles.balanceCard}>
 					<Text style={styles.balanceLabel}>Total Earned</Text>
 					<Text style={styles.balanceValue}>$1,200</Text>
 				</View>
 
-				<TouchableOpacity
-					style={styles.primaryButton}
-					onPress={() => router.push("/jobs")}
-				>
+				{/* Start Task */}
+				<TouchableOpacity style={styles.primaryButton}>
 					<Text style={styles.primaryButtonText}>Start New Task</Text>
 				</TouchableOpacity>
 
-				<Text style={styles.sectionTitle}>Recent Activity</Text>
+				{/* Job Filters */}
+				<View style={styles.chipRow}>
+					{["open", "completed", "archived"].map((status) => (
+						<TouchableOpacity
+							key={status}
+							style={[
+								styles.chip,
+								selectedStatus === status && {
+									backgroundColor: statusColors[status],
+									color: "#fff",
+								},
+							]}
+							onPress={() => setSelectedStatus(status)}
+						>
+							<Text
+								style={{
+									color:
+										selectedStatus === status ? "#fff" : statusColors[status],
+									fontWeight: "600",
+								}}
+							>
+								{status.charAt(0).toUpperCase() + status.slice(1)}
+							</Text>
+						</TouchableOpacity>
+					))}
+				</View>
 
-				{hasActivity ? (
-					<FlatList
-						data={recentActivities}
-						keyExtractor={(item) => item.id}
-						contentContainerStyle={{ paddingBottom: 24 }}
-						renderItem={({ item }) => (
-							<View style={styles.activityItem}>
-								<View style={styles.iconWrapper}>
-									<MaterialIcons
-										name={item.icon}
-										size={24}
-										color="#6366F1"
-									/>
-								</View>
-								<View style={styles.textWrapper}>
-									<Text style={styles.activityTitle}>{item.title}</Text>
-									<Text style={styles.activitySubtitle}>{item.subtitle}</Text>
-								</View>
-								<View style={styles.timestampWrapper}>
-									<Text style={styles.timestamp}>{item.timestamp}</Text>
-								</View>
+				{/* Jobs List */}
+				<FlatList
+					data={filteredJobs}
+					keyExtractor={(item) => item.id}
+					renderItem={({ item }) => (
+						<View style={styles.activityItem}>
+							<View
+								style={[
+									styles.iconWrapper,
+									{ backgroundColor: statusColors[item.status] + "22" },
+								]}
+							>
+								<MaterialCommunityIcons
+									name={
+										item.status === "open"
+											? "clock-outline"
+											: item.status === "completed"
+											? "check-circle-outline"
+											: "archive-outline"
+									}
+									size={24}
+									color={statusColors[item.status]}
+								/>
 							</View>
-						)}
-					/>
-				) : (
-					<Text style={styles.emptyState}>
-						No recent activity yet. Complete a task to get started!
-					</Text>
-				)}
+							<View style={styles.textWrapper}>
+								<Text style={styles.activityTitle}>{item.title}</Text>
+								<Text style={styles.activitySubtitle}>{item.client}</Text>
+							</View>
+							<View style={styles.timestampWrapper}>
+								<Text style={styles.timestamp}>{item.timestamp}</Text>
+							</View>
+						</View>
+					)}
+					ListEmptyComponent={
+						<Text style={styles.emptyState}>No jobs yet.</Text>
+					}
+					contentContainerStyle={{ paddingBottom: 24 }}
+				/>
 			</View>
 		</SafeAreaView>
 	);
@@ -210,6 +267,24 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.05,
 		shadowRadius: 4,
 		elevation: 1,
+	},
+	profileRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 12,
+	},
+	chipRow: {
+		flexDirection: "row",
+		gap: 10,
+		marginBottom: 16,
+		justifyContent: "center",
+	},
+	chip: {
+		paddingHorizontal: 14,
+		paddingVertical: 6,
+		borderRadius: 100,
+		backgroundColor: "#F1F5F9",
 	},
 	iconWrapper: {
 		width: 40,
