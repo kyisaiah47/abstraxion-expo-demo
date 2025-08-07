@@ -4,6 +4,7 @@ import {
 	StyleSheet,
 	SafeAreaView,
 	TouchableOpacity,
+	Image,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
@@ -101,22 +102,31 @@ export default function JobsDashboardScreen() {
 			<View style={styles.container}>
 				{/* Profile row */}
 				<View style={styles.profileRow}>
-					{data?.bech32Address && (
-						<TouchableOpacity
-							style={styles.walletBadge}
-							onPress={copyToClipboard}
-						>
-							<Text style={styles.walletText}>
-								{truncateAddress(data.bech32Address)}
-							</Text>
-							<MaterialIcons
-								name="content-copy"
-								size={14}
-								color="#191919"
-								style={{ marginLeft: 5 }}
-							/>
-						</TouchableOpacity>
-					)}
+					<View style={styles.iconRow}>
+						<Image
+							source={{
+								uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/Grow.png",
+							}}
+							style={styles.logo}
+							resizeMode="contain"
+						/>
+						{data?.bech32Address && (
+							<TouchableOpacity
+								style={styles.walletBadge}
+								onPress={copyToClipboard}
+							>
+								<Text style={styles.walletText}>
+									{truncateAddress(data.bech32Address)}
+								</Text>
+								<MaterialIcons
+									name="content-copy"
+									size={14}
+									color="#191919"
+									style={{ marginLeft: 5 }}
+								/>
+							</TouchableOpacity>
+						)}
+					</View>
 					<TouchableOpacity onPress={handleLogout}>
 						<MaterialIcons
 							name="logout"
@@ -193,6 +203,15 @@ const styles = StyleSheet.create({
 		flex: 1,
 		paddingHorizontal: 20,
 		paddingTop: 16,
+	},
+	logo: {
+		width: 25,
+		height: 25,
+		marginTop: 2,
+	},
+	iconRow: {
+		flexDirection: "row",
+		gap: 5,
 	},
 	greeting: {
 		fontSize: 22,

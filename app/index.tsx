@@ -42,6 +42,13 @@ export default function WelcomeScreen() {
 
 			{/* Main content vertically centered */}
 			<View style={styles.centerContent}>
+				<Image
+					source={{
+						uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/Grow.png",
+					}}
+					style={styles.logo}
+					resizeMode="contain"
+				/>
 				<Text style={styles.headline}>
 					Verifiable work.{" "}
 					<Text style={{ fontWeight: "400" }}>Trustless payments.</Text>
@@ -100,6 +107,7 @@ const styles = StyleSheet.create({
 	logo: {
 		width: 70,
 		height: 70,
+		marginBottom: 20,
 	},
 	centerContent: {
 		flex: 1,
