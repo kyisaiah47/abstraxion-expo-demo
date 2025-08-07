@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	walletBadge: {
-		alignSelf: "flex-start",
 		backgroundColor: "#e5e5e5",
 		paddingHorizontal: 12,
 		paddingVertical: 6,

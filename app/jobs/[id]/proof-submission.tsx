@@ -1,73 +1,43 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+	View,
+	Text,
+	TouchableOpacity,
+	StyleSheet,
+	TextInput,
+} from "react-native";
 
-export default function ProofSubmissionSheet({ job, proofEvents, onSubmit }) {
-	const [checked, setChecked] = useState(proofEvents.map((e) => !!e.verified));
-	const handleToggle = (idx) => {
-		if (proofEvents[idx].verified) {
-			setChecked((prev) => prev.map((val, i) => (i === idx ? !val : val)));
-		}
+export default function ProofSubmissionSheet({ job, onSubmit }) {
+	const [proof, setProof] = useState("");
+
+	const truncateAddress = (address) => {
+		if (!address) return "";
+		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
-	const allChecked = checked.every(Boolean);
+
+	const handleSubmit = () => {
+		if (!proof.trim()) return;
+		onSubmit(proof);
+	};
 
 	return (
 		<View style={styles.sheetWrapper}>
-			<Text style={styles.headline}>{job.title}</Text>
-			<Text style={styles.subheadline}>for {job.client}</Text>
-			{job.description ? (
-				<Text style={styles.desc}>{job.description}</Text>
-			) : null}
-			{/* <Text style={styles.section}>Submit proof of work</Text> */}
-			<View style={{ marginBottom: 12 }}>
-				{proofEvents.map((item, idx) => (
-					<TouchableOpacity
-						key={idx}
-						style={styles.proofRow}
-						activeOpacity={item.verified ? 0.7 : 1}
-						onPress={() => handleToggle(idx)}
-						disabled={!item.verified}
-					>
-						<View
-							style={[
-								styles.checkbox,
-								{
-									backgroundColor: checked[idx]
-										? "#111"
-										: item.verified
-										? "#fff"
-										: "#F2F2F2",
-									borderColor: checked[idx] ? "#111" : "#D1D5DB",
-								},
-							]}
-						>
-							{checked[idx] && (
-								<Ionicons
-									name="checkmark"
-									size={15}
-									color="#fff"
-								/>
-							)}
-						</View>
-						<Text
-							style={[
-								styles.proofText,
-								{
-									color: item.verified ? "#111" : "#BDBDBD",
-									fontWeight: checked[idx] ? "600" : "400",
-								},
-							]}
-						>
-							{item.description}
-						</Text>
-						<Text style={styles.proofTime}>{item.time}</Text>
-					</TouchableOpacity>
-				))}
-			</View>
+			<Text style={styles.clientAddr}>{truncateAddress(job?.client)}</Text>
+			<Text style={styles.headline}>{job?.description}</Text>
+
+			<Text style={styles.inputLabel}>Proof link or description</Text>
+			<TextInput
+				style={styles.input}
+				placeholder="Paste your work link or describe what you did"
+				value={proof}
+				onChangeText={setProof}
+				autoCapitalize="none"
+				autoCorrect={false}
+			/>
 			<TouchableOpacity
-				style={[styles.button, { opacity: allChecked ? 1 : 0.5 }]}
-				onPress={onSubmit}
-				disabled={!allChecked}
+				style={[styles.button, { opacity: proof.trim() ? 1 : 0.5 }]}
+				onPress={handleSubmit}
+				disabled={!proof.trim()}
 			>
 				<Text style={styles.buttonText}>Submit Proof</Text>
 			</TouchableOpacity>
@@ -78,58 +48,51 @@ export default function ProofSubmissionSheet({ job, proofEvents, onSubmit }) {
 const styles = StyleSheet.create({
 	sheetWrapper: {
 		paddingHorizontal: 28,
-		paddingTop: 28,
-		paddingBottom: 20, // minimal bottom
+		paddingTop: 22,
+		paddingBottom: 20,
 		backgroundColor: "#fff",
 		borderTopLeftRadius: 28,
 		borderTopRightRadius: 28,
 	},
 	headline: {
-		fontSize: 28,
+		fontSize: 22,
 		fontWeight: "bold",
 		color: "#111",
-		letterSpacing: -1,
 		marginBottom: 3,
 	},
-	subheadline: {
-		fontSize: 16,
-		color: "#9A9A9A",
-		marginBottom: 16,
-	},
-	desc: {
-		fontSize: 16,
-		color: "#5B5B5B",
-		marginBottom: 22,
-	},
-	section: {
-		fontSize: 17,
-		fontWeight: "700",
-		color: "#111",
-		marginBottom: 16,
-	},
-	proofRow: {
+	clientAddr: {
+		fontSize: 13,
+		fontWeight: "500",
+		marginBottom: 6,
+		alignSelf: "flex-start",
+		backgroundColor: "#e5e5e5",
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 100,
 		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: 12,
 	},
-	checkbox: {
-		width: 24,
-		height: 24,
-		borderRadius: 8,
-		borderWidth: 2,
-		alignItems: "center",
-		justifyContent: "center",
-		marginRight: 14,
+	jobTitle: {
+		fontSize: 17,
+		fontWeight: "700",
+		color: "#222",
+		marginBottom: 15,
 	},
-	proofText: {
-		flex: 1,
+	inputLabel: {
+		fontSize: 15,
+		fontWeight: "600",
+		color: "#222",
+		marginBottom: 8,
+		marginTop: 30,
+	},
+	input: {
+		borderWidth: 1,
+		borderColor: "#E5E5E5",
+		borderRadius: 12,
+		padding: 12,
 		fontSize: 16,
-	},
-	proofTime: {
-		fontSize: 13,
-		color: "#BDBDBD",
-		fontWeight: "500",
-		marginLeft: 8,
+		backgroundColor: "#FAFAFA",
+		marginBottom: 18,
 	},
 	button: {
 		backgroundColor: "#191919",
@@ -137,8 +100,6 @@ const styles = StyleSheet.create({
 		borderRadius: 16,
 		alignItems: "center",
 		justifyContent: "center",
-		marginBottom: 28,
-		flexDirection: "row", // <-- to align icon + text
 	},
 	buttonText: {
 		color: "#fff",
