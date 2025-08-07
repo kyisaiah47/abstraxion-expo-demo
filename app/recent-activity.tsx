@@ -17,6 +17,7 @@ import { useRouter } from "expo-router";
 import { Modalize } from "react-native-modalize";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
 import QRScanner from "./qr-scanner";
+import JobCreateSheet from "./create";
 
 // === BEGIN: XION FETCH LOGIC ===
 const CONTRACT_ADDRESS =
@@ -46,6 +47,9 @@ export default function JobsDashboardScreen() {
 	const [jobs, setJobs] = useState([]);
 	const [loadingJobs, setLoadingJobs] = useState(true);
 	const [activeJob, setActiveJob] = useState(null);
+	const createModalRef = useRef(null);
+
+	const handleOpenCreateModal = () => createModalRef.current?.open();
 
 	const truncateAddress = (address) => {
 		if (!address) return "";
@@ -89,6 +93,27 @@ export default function JobsDashboardScreen() {
 	const handleScanned = (data) => {
 		alert(`QR Code: ${data}`);
 		setShowScanner(false);
+	};
+
+	const [postingJob, setPostingJob] = useState(false);
+
+	const handleCreateJob = async ({ description }) => {
+		setPostingJob(true);
+		try {
+			// Replace this with your XION contract interaction!
+			await postJobToChain(description, data?.bech32Address);
+			Toast.show({ type: "success", text1: "Job Created" });
+			createModalRef.current?.close();
+			// Refresh jobs!
+			setLoadingJobs(true);
+			const jobs = await fetchJobsFromChain();
+			setJobs(jobs);
+			setActiveJob(jobs.find((j) => !j.accepted) || null);
+		} catch (e) {
+			Toast.show({ type: "error", text1: "Failed to create job" });
+		} finally {
+			setPostingJob(false);
+		}
 	};
 
 	// --- Fetch jobs from XION on mount ---
@@ -146,13 +171,19 @@ export default function JobsDashboardScreen() {
 							</TouchableOpacity>
 						)}
 					</View>
-					<TouchableOpacity onPress={handleLogout}>
-						<MaterialIcons
-							name="logout"
-							size={22}
-							color="#64748B"
-						/>
-					</TouchableOpacity>
+					<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+						{/* <TouchableOpacity onPress={() => setShowCreateModal(true)}>
+							<Text style={styles.createJob}>Create a job</Text>
+						</TouchableOpacity> */}
+						<TouchableOpacity onPress={handleLogout}>
+							<MaterialIcons
+								name="logout"
+								size={20}
+								color="#64748B"
+								style={{ marginTop: -15 }}
+							/>
+						</TouchableOpacity>
+					</View>
 				</View>
 				{/* Wallet */}
 				<View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
@@ -212,18 +243,34 @@ export default function JobsDashboardScreen() {
 					)}
 				</View>
 
-				<TouchableOpacity
-					style={styles.primaryButton}
-					onPress={handleScanQR}
-				>
-					<MaterialCommunityIcons
-						name="qrcode-scan"
-						size={22}
-						color="#fff"
-						style={{ marginRight: 8 }}
-					/>
-					<Text style={styles.primaryButtonText}>Scan Job QR</Text>
-				</TouchableOpacity>
+				<View style={styles.bottomActions}>
+					<TouchableOpacity
+						style={styles.scanButton}
+						onPress={handleScanQR}
+						activeOpacity={0.85}
+					>
+						<MaterialCommunityIcons
+							name="qrcode-scan"
+							size={22}
+							color="#fff"
+							style={{ marginRight: 8 }}
+						/>
+						<Text style={styles.scanButtonText}>Scan Job QR</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={styles.createJobButton}
+						onPress={() => createModalRef.current?.open()}
+						activeOpacity={0.85}
+					>
+						<MaterialIcons
+							name="add"
+							size={28}
+							color="#191919"
+						/>
+					</TouchableOpacity>
+				</View>
+
 				<Modalize
 					ref={modalRef}
 					adjustToContentHeight
@@ -233,6 +280,17 @@ export default function JobsDashboardScreen() {
 						job={activeJob}
 						proofEvents={[]} // you can pass real proof events here
 						onSubmit={handleSubmitProof}
+					/>
+				</Modalize>
+
+				<Modalize
+					ref={createModalRef}
+					adjustToContentHeight
+					handlePosition="inside"
+				>
+					<JobCreateSheet
+						onCreate={handleCreateJob}
+						creating={postingJob}
 					/>
 				</Modalize>
 			</View>
@@ -268,7 +326,7 @@ const styles = StyleSheet.create({
 	profileRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		alignItems: "flex-start",
+		alignItems: "center",
 		marginBottom: 12,
 	},
 	walletBadge: {
@@ -283,6 +341,19 @@ const styles = StyleSheet.create({
 	walletText: {
 		fontSize: 13,
 		color: "#191919",
+		fontWeight: "600",
+		letterSpacing: 0.4,
+	},
+	createJob: {
+		backgroundColor: "#191919",
+		color: "#ededed",
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 100,
+		marginBottom: 16,
+		flexDirection: "row",
+		alignItems: "center",
+		fontSize: 13,
 		fontWeight: "600",
 		letterSpacing: 0.4,
 	},
@@ -374,5 +445,49 @@ const styles = StyleSheet.create({
 		fontSize: 17,
 		fontWeight: "700",
 		letterSpacing: 0.1,
+	},
+
+	bottomActions: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		marginBottom: 28,
+		gap: 12,
+	},
+
+	scanButton: {
+		backgroundColor: "#191919",
+		borderRadius: 16,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		flex: 1,
+		paddingVertical: 17,
+		// Remove marginBottom here
+	},
+
+	scanButtonText: {
+		color: "#fff",
+		fontSize: 17,
+		fontWeight: "700",
+		letterSpacing: 0.1,
+	},
+
+	createJobButton: {
+		width: 54,
+		height: 54,
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		borderWidth: 1,
+		borderColor: "#ededed",
+		alignItems: "center",
+		justifyContent: "center",
+		marginLeft: 0,
+		// Small shadow for pop
+		shadowColor: "#000",
+		shadowOpacity: 0.07,
+		shadowOffset: { width: 0, height: 2 },
+		shadowRadius: 6,
+		elevation: 2,
 	},
 });
