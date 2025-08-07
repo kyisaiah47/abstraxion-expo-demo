@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
 	},
 	iconRow: {
 		flexDirection: "row",
-		gap: 5,
+		gap: 7,
 	},
 	greeting: {
 		fontSize: 22,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
 	profileRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		alignItems: "baseline",
+		alignItems: "flex-start",
 		marginBottom: 12,
 	},
 	walletBadge: {
