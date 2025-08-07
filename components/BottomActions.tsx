@@ -1,7 +1,7 @@
 import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { styles } from "@/app/recent-activity.styles";
+import { styles } from "@/app/dashboard.styles";
 
 export type BottomActionsProps = {
 	handleScanQR: () => void;

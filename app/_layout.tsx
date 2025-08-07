@@ -61,10 +61,7 @@ export default function RootLayout() {
 							screenOptions={{
 								headerShown: false, // Hide headers for all screens
 							}}
-						>
-							{/* No more "(tabs)" route! */}
-							{/* Just your pages, Expo Router will pick up /index, /recent-activity, /jobs, etc. */}
-						</Stack>
+						></Stack>
 						<StatusBar style="auto" />
 					</ThemeProvider>
 				</AbstraxionProvider>

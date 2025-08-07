@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { styles } from "@/app/recent-activity.styles";
+import { styles } from "@/app/dashboard.styles";
 
 export type ActiveJobCardProps = {
 	activeJob: any;

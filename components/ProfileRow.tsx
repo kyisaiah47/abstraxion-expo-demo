@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { styles } from "@/app/recent-activity.styles";
+import { styles } from "@/app/dashboard.styles";
 
 export type ProfileRowProps = {
 	data: any;

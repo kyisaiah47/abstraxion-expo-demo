@@ -16,7 +16,7 @@ export default function WelcomeScreen() {
 
 	useEffect(() => {
 		if (isConnected) {
-			router.replace("/recent-activity");
+			router.replace("/dashboard");
 		}
 	}, [isConnected, router]);
 

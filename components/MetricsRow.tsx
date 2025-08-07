@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import { styles } from "@/app/recent-activity.styles";
+import { styles } from "@/app/dashboard.styles";
 
 export type MetricsRowProps = {
 	loadingJobs: boolean;

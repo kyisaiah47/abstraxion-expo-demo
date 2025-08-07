@@ -9,13 +9,14 @@ import {
 	Platform,
 } from "react-native";
 
+// This should ONLY handle the UI & input!
 export default function JobCreateSheet({ onCreate, creating }) {
 	const [description, setDescription] = useState("");
-	// Add more fields if needed: payout, requirements, etc.
 
 	const handleCreate = () => {
 		if (!description.trim()) return;
-		onCreate({ description: description.trim() });
+		onCreate({ description: description.trim() }); // Parent will handle contract call!
+		setDescription(""); // Optional: reset on create
 	};
 
 	return (
@@ -31,7 +32,6 @@ export default function JobCreateSheet({ onCreate, creating }) {
 				onChangeText={setDescription}
 				autoFocus
 			/>
-			{/* Add more fields here */}
 			<TouchableOpacity
 				style={[styles.button, { opacity: description.trim() ? 1 : 0.5 }]}
 				disabled={!description.trim() || creating}
@@ -45,6 +45,7 @@ export default function JobCreateSheet({ onCreate, creating }) {
 	);
 }
 
+// (Styles unchanged)
 const styles = StyleSheet.create({
 	sheetWrapper: {
 		paddingHorizontal: 28,

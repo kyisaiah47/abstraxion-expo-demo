@@ -1,13 +1,16 @@
 import { View, SafeAreaView, ActivityIndicator } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
 import Toast from "react-native-toast-message";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
 import QRScanner from "./qr-scanner";
 import JobCreateSheet from "./create";
-import { styles } from "./recent-activity.styles";
+import { styles } from "./dashboard.styles";
 import ProfileRow from "../components/ProfileRow";
 import MetricsRow from "../components/MetricsRow";
 import ActiveJobCard from "../components/ActiveJobCard";
@@ -35,9 +38,10 @@ async function fetchJobsFromChain() {
 
 type CreateJobInput = { description: string };
 
-export default function JobsDashboardScreen() {
+export default function DashboardScreen() {
 	const [showScanner, setShowScanner] = useState(false);
 	const { data, logout } = useAbstraxionAccount();
+	const { client } = useAbstraxionSigningClient();
 	const router = useRouter();
 	const modalRef = useRef<Modalize>(null);
 	const createModalRef = useRef<Modalize>(null);
@@ -90,11 +94,10 @@ export default function JobsDashboardScreen() {
 		setShowScanner(false);
 	};
 
-	type CreateJobInput = { description: string };
 	const handleCreateJob = async ({ description }: CreateJobInput) => {
 		setPostingJob(true);
 		try {
-			// Replace this with your XION contract interaction!
+			// === ACTUAL CONTRACT CALL ===
 			await postJobToChain(description, data?.bech32Address);
 			Toast.show({ type: "success", text1: "Job Created" });
 			(createModalRef.current as any)?.close && createModalRef.current?.close();
@@ -103,17 +106,28 @@ export default function JobsDashboardScreen() {
 			const jobs = await fetchJobsFromChain();
 			setJobs(jobs);
 			setActiveJob(jobs.find((j: any) => !j.accepted) || null);
-		} catch (e) {
-			Toast.show({ type: "error", text1: "Failed to create job" });
+		} catch (e: any) {
+			Toast.show({
+				type: "error",
+				text1: "Failed to create job",
+				text2: e?.message || String(e),
+			});
 		} finally {
 			setPostingJob(false);
 		}
 	};
 
-	// Placeholder for postJobToChain
-	async function postJobToChain(description: string, address: string) {
-		// TODO: Implement actual contract call
-		return new Promise((resolve) => setTimeout(resolve, 1000));
+	// === THE ACTUAL CHAIN CALL ===
+	async function postJobToChain(description: string, sender: string) {
+		if (!client || !sender) throw new Error("Wallet not connected");
+		const msg = { post_job: { description } };
+		const tx = await client.execute(
+			sender, // Sender address
+			CONTRACT_ADDRESS, // Contract address
+			msg, // ExecuteMsg (must match your contract schema)
+			"auto" // Gas
+		);
+		return tx;
 	}
 
 	// --- Fetch jobs from XION on mount ---
