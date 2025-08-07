@@ -5,42 +5,49 @@ import {
 	SafeAreaView,
 	TouchableOpacity,
 	Image,
+	ScrollView,
+	ActivityIndicator,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import Toast from "react-native-toast-message";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { Modalize } from "react-native-modalize";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
 import QRScanner from "./qr-scanner";
 
-// Example for current/active job (replace with your logic or Redux/store/etc)
-const activeJob = {
-	title: "Design landing page",
-	client: "Acme Inc.",
-};
+// === BEGIN: XION FETCH LOGIC ===
+const CONTRACT_ADDRESS =
+	"xion1d7zer33uxd3u8cp8e4huck03z0gg6v2kv02n088yrgg5qkwxsfnqxnvxvt";
+const API_URL = `https://api.xion-testnet-2.burnt.com/cosmwasm/wasm/v1/contract/${CONTRACT_ADDRESS}/smart/${btoa(
+	JSON.stringify({ ListJobs: {} })
+)}`;
 
-const proofEvents = [
-	{ description: "Accessed figma.com", time: "10:22 AM", verified: true },
-	{ description: "Deployed to vercel.com", time: "1:10 AM", verified: true }, // disables check for demo
-	{
-		description: "Uploaded assets to figma.com",
-		time: "9:00 AM",
-		verified: true,
-	},
-];
+async function fetchJobsFromChain() {
+	try {
+		const res = await fetch(API_URL, { method: "GET" });
+		const json = await res.json();
+		return json.data?.jobs ?? [];
+	} catch (e) {
+		console.warn("Failed to fetch jobs:", e);
+		return [];
+	}
+}
+// === END: XION FETCH LOGIC ===
 
 export default function JobsDashboardScreen() {
 	const [showScanner, setShowScanner] = useState(false);
 	const { data, logout } = useAbstraxionAccount();
 	const router = useRouter();
-	const modalRef = useRef<Modalize>(null);
+	const modalRef = useRef(null);
 
-	const [showResume, setShowResume] = useState(Boolean(activeJob)); // true if there's an active job
+	const [jobs, setJobs] = useState([]);
+	const [loadingJobs, setLoadingJobs] = useState(true);
+	const [activeJob, setActiveJob] = useState(null);
 
-	const truncateAddress = (address: string | undefined | null) => {
+	const truncateAddress = (address) => {
 		if (!address) return "";
 		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
@@ -65,7 +72,7 @@ export default function JobsDashboardScreen() {
 			text2: "You have been disconnected.",
 			position: "bottom",
 		});
-		router.replace("/"); // Back to WelcomeScreen
+		router.replace("/");
 	};
 
 	const handleSubmitProof = () => {
@@ -77,16 +84,28 @@ export default function JobsDashboardScreen() {
 		modalRef.current?.close();
 	};
 
-	const openJobsCount = 3; // Replace with your data logic
-	const jobsScanned = 8; // Replace with your data logic
-
 	const handleScanQR = () => setShowScanner(true);
 
 	const handleScanned = (data) => {
 		alert(`QR Code: ${data}`);
 		setShowScanner(false);
-		// You can route, toast, or do something with data here.
 	};
+
+	// --- Fetch jobs from XION on mount ---
+	useEffect(() => {
+		let mounted = true;
+		setLoadingJobs(true);
+		fetchJobsFromChain().then((jobs) => {
+			if (!mounted) return;
+			setJobs(jobs);
+			// Pick the first open job as active for demo
+			setActiveJob(jobs.find((j) => !j.accepted) || null);
+			setLoadingJobs(false);
+		});
+		return () => {
+			mounted = false;
+		};
+	}, []);
 
 	if (showScanner) {
 		return (
@@ -136,7 +155,6 @@ export default function JobsDashboardScreen() {
 					</TouchableOpacity>
 				</View>
 				{/* Wallet */}
-				{/* Metrics Row */}
 				<View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
 					<View style={[styles.balanceCard, { flex: 1 }]}>
 						<Text style={styles.balanceLabel}>Total Earned</Text>
@@ -144,17 +162,44 @@ export default function JobsDashboardScreen() {
 					</View>
 					<View style={[styles.balanceCard, { flex: 1 }]}>
 						<Text style={styles.balanceLabel}>Jobs Open</Text>
-						<Text style={styles.balanceValue}>{openJobsCount}</Text>
+						<Text style={styles.balanceValue}>
+							{loadingJobs ? (
+								<ActivityIndicator size="small" />
+							) : (
+								jobs.filter((j) => !j.accepted).length
+							)}
+						</Text>
 					</View>
 				</View>
 				<View style={{ flex: 1, width: "100%" }}>
-					{/* Only show if an active job exists */}
-					{showResume && activeJob && (
+					{loadingJobs ? (
+						<ActivityIndicator
+							size="large"
+							style={{ marginTop: 40 }}
+						/>
+					) : activeJob ? (
 						<View style={styles.activeJobCard}>
 							<View style={styles.activeJobText}>
 								<Text style={styles.activeJobLabel}>Resume work</Text>
-								<Text style={styles.activeJobTitle}>{activeJob.title}</Text>
-								<Text style={styles.activeJobClient}>{activeJob.client}</Text>
+								<Text style={styles.activeJobTitle}>
+									{activeJob.description}
+								</Text>
+								<Text style={styles.activeJobClient}>
+									Client: {truncateAddress(activeJob.client)}
+								</Text>
+								{activeJob.worker && (
+									<Text style={styles.activeJobClient}>
+										Worker: {truncateAddress(activeJob.worker)}
+									</Text>
+								)}
+								{activeJob.proof && (
+									<Text style={styles.activeJobClient}>
+										Proof: {activeJob.proof}
+									</Text>
+								)}
+								<Text style={styles.activeJobClient}>
+									Accepted: {activeJob.accepted ? "✅" : "❌"}
+								</Text>
 							</View>
 							<TouchableOpacity
 								style={styles.resumeButton}
@@ -163,9 +208,11 @@ export default function JobsDashboardScreen() {
 								<Text style={styles.resumeButtonText}>Submit</Text>
 							</TouchableOpacity>
 						</View>
+					) : (
+						<Text>No open jobs right now.</Text>
 					)}
 				</View>
-				{/* Main CTA */}
+
 				<TouchableOpacity
 					style={styles.primaryButton}
 					onPress={handleScanQR}
@@ -185,7 +232,7 @@ export default function JobsDashboardScreen() {
 				>
 					<ProofSubmissionSheet
 						job={activeJob}
-						proofEvents={proofEvents}
+						proofEvents={[]} // you can pass real proof events here
 						onSubmit={handleSubmitProof}
 					/>
 				</Modalize>
@@ -314,7 +361,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginBottom: 28,
-		flexDirection: "row", // <-- to align icon + text
+		flexDirection: "row",
 	},
 	primaryButtonText: {
 		color: "#fff",
