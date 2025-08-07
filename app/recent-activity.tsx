@@ -180,12 +180,11 @@ export default function JobsDashboardScreen() {
 					) : activeJob ? (
 						<View style={styles.activeJobCard}>
 							<View style={styles.activeJobText}>
-								<Text style={styles.activeJobLabel}>Resume work</Text>
 								<Text style={styles.activeJobTitle}>
 									{activeJob.description}
 								</Text>
 								<Text style={styles.activeJobClient}>
-									Client: {truncateAddress(activeJob.client)}
+									{truncateAddress(activeJob.client)}
 								</Text>
 								{activeJob.worker && (
 									<Text style={styles.activeJobClient}>
@@ -197,9 +196,9 @@ export default function JobsDashboardScreen() {
 										Proof: {activeJob.proof}
 									</Text>
 								)}
-								<Text style={styles.activeJobClient}>
+								{/* <Text style={styles.activeJobClient}>
 									Accepted: {activeJob.accepted ? "✅" : "❌"}
-								</Text>
+								</Text> */}
 							</View>
 							<TouchableOpacity
 								style={styles.resumeButton}
@@ -338,8 +337,16 @@ const styles = StyleSheet.create({
 		color: "#191919",
 	},
 	activeJobClient: {
-		fontSize: 15,
-		color: "#8e8e8e",
+		fontSize: 12,
+		fontWeight: "500",
+		marginTop: 6,
+		alignSelf: "flex-start",
+		backgroundColor: "#e5e5e5",
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 100,
+		flexDirection: "row",
+		alignItems: "center",
 	},
 	resumeButton: {
 		backgroundColor: "#191919",
