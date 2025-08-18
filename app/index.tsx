@@ -6,6 +6,7 @@ import {
 	Image,
 	TouchableOpacity,
 	ActivityIndicator,
+	Animated,
 } from "react-native";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { useRouter } from "expo-router";
@@ -21,37 +22,31 @@ export default function WelcomeScreen() {
 	}, [isConnected, router]);
 
 	if (isConnected) {
-		// Optionally show a loader or nothing
 		return null;
 	}
 
 	return (
 		<View style={styles.container}>
-			{/* Top logo */}
-			{/* <View style={styles.logoRow}>
-				<View style={styles.logoCircle}>
+			{/* Centered Content */}
+			<View style={styles.centerContent}>
+				<View style={styles.logoShadowWrapper}>
 					<Image
 						source={{
-							uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/proof-of-work-logo",
+							uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/Grow.png",
 						}}
 						style={styles.logo}
 						resizeMode="contain"
+						accessibilityRole="image"
+						accessibilityLabel="Proof of Work logo"
 					/>
 				</View>
-			</View> */}
-
-			{/* Main content vertically centered */}
-			<View style={styles.centerContent}>
-				<Image
-					source={{
-						uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/Grow.png",
-					}}
-					style={styles.logo}
-					resizeMode="contain"
-				/>
-				<Text style={styles.headline}>
-					Verifiable work.{" "}
-					<Text style={{ fontWeight: "400" }}>Trustless payments.</Text>
+				<Text
+					style={styles.headline}
+					accessibilityRole="header"
+				>
+					Verifiable work.
+					{"\n"}
+					<Text style={styles.subheadline}>Trustless payments.</Text>
 				</Text>
 				<Text style={styles.subtext}>
 					Submit your work, get paid instantly and securely. Powered by XION.
@@ -65,6 +60,8 @@ export default function WelcomeScreen() {
 					style={[styles.connectButton, isConnecting && styles.disabledButton]}
 					disabled={isConnecting}
 					activeOpacity={0.92}
+					accessibilityRole="button"
+					accessibilityLabel="Connect Wallet"
 				>
 					{isConnecting ? (
 						<ActivityIndicator color="#fff" />
@@ -81,72 +78,77 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fff",
+		backgroundColor: "#f8f9fb", // Subtle off-white background
 		paddingHorizontal: 32,
 		paddingTop: 56,
-		paddingBottom: 0, // Let bottom be fully pinned
-		justifyContent: "space-between", // Main trick!
+		paddingBottom: 0,
+		justifyContent: "space-between",
 	},
-	logoRow: {
-		marginBottom: 0,
-		marginTop: 8,
-	},
-	logoCircle: {
-		width: 100,
-		height: 100,
+	logoShadowWrapper: {
+		shadowColor: "#191919",
+		shadowOpacity: 0.12,
+		shadowRadius: 24,
+		shadowOffset: { width: 0, height: 6 },
+		elevation: 10,
+		alignSelf: "flex-start",
+		marginBottom: 38,
+		marginTop: 0,
 		borderRadius: 50,
-		backgroundColor: "#6366F1",
-		alignItems: "center",
-		justifyContent: "center",
-		shadowColor: "#6366F1",
-		shadowOpacity: 0.1,
-		shadowRadius: 14,
-		shadowOffset: { width: 0, height: 3 },
-		elevation: 6,
+		backgroundColor: "#fff",
 	},
 	logo: {
-		width: 70,
-		height: 70,
-		marginBottom: 20,
+		width: 90,
+		height: 90,
+		borderRadius: 45,
+		backgroundColor: "#fff",
 	},
 	centerContent: {
 		flex: 1,
 		justifyContent: "center",
-		alignItems: "flex-start", // keep text left-aligned
+		alignItems: "flex-start",
 		marginTop: 8,
 		marginBottom: 8,
 	},
 	headline: {
-		fontSize: 36, // try 40 for more drama
+		fontSize: 40,
 		fontWeight: "700",
 		color: "#191919",
 		textAlign: "left",
-		marginBottom: 12,
-		lineHeight: 42,
+		marginBottom: 10,
+		lineHeight: 44,
+		letterSpacing: 0.1,
+	},
+	subheadline: {
+		fontWeight: "400",
+		color: "#444",
+		fontSize: 36,
 	},
 	subtext: {
-		fontSize: 16,
-		color: "#555",
+		fontSize: 17,
+		color: "#444",
 		marginBottom: 0,
 		textAlign: "left",
 		fontWeight: "400",
-		lineHeight: 22,
+		lineHeight: 23,
+		marginTop: 6,
 	},
 	bottom: {
 		width: "100%",
 		paddingBottom: 38,
+		alignItems: "center",
 	},
 	connectButton: {
 		backgroundColor: "#191919",
-		paddingVertical: 17,
+		paddingVertical: 21,
 		borderRadius: 16,
 		alignItems: "center",
 		width: "100%",
-		marginBottom: 12,
+		marginBottom: 14,
+		transition: "background-color 0.2s",
 	},
 	connectText: {
 		color: "#fff",
-		fontSize: 18,
+		fontSize: 19,
 		fontWeight: "600",
 		letterSpacing: 0.2,
 	},
@@ -155,9 +157,10 @@ const styles = StyleSheet.create({
 		opacity: 0.7,
 	},
 	footer: {
-		fontSize: 15,
-		color: "#BBB",
-		textAlign: "left",
+		fontSize: 16,
+		color: "#888",
+		textAlign: "center",
 		marginTop: 0,
+		letterSpacing: 0.1,
 	},
 });

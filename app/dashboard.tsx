@@ -97,7 +97,6 @@ export default function DashboardScreen() {
 	const handleCreateJob = async ({ description }: CreateJobInput) => {
 		setPostingJob(true);
 		try {
-			// === ACTUAL CONTRACT CALL ===
 			await postJobToChain(description, data?.bech32Address);
 			Toast.show({ type: "success", text1: "Job Created" });
 			(createModalRef.current as any)?.close && createModalRef.current?.close();
@@ -107,6 +106,7 @@ export default function DashboardScreen() {
 			setJobs(jobs);
 			setActiveJob(jobs.find((j: any) => !j.accepted) || null);
 		} catch (e: any) {
+			console.error("Chain execute failed:", e);
 			Toast.show({
 				type: "error",
 				text1: "Failed to create job",
@@ -118,16 +118,18 @@ export default function DashboardScreen() {
 	};
 
 	// === THE ACTUAL CHAIN CALL ===
-	async function postJobToChain(description: string, sender: string) {
+	async function postJobToChain(description, sender) {
 		if (!client || !sender) throw new Error("Wallet not connected");
+		console.log("Sender:", sender);
+		console.log("Client:", client);
 		const msg = { post_job: { description } };
-		const tx = await client.execute(
-			sender, // Sender address
-			CONTRACT_ADDRESS, // Contract address
-			msg, // ExecuteMsg (must match your contract schema)
-			"auto" // Gas
-		);
-		return tx;
+		try {
+			const tx = await client.execute(sender, CONTRACT_ADDRESS, msg, "auto");
+			return tx;
+		} catch (e) {
+			console.error("Chain execute failed:", e);
+			throw e;
+		}
 	}
 
 	// --- Fetch jobs from XION on mount ---
@@ -137,7 +139,6 @@ export default function DashboardScreen() {
 		fetchJobsFromChain().then((jobs) => {
 			if (!mounted) return;
 			setJobs(jobs);
-			// Pick the first open job as active for demo
 			setActiveJob(jobs.find((j: any) => !j.accepted) || null);
 			setLoadingJobs(false);
 		});

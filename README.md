@@ -38,6 +38,7 @@ Run locally:
 ```bash
 npm start
 ```
+
 Open in the Expo Go app or your device simulator.
 
 ---
