@@ -22,9 +22,14 @@ import ProfileRow from "../components/ProfileRow";
 import MetricsRow from "../components/MetricsRow";
 import ActiveJobCard from "../components/ActiveJobCard";
 import BottomActions from "../components/BottomActions";
+import TreasuryStatusCard from "../components/TreasuryStatusCard";
 import { Modalize } from "react-native-modalize";
 import { ContractService, type Job } from "../lib/contractService";
-import { XION_DECIMALS, CONTRACT_CONFIG } from "../constants/contracts";
+import {
+	XION_DECIMALS,
+	CONTRACT_CONFIG,
+	TREASURY_CONFIG,
+} from "../constants/contracts";
 
 // Remove the old XION fetch logic and replace with contract service
 type CreateJobInput = {
@@ -302,6 +307,12 @@ export default function DashboardScreen() {
 					totalEarnings={totalEarnings}
 					userAddress={data?.bech32Address}
 				/>
+				{TREASURY_CONFIG.enabled && (
+					<TreasuryStatusCard
+						contractService={contractService}
+						onPress={() => router.push("./treasury-management" as any)}
+					/>
+				)}
 				<View style={{ flex: 1, width: "100%" }}>
 					{loadingJobs ? (
 						<ActivityIndicator

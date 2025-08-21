@@ -5,6 +5,7 @@ import {
 	XION_DECIMALS,
 	XION_DENOM,
 } from "../constants/contracts";
+import { TreasuryService, TreasuryExecuteResult } from "./treasury";
 
 export interface Job {
 	id: number;
@@ -41,10 +42,25 @@ export interface ContractClient {
 export class ContractService {
 	private account: ContractAccount;
 	private client: ContractClient;
+	private treasuryService?: TreasuryService;
 
-	constructor(account: ContractAccount, client: ContractClient) {
+	constructor(
+		account: ContractAccount,
+		client: ContractClient,
+		treasuryAddress?: string
+	) {
 		this.account = account;
 		this.client = client;
+
+		// Initialize Treasury service if address provided
+		if (treasuryAddress) {
+			this.treasuryService = new TreasuryService(
+				account,
+				client,
+				treasuryAddress,
+				CONTRACT_CONFIG.address
+			);
+		}
 	}
 
 	// ======= QUERY FUNCTIONS (FREE, NO GAS) =======
@@ -387,8 +403,21 @@ export class ContractService {
 			throw error;
 		}
 	}
-	async acceptJob(jobId: number): Promise<any> {
+	// ======= TREASURY-ENABLED EXECUTE FUNCTIONS =======
+
+	/**
+	 * Accept job using Treasury for gasless transaction
+	 */
+	async acceptJob(jobId: number): Promise<TreasuryExecuteResult | any> {
 		try {
+			// Try Treasury first if available
+			if (this.treasuryService) {
+				console.log("🏦 Attempting job acceptance through Treasury...");
+				return await this.treasuryService.executeJobAcceptance(jobId);
+			}
+
+			// Fallback to direct payment
+			console.log("💳 Using direct payment for job acceptance...");
 			const msg = CONTRACT_MESSAGES.ACCEPT_JOB(jobId);
 			const result = await this.client.execute(
 				this.account.bech32Address,
@@ -396,15 +425,42 @@ export class ContractService {
 				msg,
 				"auto"
 			);
-			return result;
-		} catch (error) {
+
+			return {
+				success: true,
+				transactionHash: result.transactionHash,
+				usedTreasury: false,
+			};
+		} catch (error: any) {
 			console.error("Error accepting job:", error);
-			throw error;
+
+			return {
+				success: false,
+				error: error.message || "Failed to accept job",
+				usedTreasury: false,
+			};
 		}
 	}
 
-	async submitProof(jobId: number, proofText: string): Promise<any> {
+	/**
+	 * Submit proof using Treasury for gasless transaction
+	 */
+	async submitProof(
+		jobId: number,
+		proofText: string
+	): Promise<TreasuryExecuteResult | any> {
 		try {
+			// Try Treasury first if available
+			if (this.treasuryService) {
+				console.log("🏦 Attempting proof submission through Treasury...");
+				return await this.treasuryService.executeProofSubmission(
+					jobId,
+					proofText
+				);
+			}
+
+			// Fallback to direct payment
+			console.log("💳 Using direct payment for proof submission...");
 			const msg = CONTRACT_MESSAGES.SUBMIT_PROOF(jobId, proofText);
 			const result = await this.client.execute(
 				this.account.bech32Address,
@@ -412,15 +468,36 @@ export class ContractService {
 				msg,
 				"auto"
 			);
-			return result;
-		} catch (error) {
+
+			return {
+				success: true,
+				transactionHash: result.transactionHash,
+				usedTreasury: false,
+			};
+		} catch (error: any) {
 			console.error("Error submitting proof:", error);
-			throw error;
+
+			return {
+				success: false,
+				error: error.message || "Failed to submit proof",
+				usedTreasury: false,
+			};
 		}
 	}
 
-	async acceptProof(jobId: number): Promise<any> {
+	/**
+	 * Accept proof (release payment) using Treasury for gasless transaction
+	 */
+	async acceptProof(jobId: number): Promise<TreasuryExecuteResult | any> {
 		try {
+			// Try Treasury first if available
+			if (this.treasuryService) {
+				console.log("🏦 Attempting payment release through Treasury...");
+				return await this.treasuryService.executePaymentRelease(jobId);
+			}
+
+			// Fallback to direct payment
+			console.log("💳 Using direct payment for payment release...");
 			const msg = CONTRACT_MESSAGES.ACCEPT_PROOF(jobId);
 			const result = await this.client.execute(
 				this.account.bech32Address,
@@ -428,15 +505,36 @@ export class ContractService {
 				msg,
 				"auto"
 			);
-			return result;
-		} catch (error) {
+
+			return {
+				success: true,
+				transactionHash: result.transactionHash,
+				usedTreasury: false,
+			};
+		} catch (error: any) {
 			console.error("Error accepting proof:", error);
-			throw error;
+
+			return {
+				success: false,
+				error: error.message || "Failed to accept proof",
+				usedTreasury: false,
+			};
 		}
 	}
 
-	async rejectProof(jobId: number): Promise<any> {
+	/**
+	 * Reject proof using Treasury for gasless transaction
+	 */
+	async rejectProof(jobId: number): Promise<TreasuryExecuteResult | any> {
 		try {
+			// Try Treasury first if available
+			if (this.treasuryService) {
+				console.log("🏦 Attempting job rejection through Treasury...");
+				return await this.treasuryService.executeJobRejection(jobId);
+			}
+
+			// Fallback to direct payment
+			console.log("💳 Using direct payment for job rejection...");
 			const msg = CONTRACT_MESSAGES.REJECT_PROOF(jobId);
 			const result = await this.client.execute(
 				this.account.bech32Address,
@@ -444,15 +542,36 @@ export class ContractService {
 				msg,
 				"auto"
 			);
-			return result;
-		} catch (error) {
+
+			return {
+				success: true,
+				transactionHash: result.transactionHash,
+				usedTreasury: false,
+			};
+		} catch (error: any) {
 			console.error("Error rejecting proof:", error);
-			throw error;
+
+			return {
+				success: false,
+				error: error.message || "Failed to reject proof",
+				usedTreasury: false,
+			};
 		}
 	}
 
-	async cancelJob(jobId: number): Promise<any> {
+	/**
+	 * Cancel job using Treasury for gasless transaction
+	 */
+	async cancelJob(jobId: number): Promise<TreasuryExecuteResult | any> {
 		try {
+			// Try Treasury first if available
+			if (this.treasuryService) {
+				console.log("🏦 Attempting job cancellation through Treasury...");
+				return await this.treasuryService.executeJobCancellation(jobId);
+			}
+
+			// Fallback to direct payment
+			console.log("💳 Using direct payment for job cancellation...");
 			const msg = CONTRACT_MESSAGES.CANCEL_JOB(jobId);
 			const result = await this.client.execute(
 				this.account.bech32Address,
@@ -460,11 +579,62 @@ export class ContractService {
 				msg,
 				"auto"
 			);
-			return result;
-		} catch (error) {
+
+			return {
+				success: true,
+				transactionHash: result.transactionHash,
+				usedTreasury: false,
+			};
+		} catch (error: any) {
 			console.error("Error cancelling job:", error);
-			throw error;
+
+			return {
+				success: false,
+				error: error.message || "Failed to cancel job",
+				usedTreasury: false,
+			};
 		}
+	}
+
+	// ======= TREASURY MANAGEMENT =======
+
+	/**
+	 * Get Treasury service instance
+	 */
+	getTreasuryService(): TreasuryService | undefined {
+		return this.treasuryService;
+	}
+
+	/**
+	 * Check if Treasury is available and has funds
+	 */
+	async isTreasuryAvailable(): Promise<boolean> {
+		if (!this.treasuryService) return false;
+
+		try {
+			const status = await this.treasuryService.getTreasuryStatus();
+			return status.isAvailable && status.canSponsorGas;
+		} catch (error) {
+			console.error("Failed to check Treasury availability:", error);
+			return false;
+		}
+	}
+
+	/**
+	 * Get Treasury status for display
+	 */
+	async getTreasuryStatus() {
+		if (!this.treasuryService) {
+			return {
+				isAvailable: false,
+				balance: 0,
+				canSponsorGas: false,
+				estimatedTransactionsLeft: 0,
+				lastChecked: new Date(),
+			};
+		}
+
+		return await this.treasuryService.getTreasuryStatus();
 	}
 
 	// ======= HELPER FUNCTIONS =======

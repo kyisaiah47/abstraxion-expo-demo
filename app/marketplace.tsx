@@ -16,6 +16,7 @@ import {
 	useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
 import { ContractService, type Job } from "../lib/contractService";
+import { TREASURY_CONFIG } from "../constants/contracts";
 import Toast from "react-native-toast-message";
 
 export default function MarketplaceScreen() {
@@ -29,15 +30,25 @@ export default function MarketplaceScreen() {
 	const [acceptingJobId, setAcceptingJobId] = useState<number | null>(null);
 	const [contractService, setContractService] =
 		useState<ContractService | null>(null);
+	const [treasuryStatus, setTreasuryStatus] = useState({
+		isAvailable: false,
+		balance: 0,
+		canSponsorGas: false,
+		estimatedTransactionsLeft: 0,
+	});
 
 	// Initialize contract service and load jobs
 	useEffect(() => {
 		if (account && client) {
-			const service = new ContractService(account, client);
+			// Initialize with Treasury if available
+			const treasuryAddress = TREASURY_CONFIG.enabled
+				? TREASURY_CONFIG.address
+				: undefined;
+			const service = new ContractService(account, client, treasuryAddress);
 			setContractService(service);
 
-			// Load jobs directly in the effect
-			const loadInitialJobs = async () => {
+			// Load jobs and Treasury status
+			const loadInitialData = async () => {
 				try {
 					setLoading(true);
 					const allJobs = await service.queryJobs();
@@ -46,6 +57,12 @@ export default function MarketplaceScreen() {
 						(job) => job.worker === null && job.status === "Open"
 					);
 					setJobs(openJobs);
+
+					// Check Treasury status if available
+					if (treasuryAddress) {
+						const status = await service.getTreasuryStatus();
+						setTreasuryStatus(status);
+					}
 				} catch (error) {
 					console.error("Failed to load jobs:", error);
 					Toast.show({
@@ -59,7 +76,7 @@ export default function MarketplaceScreen() {
 				}
 			};
 
-			loadInitialJobs();
+			loadInitialData();
 		}
 	}, [account?.bech32Address, client]); // Use specific properties instead of objects
 
@@ -98,9 +115,15 @@ export default function MarketplaceScreen() {
 			return;
 		}
 
+		const treasuryInfo = treasuryStatus.canSponsorGas
+			? "This transaction will be gasless via Treasury."
+			: treasuryStatus.isAvailable
+			? "Treasury is low on funds. You may need to pay gas fees."
+			: "You will pay gas fees for this transaction.";
+
 		Alert.alert(
 			"Accept Job",
-			"Are you sure you want to accept this job? You'll be responsible for completing the work.",
+			`Are you sure you want to accept this job? You'll be responsible for completing the work.\n\n${treasuryInfo}`,
 			[
 				{ text: "Cancel", style: "cancel" },
 				{
@@ -108,27 +131,54 @@ export default function MarketplaceScreen() {
 					onPress: async () => {
 						try {
 							setAcceptingJobId(jobId);
-							await contractService.acceptJob(jobId);
 
-							Toast.show({
-								type: "success",
-								text1: "Job Accepted!",
-								text2: "You can now work on this job",
-								position: "bottom",
-							});
+							// Use Treasury-enabled contract service
+							const result = await contractService.acceptJob(jobId);
 
-							// Refresh jobs list
-							try {
-								const allJobs = await contractService.queryJobs();
-								const openJobs = allJobs.filter(
-									(job) => job.worker === null && job.status === "Open"
-								);
-								setJobs(openJobs);
-							} catch (refreshError) {
-								console.error(
-									"Failed to refresh after job acceptance:",
-									refreshError
-								);
+							if (result.success) {
+								const gasMessage = result.usedTreasury
+									? "Job accepted gaslessly via Treasury!"
+									: "Job accepted! Gas fees were paid directly.";
+
+								Toast.show({
+									type: "success",
+									text1: "Job Accepted!",
+									text2: gasMessage,
+									position: "bottom",
+								});
+
+								// Refresh jobs list and Treasury status
+								try {
+									const allJobs = await contractService.queryJobs();
+									const openJobs = allJobs.filter(
+										(job) => job.worker === null && job.status === "Open"
+									);
+									setJobs(openJobs);
+
+									// Update Treasury status
+									if (TREASURY_CONFIG.enabled) {
+										const status = await contractService.getTreasuryStatus();
+										setTreasuryStatus(status);
+									}
+								} catch (refreshError) {
+									console.error(
+										"Failed to refresh after job acceptance:",
+										refreshError
+									);
+								}
+							} else {
+								// Handle Treasury-specific errors
+								const errorMessage = result.error || "Unknown error occurred";
+								const displayMessage = result.usedTreasury
+									? `Treasury transaction failed: ${errorMessage}`
+									: `Transaction failed: ${errorMessage}`;
+
+								Toast.show({
+									type: "error",
+									text1: "Failed to Accept Job",
+									text2: displayMessage,
+									position: "bottom",
+								});
 							}
 						} catch (error: any) {
 							console.error("Failed to accept job:", error);
@@ -232,6 +282,28 @@ export default function MarketplaceScreen() {
 				<Text style={styles.subheading}>
 					{loading ? "Loading..." : `${jobs.length} available jobs`}
 				</Text>
+
+				{TREASURY_CONFIG.enabled && (
+					<View style={styles.treasuryStatus}>
+						<View
+							style={[
+								styles.treasuryIndicator,
+								{
+									backgroundColor: treasuryStatus.canSponsorGas
+										? "#22c55e"
+										: "#ef4444",
+								},
+							]}
+						/>
+						<Text style={styles.treasuryText}>
+							{treasuryStatus.canSponsorGas
+								? `Treasury Active (${treasuryStatus.estimatedTransactionsLeft} txns remaining)`
+								: treasuryStatus.isAvailable
+								? "Treasury Low on Funds"
+								: "Treasury Unavailable"}
+						</Text>
+					</View>
+				)}
 
 				{loading ? (
 					<View style={styles.centered}>
@@ -352,6 +424,26 @@ const styles = StyleSheet.create({
 		color: "#6B7280",
 		marginBottom: 16,
 		marginTop: 4,
+	},
+	treasuryStatus: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 16,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		backgroundColor: "#F9FAFB",
+		borderRadius: 8,
+	},
+	treasuryIndicator: {
+		width: 8,
+		height: 8,
+		borderRadius: 4,
+		marginRight: 8,
+	},
+	treasuryText: {
+		fontSize: 12,
+		color: "#6B7280",
+		fontWeight: "500",
 	},
 	loadingText: {
 		marginTop: 16,

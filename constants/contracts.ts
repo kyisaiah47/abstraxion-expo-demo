@@ -6,6 +6,14 @@ export const CONTRACT_CONFIG = {
 	chainId: "xion-testnet-2",
 };
 
+export const TREASURY_CONFIG = {
+	// Treasury contract for gasless transactions
+	address: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS || "",
+	enabled: !!process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS,
+	minBalanceThreshold: 1.0, // 1 XION minimum
+	gasEstimate: 200000, // ~0.2 XION per transaction
+};
+
 export const CONTRACT_MESSAGES = {
 	// Proof of Work contract query messages
 	LIST_JOBS: { list_jobs: {} },

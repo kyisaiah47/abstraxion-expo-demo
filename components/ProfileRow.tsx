@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { styles } from "@/app/dashboard.styles";
 
 export type ProfileRowProps = {
@@ -16,6 +17,8 @@ export default function ProfileRow({
 	handleLogout,
 	truncateAddress,
 }: ProfileRowProps) {
+	const router = useRouter();
+
 	return (
 		<View style={styles.profileRow}>
 			<View style={styles.iconRow}>
@@ -44,6 +47,16 @@ export default function ProfileRow({
 				)}
 			</View>
 			<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+				<TouchableOpacity
+					onPress={() => router.push("./treasury-management" as any)}
+				>
+					<MaterialIcons
+						name="account-balance"
+						size={20}
+						color="#64748B"
+						style={{ marginTop: -15 }}
+					/>
+				</TouchableOpacity>
 				<TouchableOpacity onPress={handleLogout}>
 					<MaterialIcons
 						name="logout"
