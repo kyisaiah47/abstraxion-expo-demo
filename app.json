@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.proof-of-work",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app needs camera access to scan QR codes."
+        "NSCameraUsageDescription": "This app needs camera access to scan QR codes.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

@@ -1,34 +1,112 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
 	View,
 	Text,
 	FlatList,
 	StyleSheet,
 	TouchableOpacity,
+	ActivityIndicator,
+	RefreshControl,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
-
-const jobs = [
-	{
-		id: "1",
-		title: "Design landing page",
-		client: "Acme Inc",
-		payout: "$400",
-		due: "in 3 days",
-		tags: ["Remote", "Fixed-price", "Urgent"],
-	},
-	{
-		id: "2",
-		title: "Build mobile prototype",
-		client: "ZenFlow",
-		payout: "$700",
-		due: "in 5 days",
-		tags: ["Remote", "Milestone", "New"],
-	},
-];
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
+import { ContractService, type Job } from "../../lib/contractService";
+import { JobStatus } from "../../constants/contracts";
 
 export default function JobMarketplaceScreen() {
 	const router = useRouter();
+	const { data: account } = useAbstraxionAccount();
+	const { client } = useAbstraxionSigningClient();
+
+	const [jobs, setJobs] = useState<Job[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [refreshing, setRefreshing] = useState(false);
+	const [contractService, setContractService] =
+		useState<ContractService | null>(null);
+
+	// Initialize contract service
+	useEffect(() => {
+		if (account && client) {
+			const service = new ContractService(account, client);
+			setContractService(service);
+			loadJobs(service);
+		}
+	}, [account, client]);
+
+	const loadJobs = async (service: ContractService) => {
+		try {
+			setLoading(true);
+			const allJobs = await service.queryJobs();
+			// Only show open jobs in the marketplace
+			const openJobs = service.getOpenJobs(allJobs);
+			setJobs(openJobs);
+		} catch (error) {
+			console.error("Failed to load jobs:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleRefresh = async () => {
+		if (contractService) {
+			setRefreshing(true);
+			await loadJobs(contractService);
+			setRefreshing(false);
+		}
+	};
+
+	const truncateAddress = (address: string) => {
+		return `${address.slice(0, 6)}...${address.slice(-4)}`;
+	};
+
+	const formatTimeAgo = (timestamp: string) => {
+		try {
+			const date = new Date(timestamp);
+			const now = new Date();
+			const diffMs = now.getTime() - date.getTime();
+			const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+			if (diffDays === 0) return "Today";
+			if (diffDays === 1) return "1 day ago";
+			return `${diffDays} days ago`;
+		} catch {
+			return "Recently";
+		}
+	};
+
+	const getJobTags = (job: Job) => {
+		const tags = ["Remote"];
+
+		// Add payment tier tag
+		const paymentAmount = ContractService.convertUxionToXion(
+			parseInt(job.escrow_amount.amount)
+		);
+		if (paymentAmount >= 10) tags.push("High Pay");
+		else if (paymentAmount >= 5) tags.push("Good Pay");
+
+		// Add urgency if deadline is soon
+		if (job.deadline) {
+			const deadline = new Date(job.deadline);
+			const now = new Date();
+			const daysUntil = Math.ceil(
+				(deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+			);
+			if (daysUntil <= 3) tags.push("Urgent");
+		}
+
+		return tags;
+	};
+
+	if (!account || !client) {
+		return (
+			<View style={[styles.container, styles.centered]}>
+				<Text>Connect your wallet to view jobs</Text>
+			</View>
+		);
+	}
 
 	return (
 		<View style={styles.container}>
@@ -48,39 +126,71 @@ export default function JobMarketplaceScreen() {
 				}}
 			/>
 
-			<Text style={styles.subheading}>{jobs.length} open tasks</Text>
+			<Text style={styles.subheading}>
+				{loading ? "Loading..." : `${jobs.length} open tasks`}
+			</Text>
 
 			<View style={styles.searchBar}>
 				<Text style={styles.searchPlaceholder}>🔍 Search tasks</Text>
 			</View>
 
-			<FlatList
-				data={jobs}
-				keyExtractor={(item) => item.id}
-				contentContainerStyle={{ paddingBottom: 24 }}
-				renderItem={({ item }) => (
-					<TouchableOpacity
-						style={styles.card}
-						onPress={() => router.push(`/jobs/${item.id}`)}
-					>
-						<Text style={styles.title}>{item.title}</Text>
-						<View style={styles.badgeRow}>
-							{item.tags.map((tag) => (
-								<View
-									style={styles.badge}
-									key={tag}
-								>
-									<Text style={styles.badgeText}>{tag}</Text>
-								</View>
-							))}
+			{loading ? (
+				<View style={styles.centered}>
+					<ActivityIndicator size="large" />
+					<Text style={{ marginTop: 16, color: "#666" }}>
+						Loading jobs from blockchain...
+					</Text>
+				</View>
+			) : (
+				<FlatList
+					data={jobs}
+					keyExtractor={(item) => item.id.toString()}
+					contentContainerStyle={{ paddingBottom: 24 }}
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={handleRefresh}
+						/>
+					}
+					ListEmptyComponent={
+						<View style={styles.centered}>
+							<Text style={{ color: "#666", fontSize: 16 }}>
+								No open jobs available
+							</Text>
+							<Text style={{ color: "#999", fontSize: 14, marginTop: 4 }}>
+								Check back later or create a job!
+							</Text>
 						</View>
-						<Text style={styles.meta}>
-							{item.client} • {item.payout}
-						</Text>
-						<Text style={styles.due}>{item.due}</Text>
-					</TouchableOpacity>
-				)}
-			/>
+					}
+					renderItem={({ item }) => (
+						<TouchableOpacity
+							style={styles.card}
+							onPress={() => router.push(`/jobs/${item.id}`)}
+						>
+							<Text style={styles.title}>{item.description}</Text>
+							<View style={styles.badgeRow}>
+								{getJobTags(item).map((tag) => (
+									<View
+										style={styles.badge}
+										key={tag}
+									>
+										<Text style={styles.badgeText}>{tag}</Text>
+									</View>
+								))}
+							</View>
+							<Text style={styles.meta}>
+								{truncateAddress(item.client)} •{" "}
+								{ContractService.formatXionAmount(
+									parseInt(item.escrow_amount.amount)
+								)}
+							</Text>
+							<Text style={styles.due}>
+								Posted {formatTimeAgo(item.created_at)}
+							</Text>
+						</TouchableOpacity>
+					)}
+				/>
+			)}
 		</View>
 	);
 }
@@ -91,6 +201,11 @@ const styles = StyleSheet.create({
 		backgroundColor: "#F4F4F5",
 		paddingHorizontal: 20,
 		paddingTop: 8,
+	},
+	centered: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 	subheading: {
 		fontSize: 14,

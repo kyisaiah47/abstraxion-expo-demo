@@ -1,4 +1,11 @@
-import { View, SafeAreaView, ActivityIndicator } from "react-native";
+import {
+	View,
+	SafeAreaView,
+	ActivityIndicator,
+	Alert,
+	Text,
+	TouchableOpacity,
+} from "react-native";
 import * as Clipboard from "expo-clipboard";
 import {
 	useAbstraxionAccount,
@@ -16,27 +23,15 @@ import MetricsRow from "../components/MetricsRow";
 import ActiveJobCard from "../components/ActiveJobCard";
 import BottomActions from "../components/BottomActions";
 import { Modalize } from "react-native-modalize";
+import { ContractService, type Job } from "../lib/contractService";
+import { XION_DECIMALS } from "../constants/contracts";
 
-// === BEGIN: XION FETCH LOGIC ===
-const CONTRACT_ADDRESS =
-	"xion1d7zer33uxd3u8cp8e4huck03z0gg6v2kv02n088yrgg5qkwxsfnqxnvxvt";
-const API_URL = `https://api.xion-testnet-2.burnt.com/cosmwasm/wasm/v1/contract/${CONTRACT_ADDRESS}/smart/${btoa(
-	JSON.stringify({ ListJobs: {} })
-)}`;
-
-async function fetchJobsFromChain() {
-	try {
-		const res = await fetch(API_URL, { method: "GET" });
-		const json = await res.json();
-		return json.data?.jobs ?? [];
-	} catch (e) {
-		console.warn("Failed to fetch jobs:", e);
-		return [];
-	}
-}
-// === END: XION FETCH LOGIC ===
-
-type CreateJobInput = { description: string };
+// Remove the old XION fetch logic and replace with contract service
+type CreateJobInput = {
+	description: string;
+	amount?: string;
+	deadline?: string;
+};
 
 export default function DashboardScreen() {
 	const [showScanner, setShowScanner] = useState(false);
@@ -45,10 +40,63 @@ export default function DashboardScreen() {
 	const router = useRouter();
 	const modalRef = useRef<Modalize>(null);
 	const createModalRef = useRef<Modalize>(null);
-	const [jobs, setJobs] = useState([]);
+
+	// Real blockchain state
+	const [jobs, setJobs] = useState<Job[]>([]);
 	const [loadingJobs, setLoadingJobs] = useState(true);
-	const [activeJob, setActiveJob] = useState(null);
+	const [activeJob, setActiveJob] = useState<Job | null>(null);
 	const [postingJob, setPostingJob] = useState(false);
+	const [contractService, setContractService] =
+		useState<ContractService | null>(null);
+	const [totalEarnings, setTotalEarnings] = useState(0);
+	const [error, setError] = useState<string | null>(null);
+
+	// Initialize contract service when account and client are available
+	useEffect(() => {
+		if (data && client) {
+			const service = new ContractService(data, client);
+			setContractService(service);
+			loadJobs(service);
+		}
+	}, [data, client]);
+
+	// Load jobs from blockchain
+	const loadJobs = async (service: ContractService) => {
+		try {
+			setLoadingJobs(true);
+			setError(null);
+
+			const allJobs = await service.queryJobs();
+			setJobs(allJobs);
+
+			if (data) {
+				// Calculate total earnings
+				const earnings = service.calculateTotalEarnings(
+					allJobs,
+					data.bech32Address
+				);
+				setTotalEarnings(earnings);
+
+				// Find active job for current user
+				const userActiveJob = service.getActiveJobForUser(
+					allJobs,
+					data.bech32Address
+				);
+				setActiveJob(userActiveJob);
+			}
+		} catch (error) {
+			console.error("Failed to load jobs:", error);
+			setError("Failed to load jobs from blockchain");
+			Toast.show({
+				type: "error",
+				text1: "Network Error",
+				text2: "Failed to load jobs from blockchain",
+				position: "bottom",
+			});
+		} finally {
+			setLoadingJobs(false);
+		}
+	};
 
 	function truncateAddress(address: string | undefined | null): string {
 		if (!address) return "";
@@ -78,13 +126,38 @@ export default function DashboardScreen() {
 		router.replace("/");
 	};
 
-	const handleSubmitProof = () => {
-		Toast.show({
-			type: "success",
-			text1: "Proof submitted!",
-			position: "bottom",
-		});
-		(modalRef.current as any)?.close && modalRef.current?.close();
+	const handleSubmitProof = async (proofText: string) => {
+		if (!contractService || !activeJob) {
+			Toast.show({
+				type: "error",
+				text1: "Error",
+				text2: "No active job found",
+				position: "bottom",
+			});
+			return;
+		}
+
+		try {
+			await contractService.submitProof(activeJob.id, proofText);
+			Toast.show({
+				type: "success",
+				text1: "Proof submitted!",
+				text2: "Your proof has been submitted to the blockchain",
+				position: "bottom",
+			});
+			(modalRef.current as any)?.close && modalRef.current?.close();
+
+			// Reload jobs to get updated status
+			await loadJobs(contractService);
+		} catch (error: any) {
+			console.error("Failed to submit proof:", error);
+			Toast.show({
+				type: "error",
+				text1: "Submission Failed",
+				text2: error?.message || "Failed to submit proof",
+				position: "bottom",
+			});
+		}
 	};
 
 	const handleScanQR = () => setShowScanner(true);
@@ -94,58 +167,108 @@ export default function DashboardScreen() {
 		setShowScanner(false);
 	};
 
-	const handleCreateJob = async ({ description }: CreateJobInput) => {
+	const handleCreateJob = async ({
+		description,
+		amount = "1",
+	}: CreateJobInput) => {
+		if (!contractService || !data) {
+			Toast.show({
+				type: "error",
+				text1: "Error",
+				text2: "Wallet not connected",
+				position: "bottom",
+			});
+			return;
+		}
+
 		setPostingJob(true);
 		try {
-			await postJobToChain(description, data?.bech32Address);
-			Toast.show({ type: "success", text1: "Job Created" });
+			// Convert XION to uxion (multiply by 1,000,000)
+			const paymentAmount = ContractService.convertXionToUxion(
+				parseFloat(amount)
+			);
+
+			await contractService.postJob(description, paymentAmount);
+
+			Toast.show({
+				type: "success",
+				text1: "Job Created",
+				text2: `Job posted with ${amount} XION payment`,
+				position: "bottom",
+			});
+
 			(createModalRef.current as any)?.close && createModalRef.current?.close();
-			// Refresh jobs!
-			setLoadingJobs(true);
-			const jobs = await fetchJobsFromChain();
-			setJobs(jobs);
-			setActiveJob(jobs.find((j: any) => !j.accepted) || null);
+
+			// Refresh jobs to show the new job
+			await loadJobs(contractService);
 		} catch (e: any) {
 			console.error("Chain execute failed:", e);
 			Toast.show({
 				type: "error",
 				text1: "Failed to create job",
 				text2: e?.message || String(e),
+				position: "bottom",
 			});
 		} finally {
 			setPostingJob(false);
 		}
 	};
 
-	// === THE ACTUAL CHAIN CALL ===
-	async function postJobToChain(description, sender) {
-		if (!client || !sender) throw new Error("Wallet not connected");
-		console.log("Sender:", sender);
-		console.log("Client:", client);
-		const msg = { post_job: { description } };
-		try {
-			const tx = await client.execute(sender, CONTRACT_ADDRESS, msg, "auto");
-			return tx;
-		} catch (e) {
-			console.error("Chain execute failed:", e);
-			throw e;
+	// Error retry function
+	const handleRetry = () => {
+		if (contractService) {
+			loadJobs(contractService);
 		}
+	};
+
+	// Show loading screen if still connecting
+	if (!data || !client) {
+		return (
+			<SafeAreaView style={styles.safeArea}>
+				<View
+					style={[
+						styles.container,
+						{ justifyContent: "center", alignItems: "center" },
+					]}
+				>
+					<ActivityIndicator
+						size="large"
+						style={{ marginBottom: 16 }}
+					/>
+					<Text>Connecting to blockchain...</Text>
+				</View>
+			</SafeAreaView>
+		);
 	}
 
-	// --- Fetch jobs from XION on mount ---
-	useEffect(() => {
-		let mounted = true;
-		setLoadingJobs(true);
-		fetchJobsFromChain().then((jobs) => {
-			if (!mounted) return;
-			setJobs(jobs);
-			setActiveJob(jobs.find((j: any) => !j.accepted) || null);
-			setLoadingJobs(false);
-		});
-		return () => {
-			mounted = false;
-		};
-	}, []);
+	// Show error screen if there's a network error
+	if (error && !loadingJobs) {
+		return (
+			<SafeAreaView style={styles.safeArea}>
+				<View
+					style={[
+						styles.container,
+						{ justifyContent: "center", alignItems: "center" },
+					]}
+				>
+					<Text style={{ marginBottom: 16, textAlign: "center" }}>
+						Failed to connect to blockchain
+					</Text>
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#191919",
+							paddingHorizontal: 20,
+							paddingVertical: 12,
+							borderRadius: 8,
+						}}
+						onPress={handleRetry}
+					>
+						<Text style={{ color: "#fff", fontWeight: "600" }}>Retry</Text>
+					</TouchableOpacity>
+				</View>
+			</SafeAreaView>
+		);
+	}
 
 	if (showScanner) {
 		return (
@@ -168,6 +291,8 @@ export default function DashboardScreen() {
 				<MetricsRow
 					loadingJobs={loadingJobs}
 					jobs={jobs}
+					totalEarnings={totalEarnings}
+					userAddress={data?.bech32Address}
 				/>
 				<View style={{ flex: 1, width: "100%" }}>
 					{loadingJobs ? (
@@ -180,6 +305,7 @@ export default function DashboardScreen() {
 							activeJob={activeJob}
 							modalRef={modalRef}
 							truncateAddress={truncateAddress}
+							userAddress={data?.bech32Address}
 						/>
 					)}
 				</View>

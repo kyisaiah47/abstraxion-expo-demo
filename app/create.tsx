@@ -9,43 +9,85 @@ import {
 	Platform,
 } from "react-native";
 
-// This should ONLY handle the UI & input!
-export default function JobCreateSheet({ onCreate, creating }) {
+interface JobCreateSheetProps {
+	onCreate: (job: { description: string; amount: string }) => void;
+	creating: boolean;
+}
+
+export default function JobCreateSheet({
+	onCreate,
+	creating,
+}: JobCreateSheetProps) {
 	const [description, setDescription] = useState("");
+	const [amount, setAmount] = useState("1");
 
 	const handleCreate = () => {
-		if (!description.trim()) return;
-		onCreate({ description: description.trim() }); // Parent will handle contract call!
-		setDescription(""); // Optional: reset on create
+		if (!description.trim() || !amount.trim()) return;
+
+		// Validate amount is a positive number
+		const amountNum = parseFloat(amount);
+		if (isNaN(amountNum) || amountNum <= 0) {
+			alert("Please enter a valid payment amount");
+			return;
+		}
+
+		onCreate({
+			description: description.trim(),
+			amount: amount.trim(),
+		});
+
+		// Reset form
+		setDescription("");
+		setAmount("1");
 	};
+
+	const isValid = description.trim() && amount.trim() && parseFloat(amount) > 0;
 
 	return (
 		<KeyboardAvoidingView
 			behavior={Platform.OS === "ios" ? "padding" : undefined}
 			style={styles.sheetWrapper}
 		>
-			<Text style={styles.title}>Create a New Contract</Text>
+			<Text style={styles.title}>Create a New Job Contract</Text>
+
+			<Text style={styles.label}>Job Description</Text>
 			<TextInput
 				style={styles.input}
 				placeholder="Describe the work, e.g. 'Build landing page for Acme Inc.'"
 				value={description}
 				onChangeText={setDescription}
+				multiline
+				numberOfLines={3}
 				autoFocus
 			/>
+
+			<Text style={styles.label}>Payment Amount (XION)</Text>
+			<TextInput
+				style={styles.input}
+				placeholder="1.0"
+				value={amount}
+				onChangeText={setAmount}
+				keyboardType="decimal-pad"
+			/>
+			<Text style={styles.hint}>
+				Payment will be held in escrow and released upon proof acceptance
+			</Text>
+
 			<TouchableOpacity
-				style={[styles.button, { opacity: description.trim() ? 1 : 0.5 }]}
-				disabled={!description.trim() || creating}
+				style={[styles.button, { opacity: isValid && !creating ? 1 : 0.5 }]}
+				disabled={!isValid || creating}
 				onPress={handleCreate}
 			>
 				<Text style={styles.buttonText}>
-					{creating ? "Posting..." : "Create Contract"}
+					{creating
+						? "Posting to Blockchain..."
+						: `Create Job (${amount} XION)`}
 				</Text>
 			</TouchableOpacity>
 		</KeyboardAvoidingView>
 	);
 }
 
-// (Styles unchanged)
 const styles = StyleSheet.create({
 	sheetWrapper: {
 		paddingHorizontal: 28,
@@ -61,6 +103,13 @@ const styles = StyleSheet.create({
 		color: "#111",
 		marginBottom: 18,
 	},
+	label: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#333",
+		marginBottom: 8,
+		marginTop: 8,
+	},
 	input: {
 		borderWidth: 1,
 		borderColor: "#E5E5E5",
@@ -68,7 +117,13 @@ const styles = StyleSheet.create({
 		padding: 12,
 		fontSize: 16,
 		backgroundColor: "#FAFAFA",
-		marginBottom: 18,
+		marginBottom: 12,
+	},
+	hint: {
+		fontSize: 14,
+		color: "#666",
+		marginBottom: 20,
+		textAlign: "center",
 	},
 	button: {
 		backgroundColor: "#191919",
