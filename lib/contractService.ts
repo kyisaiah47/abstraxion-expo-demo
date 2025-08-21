@@ -51,18 +51,14 @@ export class ContractService {
 
 	async queryJobs(): Promise<Job[]> {
 		try {
-			// TEMPORARY: Since we're testing with User Map contract, don't query jobs
-			// The User Map contract doesn't have job functionality
-			console.log("⚠️ TEMPORARILY DISABLED - Testing with User Map contract");
-			return [];
-
-			/* Original code for Proof of Work contract:
+			// Back to querying jobs from our Proof of Work contract!
+			console.log("🔍 Querying jobs from Proof of Work contract...");
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
 				CONTRACT_MESSAGES.LIST_JOBS
 			);
+			console.log("Jobs query result:", result);
 			return result.jobs || [];
-			*/
 		} catch (error) {
 			console.error("Error querying jobs:", error);
 			return [];
@@ -861,6 +857,95 @@ export class ContractService {
 			return {
 				success: false,
 				message: `Treasury test failed: ${error.message || "Unknown error"}`,
+			};
+		}
+	}
+
+	async testJobPosting(): Promise<{
+		success: boolean;
+		message: string;
+		jobId?: number;
+	}> {
+		try {
+			console.log("🚀 Testing JOB POSTING with new Treasury authorization...");
+			console.log("Account:", this.account.bech32Address);
+			console.log("Contract (Proof of Work):", CONTRACT_CONFIG.address);
+			console.log(
+				"Treasury:",
+				process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS
+			);
+
+			const description = `Test job created with Treasury authorization! Created at ${new Date().toISOString()}`;
+			const escrowAmount = "1000000"; // 1 XION
+
+			const msg = CONTRACT_MESSAGES.POST_JOB(description);
+			console.log("Job posting message:", JSON.stringify(msg, null, 2));
+
+			const funds = [
+				{
+					denom: XION_DENOM,
+					amount: escrowAmount,
+				},
+			];
+
+			console.log("=== TESTING JOB POSTING WITH TREASURY ===");
+			console.log("Escrow amount:", escrowAmount, "uxion (1 XION)");
+
+			const result = await this.client.execute(
+				this.account.bech32Address,
+				CONTRACT_CONFIG.address,
+				msg,
+				"auto",
+				"Testing job posting with Treasury authorization",
+				funds
+			);
+
+			console.log("✅ JOB POSTING SUCCESS:", result.transactionHash);
+
+			// Try to extract job ID from transaction logs
+			let jobId: number | undefined;
+			try {
+				const logs = result.logs || [];
+				for (const log of logs) {
+					const events = log.events || [];
+					for (const event of events) {
+						if (event.type === "wasm") {
+							const attributes = event.attributes || [];
+							for (const attr of attributes) {
+								if (attr.key === "job_id") {
+									jobId = parseInt(attr.value);
+									break;
+								}
+							}
+						}
+					}
+				}
+			} catch (e) {
+				console.log("Could not extract job ID from transaction logs");
+			}
+
+			return {
+				success: true,
+				message: `Job posting successful! Transaction: ${
+					result.transactionHash
+				}${jobId ? ` | Job ID: ${jobId}` : ""}`,
+				jobId,
+			};
+		} catch (error: any) {
+			console.error("=== JOB POSTING FAILED ===");
+			console.error("Error object:", error);
+
+			if (error.message?.includes("unauthorized")) {
+				return {
+					success: false,
+					message:
+						"Unauthorized - Treasury grants may not be properly configured",
+				};
+			}
+
+			return {
+				success: false,
+				message: `Job posting failed: ${error.message || "Unknown error"}`,
 			};
 		}
 	}

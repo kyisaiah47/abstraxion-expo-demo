@@ -156,6 +156,32 @@ export default function JobMarketplaceScreen() {
 				</Text>
 			</TouchableOpacity>
 
+			{/* Job Posting Test Button */}
+			<TouchableOpacity
+				style={styles.jobTestButton}
+				onPress={async () => {
+					if (contractService) {
+						try {
+							console.log("Testing job posting...");
+							const result = await contractService.testJobPosting();
+							console.log("Job posting test result:", result);
+							alert(result.message);
+							if (result.success) {
+								// Refresh jobs list to show new job
+								loadJobs(contractService);
+							}
+						} catch (error) {
+							console.error("Job posting test failed:", error);
+							alert("Job posting test failed: " + (error as Error).message);
+						}
+					}
+				}}
+			>
+				<Text style={styles.jobTestButtonText}>
+					🚀 Test Job Posting (1 XION)
+				</Text>
+			</TouchableOpacity>
+
 			{loading ? (
 				<View style={styles.centered}>
 					<ActivityIndicator size="large" />
@@ -256,6 +282,20 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	treasuryTestButtonText: {
+		color: "#FFFFFF",
+		fontWeight: "600",
+		fontSize: 14,
+	},
+	jobTestButton: {
+		backgroundColor: "#3B82F6",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		marginHorizontal: 16,
+		marginBottom: 16,
+		alignItems: "center",
+	},
+	jobTestButtonText: {
 		color: "#FFFFFF",
 		fontWeight: "600",
 		fontSize: 14,

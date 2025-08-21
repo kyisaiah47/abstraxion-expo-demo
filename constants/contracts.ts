@@ -1,24 +1,19 @@
 export const CONTRACT_CONFIG = {
-	// TEMPORARY: Using User Map contract to test Treasury/authorization flow
-	// Original: "xion1x9wlxg2xs9ft0h20z7t6rmnexhzwwws3qgkmm2j803rcdr4jrrys4gt6cv"
-	address: "xion1276fhsa7v4twwfq9ta7lxszfvl7gqusc6c0vw98d55ryayrjhxpqmal0vg", // User Map contract
+	// Back to our original Proof of Work contract - Treasury authorization proven working!
+	address: "xion1x9wlxg2xs9ft0h20z7t6rmnexhzwwws3qgkmm2j803rcdr4jrrys4gt6cv", // Proof of Work contract
 	rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
 	restUrl: "https://api.xion-testnet-2.burnt.com:443",
 	chainId: "xion-testnet-2",
 };
 
 export const CONTRACT_MESSAGES = {
-	// User Map contract query messages (correct format)
-	GET_USERS: { get_users: {} },
-	GET_VALUE_BY_USER: (user: string) => ({ get_value_by_user: { user } }),
-	GET_MAP: { get_map: {} },
-
-	// User Map contract execute messages (correct format)
-	UPDATE: (value: any) => ({ update: { value } }), // Original messages - keep for when we switch back to Proof of Work contract
+	// Proof of Work contract query messages
 	LIST_JOBS: { list_jobs: {} },
 	GET_JOB: (jobId: number) => ({ get_job: { job_id: jobId } }),
 	GET_JOBS_BY_CLIENT: (client: string) => ({ get_jobs_by_client: { client } }),
 	GET_JOBS_BY_WORKER: (worker: string) => ({ get_jobs_by_worker: { worker } }),
+
+	// Proof of Work contract execute messages
 	POST_JOB: (description: string, deadline?: string) => {
 		const msg: any = { post_job: { description } };
 		if (deadline !== null && deadline !== undefined && deadline !== "") {
