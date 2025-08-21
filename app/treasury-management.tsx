@@ -60,7 +60,9 @@ export default function TreasuryManagementScreen() {
 				</TouchableOpacity>
 
 				{/* Treasury Status Card */}
-				<SimpleTreasuryStatusCard treasuryEnabled={TREASURY_CONFIG.enabled} />
+				<View style={styles.treasuryCardWrapper}>
+					<SimpleTreasuryStatusCard treasuryEnabled={TREASURY_CONFIG.enabled} />
+				</View>
 
 				{/* Treasury Information */}
 				<View style={styles.infoCard}>
@@ -147,5 +149,9 @@ const styles = StyleSheet.create({
 		color: "#6B7280",
 		lineHeight: 20,
 		marginBottom: 8,
+	},
+	treasuryCardWrapper: {
+		marginHorizontal: -20, // Counteract the card's built-in margin
+		marginBottom: 20,
 	},
 });
