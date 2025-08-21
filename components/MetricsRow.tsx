@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { styles } from "@/app/dashboard.styles";
 import { ContractService, type Job } from "../lib/contractService";
 
@@ -16,6 +17,8 @@ export default function MetricsRow({
 	totalEarnings,
 	userAddress,
 }: MetricsRowProps) {
+	const router = useRouter();
+
 	// Calculate open jobs count
 	const openJobsCount = loadingJobs
 		? 0
@@ -26,6 +29,10 @@ export default function MetricsRow({
 		? "Loading..."
 		: ContractService.formatXionAmount(totalEarnings);
 
+	const handleJobsOpenPress = () => {
+		router.push("/marketplace" as any);
+	};
+
 	return (
 		<View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
 			<View style={[styles.balanceCard, { flex: 1 }]}>
@@ -34,12 +41,16 @@ export default function MetricsRow({
 					{loadingJobs ? <ActivityIndicator size="small" /> : earningsDisplay}
 				</Text>
 			</View>
-			<View style={[styles.balanceCard, { flex: 1 }]}>
+			<TouchableOpacity
+				style={[styles.balanceCard, { flex: 1 }]}
+				onPress={handleJobsOpenPress}
+				activeOpacity={0.7}
+			>
 				<Text style={styles.balanceLabel}>Jobs Open</Text>
 				<Text style={styles.balanceValue}>
 					{loadingJobs ? <ActivityIndicator size="small" /> : openJobsCount}
 				</Text>
-			</View>
+			</TouchableOpacity>
 		</View>
 	);
 }

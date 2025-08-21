@@ -52,12 +52,10 @@ export class ContractService {
 	async queryJobs(): Promise<Job[]> {
 		try {
 			// Back to querying jobs from our Proof of Work contract!
-			console.log("🔍 Querying jobs from Proof of Work contract...");
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
 				CONTRACT_MESSAGES.LIST_JOBS
 			);
-			console.log("Jobs query result:", result);
 			return result.jobs || [];
 		} catch (error) {
 			console.error("Error querying jobs:", error);
