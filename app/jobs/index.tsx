@@ -134,6 +134,28 @@ export default function JobMarketplaceScreen() {
 				<Text style={styles.searchPlaceholder}>🔍 Search tasks</Text>
 			</View>
 
+			{/* Treasury Read Access Test Button - No funds needed */}
+			<TouchableOpacity
+				style={styles.readTestButton}
+				onPress={async () => {
+					if (contractService) {
+						try {
+							console.log("Testing Treasury read access...");
+							const result = await contractService.testTreasuryReadAccess();
+							console.log("Treasury read test result:", result);
+							alert(result.message);
+						} catch (error) {
+							console.error("Treasury read test failed:", error);
+							alert("Treasury read test failed: " + (error as Error).message);
+						}
+					}
+				}}
+			>
+				<Text style={styles.readTestButtonText}>
+					📖 Test Treasury Read Access (Free)
+				</Text>
+			</TouchableOpacity>
+
 			{/* Treasury Authorization Test Button */}
 			<TouchableOpacity
 				style={styles.treasuryTestButton}
@@ -270,6 +292,20 @@ const styles = StyleSheet.create({
 	},
 	searchPlaceholder: {
 		color: "#9CA3AF",
+		fontSize: 14,
+	},
+	readTestButton: {
+		backgroundColor: "#059669",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		marginHorizontal: 16,
+		marginBottom: 16,
+		alignItems: "center",
+	},
+	readTestButtonText: {
+		color: "#FFFFFF",
+		fontWeight: "600",
 		fontSize: 14,
 	},
 	treasuryTestButton: {
