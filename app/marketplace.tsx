@@ -37,6 +37,14 @@ export default function MarketplaceScreen() {
 		estimatedTransactionsLeft: 0,
 	});
 
+	// Helper function to map Treasury status
+	const mapTreasuryStatus = (status: any) => ({
+		isAvailable: status.isConnected || status.isAvailable || false,
+		balance: status.balance || 0,
+		canSponsorGas: status.canSponsorGas || false,
+		estimatedTransactionsLeft: Math.floor((status.balance || 0) * 5), // Estimate 5 txs per XION
+	});
+
 	// Initialize contract service and load jobs
 	useEffect(() => {
 		if (account && client) {
@@ -61,7 +69,7 @@ export default function MarketplaceScreen() {
 					// Check Treasury status if available
 					if (treasuryAddress) {
 						const status = await service.getTreasuryStatus();
-						setTreasuryStatus(status);
+						setTreasuryStatus(mapTreasuryStatus(status));
 					}
 				} catch (error) {
 					console.error("Failed to load jobs:", error);
@@ -158,7 +166,7 @@ export default function MarketplaceScreen() {
 									// Update Treasury status
 									if (TREASURY_CONFIG.enabled) {
 										const status = await contractService.getTreasuryStatus();
-										setTreasuryStatus(status);
+										setTreasuryStatus(mapTreasuryStatus(status));
 									}
 								} catch (refreshError) {
 									console.error(

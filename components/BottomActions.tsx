@@ -1,6 +1,7 @@
 import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { styles } from "@/app/dashboard.styles";
 
 export type BottomActionsProps = {
@@ -12,6 +13,8 @@ export default function BottomActions({
 	handleScanQR,
 	createModalRef,
 }: BottomActionsProps) {
+	const router = useRouter();
+
 	return (
 		<View style={styles.bottomActions}>
 			<TouchableOpacity
@@ -27,6 +30,7 @@ export default function BottomActions({
 				/>
 				<Text style={styles.scanButtonText}>Scan Job QR</Text>
 			</TouchableOpacity>
+
 			<TouchableOpacity
 				style={styles.createJobButton}
 				onPress={() => createModalRef.current?.open()}

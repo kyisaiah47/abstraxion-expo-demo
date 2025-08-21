@@ -15,7 +15,7 @@ import {
 	Alert,
 	SafeAreaView,
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
 import ZKTLSVerification from "../components/ZKTLSVerification";
@@ -43,6 +43,7 @@ export default function ZKTLSDemoScreen() {
 	const [step, setStep] = useState<"intro" | "demo" | "results">("intro");
 	const [demoResults, setDemoResults] = useState<any>(null);
 	const { isConfigured } = useZKTLSVerification();
+	const router = useRouter();
 
 	const handleStartDemo = () => {
 		if (!isConfigured) {
@@ -78,7 +79,24 @@ export default function ZKTLSDemoScreen() {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<Stack.Screen options={{ title: "zkTLS Demo" }} />
+			<Stack.Screen
+				options={{
+					headerShown: true,
+					title: "zkTLS Demo",
+					headerLeft: () => (
+						<TouchableOpacity
+							onPress={() => router.back()}
+							style={{ padding: 8, marginLeft: -8 }}
+						>
+							<Ionicons
+								name="arrow-back"
+								size={24}
+								color="#007AFF"
+							/>
+						</TouchableOpacity>
+					),
+				}}
+			/>
 
 			<ScrollView
 				style={styles.scrollView}

@@ -47,6 +47,14 @@ export default function ProfileRow({
 				)}
 			</View>
 			<View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+				<TouchableOpacity onPress={() => router.push("/zktls-demo")}>
+					<MaterialIcons
+						name="shield"
+						size={20}
+						color="#007AFF"
+						style={{ marginTop: -15 }}
+					/>
+				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={() => router.push("./treasury-management" as any)}
 				>
