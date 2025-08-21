@@ -13,6 +13,18 @@ export const TREASURY_CONFIG = {
 	averageGasCost: 0.2, // ~0.2 XION per transaction estimate
 };
 
+export const RECLAIM_CONFIG = {
+	appId: process.env.EXPO_PUBLIC_RECLAIM_APP_ID || "",
+	appSecret: process.env.EXPO_PUBLIC_RECLAIM_APP_SECRET || "",
+	enabled: !!(
+		process.env.EXPO_PUBLIC_RECLAIM_APP_ID &&
+		process.env.EXPO_PUBLIC_RECLAIM_APP_SECRET
+	),
+	verificationContractAddress:
+		"xion1qf8jtznwf0tykpg7e65gwafwp47rwxl4x2g2kldvv357s6frcjlsh2m24e", // From Burnt documentation
+	rumCodeId: 1289, // RUM contract code ID for storing proofs
+};
+
 export const CONTRACT_MESSAGES = {
 	// Proof of Work contract query messages
 	LIST_JOBS: { list_jobs: {} },
@@ -37,6 +49,24 @@ export const CONTRACT_MESSAGES = {
 	ACCEPT_PROOF: (jobId: number) => ({ accept_proof: { job_id: jobId } }),
 	REJECT_PROOF: (jobId: number) => ({ reject_proof: { job_id: jobId } }),
 	CANCEL_JOB: (jobId: number) => ({ cancel_job: { job_id: jobId } }),
+
+	// zkTLS integration messages (future contract upgrade)
+	SUBMIT_ZKTLS_PROOF: (
+		jobId: number,
+		proofData: string,
+		reclaimProof: string,
+		deliveryUrl: string
+	) => ({
+		submit_zktls_proof: {
+			job_id: jobId,
+			proof_data: proofData,
+			reclaim_proof: reclaimProof,
+			delivery_url: deliveryUrl,
+		},
+	}),
+	VERIFY_ZKTLS_PROOF: (jobId: number) => ({
+		verify_zktls_proof: { job_id: jobId },
+	}),
 };
 
 // Job status types
