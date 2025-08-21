@@ -24,7 +24,7 @@ import ActiveJobCard from "../components/ActiveJobCard";
 import BottomActions from "../components/BottomActions";
 import { Modalize } from "react-native-modalize";
 import { ContractService, type Job } from "../lib/contractService";
-import { XION_DECIMALS } from "../constants/contracts";
+import { XION_DECIMALS, CONTRACT_CONFIG } from "../constants/contracts";
 
 // Remove the old XION fetch logic and replace with contract service
 type CreateJobInput = {
@@ -95,6 +95,21 @@ export default function DashboardScreen() {
 	// Initialize contract service when account and client are available
 	useEffect(() => {
 		if (data && client && data.bech32Address) {
+			console.log("=== NETWORK DEBUG ===");
+			console.log("Connected Account:", data.bech32Address);
+			console.log(
+				"Expected CLI Account: xion1n6nesg6yzdq3nzrzxv8zxms9tx7eh7d65zaadr"
+			);
+			console.log(
+				"Addresses Match:",
+				data.bech32Address === "xion1n6nesg6yzdq3nzrzxv8zxms9tx7eh7d65zaadr"
+			);
+			console.log("Client Config:", {
+				rpcUrl: CONTRACT_CONFIG.rpcUrl,
+				chainId: CONTRACT_CONFIG.chainId,
+				contractAddress: CONTRACT_CONFIG.address,
+			});
+
 			const service = new ContractService(data, client);
 			setContractService(service);
 			loadJobs(service);
@@ -196,24 +211,271 @@ export default function DashboardScreen() {
 			Toast.show({
 				type: "success",
 				text1: "Job Created",
-				text2: `Job posted with ${amount} XION payment`,
+				text2: "Your job has been posted to the blockchain",
 				position: "bottom",
 			});
-
-			(createModalRef.current as any)?.close && createModalRef.current?.close();
-
-			// Refresh jobs to show the new job
+			createModalRef.current?.close();
 			await loadJobs(contractService);
-		} catch (e: any) {
-			console.error("Chain execute failed:", e);
+		} catch (error) {
+			console.error("Error creating job:", error);
 			Toast.show({
 				type: "error",
-				text1: "Failed to create job",
-				text2: e?.message || String(e),
+				text1: "Failed to Create Job",
+				text2: error instanceof Error ? error.message : "Unknown error",
 				position: "bottom",
 			});
 		} finally {
 			setPostingJob(false);
+		}
+	};
+
+	// Test Treasury authorization function
+	const handleTestTreasuryAuth = async () => {
+		if (!contractService) {
+			Alert.alert("Error", "Contract service not available");
+			return;
+		}
+
+		try {
+			const result = await contractService.testTreasuryAuthorization();
+			if (result.success) {
+				Alert.alert("Treasury Success!", result.message);
+			} else {
+				Alert.alert("Treasury Failed", result.message);
+			}
+		} catch (error) {
+			Alert.alert(
+				"Treasury Error",
+				`Treasury test failed: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`
+			);
+		}
+	};
+
+	// Test function for minimal format
+	const handleTestMinimalJob = async () => {
+		if (!contractService) {
+			Alert.alert("Error", "Contract service not available");
+			return;
+		}
+
+		try {
+			setPostingJob(true);
+			await contractService.testPostJobMinimal();
+			Alert.alert("Success", "Minimal test worked!");
+			await loadJobs(contractService);
+		} catch (error) {
+			Alert.alert(
+				"Error",
+				`Minimal test failed: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`
+			);
+		} finally {
+			setPostingJob(false);
+		}
+	};
+
+	// Test contract query function
+	const handleTestQuery = async () => {
+		if (!contractService) {
+			Alert.alert("Error", "Contract service not available");
+			return;
+		}
+
+		try {
+			const result = await contractService.testContractQuery();
+			Alert.alert("Query Success", `Found ${result.jobs?.length || 0} jobs`);
+		} catch (error) {
+			Alert.alert(
+				"Query Failed",
+				`Query error: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`
+			);
+		}
+	};
+
+	// Test execute without funds
+	const handleTestExecuteNoFunds = async () => {
+		if (!contractService) {
+			Alert.alert("Error", "Contract service not available");
+			return;
+		}
+
+		try {
+			const result = await contractService.testExecuteWithoutFunds();
+			Alert.alert("Execute Success", "Execute without funds worked!");
+		} catch (error) {
+			Alert.alert(
+				"Execute Failed",
+				`Execute error: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`
+			);
+		}
+	};
+
+	// Test client debugging
+	const handleTestClientDebug = async () => {
+		if (!contractService) {
+			Alert.alert("Error", "Contract service not available");
+			return;
+		}
+
+		try {
+			const result = await contractService.testClientDebugging();
+			Alert.alert("Debug Success", "Check console for client details");
+		} catch (error) {
+			Alert.alert(
+				"Debug Failed",
+				`Debug error: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`
+			);
+		}
+	};
+
+	// Force create authorization grants
+	const handleCreateGrants = async () => {
+		if (!contractService || !data?.bech32Address) {
+			Alert.alert("Error", "Contract service not available or not connected");
+			return;
+		}
+
+		Alert.alert(
+			"Create Authorization Grants",
+			`This will attempt to create authorization grants for your wallet (${data.bech32Address}) to allow Abstraxion to execute contract transactions on your behalf. You may see permission prompts from Abstraxion.`,
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Create Grants",
+					onPress: async () => {
+						try {
+							console.log("🔑 Starting authorization grant creation...");
+							const result = await contractService.createAbstraxionGrants();
+
+							if (result.success) {
+								Alert.alert("✅ Success", result.message);
+								Toast.show({
+									type: "success",
+									text1: "Authorization Success",
+									text2: "Grants created successfully!",
+									position: "bottom",
+								});
+							} else {
+								Alert.alert("⚠️ Authorization Required", result.message);
+								Toast.show({
+									type: "info",
+									text1: "Authorization Needed",
+									text2: "Please approve any Abstraxion permission requests",
+									position: "bottom",
+								});
+							}
+						} catch (error: any) {
+							console.error("Authorization flow error:", error);
+							Alert.alert(
+								"Error",
+								`Authorization failed: ${error.message || "Unknown error"}`
+							);
+						}
+					},
+				},
+			]
+		);
+	};
+
+	// Test direct signing function
+	const handleTestDirectSigning = async () => {
+		if (!contractService) {
+			Alert.alert("Error", "Contract service not available");
+			return;
+		}
+
+		try {
+			console.log("🧪 Testing direct signing...");
+			const result = await contractService.testDirectSigning();
+
+			if (result.success) {
+				Alert.alert("✅ Direct Signing", result.message);
+			} else {
+				Alert.alert("❌ Direct Signing Failed", result.message);
+			}
+		} catch (error: any) {
+			Alert.alert(
+				"Error",
+				`Direct signing test failed: ${error.message || "Unknown error"}`
+			);
+		}
+	};
+
+	// Direct grant creation function
+	const handleDirectGrantCreation = async () => {
+		if (!contractService || !data?.bech32Address) {
+			Alert.alert("Error", "Contract service not available or not connected");
+			return;
+		}
+
+		Alert.alert(
+			"Direct Grant Creation",
+			"This will attempt to create authorization grants using a direct transaction method, bypassing Abstraxion's UI flow.",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Create Direct Grant",
+					onPress: async () => {
+						try {
+							console.log("🔧 Starting direct grant creation...");
+							const result = await contractService.createAuthorizationGrant();
+
+							if (result.success) {
+								Alert.alert("✅ Success", result.message);
+								Toast.show({
+									type: "success",
+									text1: "Grant Created",
+									text2: "Direct authorization grant created!",
+									position: "bottom",
+								});
+							} else {
+								Alert.alert("❌ Failed", result.message);
+								Toast.show({
+									type: "error",
+									text1: "Grant Creation Failed",
+									text2: result.message,
+									position: "bottom",
+								});
+							}
+						} catch (error: any) {
+							console.error("Direct grant creation error:", error);
+							Alert.alert(
+								"Error",
+								`Direct grant creation failed: ${
+									error.message || "Unknown error"
+								}`
+							);
+						}
+					},
+				},
+			]
+		);
+	};
+
+	// Reconnect wallet function
+	const handleReconnectWallet = async () => {
+		try {
+			await logout();
+			setTimeout(() => {
+				router.replace("/");
+			}, 1000);
+			Toast.show({
+				type: "info",
+				text1: "Reconnecting",
+				text2: "Please reconnect your wallet",
+				position: "bottom",
+			});
+		} catch (error) {
+			console.error("Error during reconnection:", error);
 		}
 	};
 
@@ -312,6 +574,146 @@ export default function DashboardScreen() {
 						/>
 					)}
 				</View>
+
+				{/* Debug Test Buttons */}
+				<View style={{ padding: 20, gap: 10 }}>
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#FF3030",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleReconnectWallet}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							🔄 Reconnect Wallet
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#4ECDC4",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleTestQuery}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							🔍 Test Contract Query
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#E67E22",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleTestClientDebug}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							🔧 Debug Client Info
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#FFA500",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleCreateGrants}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							🔑 Create Authorization Grants
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#FF8C00",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleDirectGrantCreation}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							🛠️ Direct Grant Creation
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#8B4513",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleTestDirectSigning}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							🧪 Test Direct Signing
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#9B59B6",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleTestExecuteNoFunds}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							⚡ Test Execute (No Funds)
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#FF6B6B",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleTestMinimalJob}
+						disabled={postingJob}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							{postingJob ? "Testing..." : "🔧 Test Minimal Job Post"}
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#2ECC71",
+							paddingVertical: 12,
+							paddingHorizontal: 20,
+							borderRadius: 8,
+							alignItems: "center",
+						}}
+						onPress={handleTestTreasuryAuth}
+					>
+						<Text style={{ color: "white", fontWeight: "bold" }}>
+							🏦 Test Treasury Authorization
+						</Text>
+					</TouchableOpacity>
+				</View>
+
 				<BottomActions
 					handleScanQR={handleScanQR}
 					createModalRef={createModalRef}

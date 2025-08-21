@@ -134,6 +134,28 @@ export default function JobMarketplaceScreen() {
 				<Text style={styles.searchPlaceholder}>🔍 Search tasks</Text>
 			</View>
 
+			{/* Treasury Authorization Test Button */}
+			<TouchableOpacity
+				style={styles.treasuryTestButton}
+				onPress={async () => {
+					if (contractService) {
+						try {
+							console.log("Testing Treasury authorization...");
+							const result = await contractService.testTreasuryAuthorization();
+							console.log("Treasury test result:", result);
+							alert(result.message);
+						} catch (error) {
+							console.error("Treasury test failed:", error);
+							alert("Treasury test failed: " + (error as Error).message);
+						}
+					}
+				}}
+			>
+				<Text style={styles.treasuryTestButtonText}>
+					🏦 Test Treasury Authorization
+				</Text>
+			</TouchableOpacity>
+
 			{loading ? (
 				<View style={styles.centered}>
 					<ActivityIndicator size="large" />
@@ -222,6 +244,20 @@ const styles = StyleSheet.create({
 	},
 	searchPlaceholder: {
 		color: "#9CA3AF",
+		fontSize: 14,
+	},
+	treasuryTestButton: {
+		backgroundColor: "#10B981",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		marginHorizontal: 16,
+		marginBottom: 16,
+		alignItems: "center",
+	},
+	treasuryTestButtonText: {
+		color: "#FFFFFF",
+		fontWeight: "600",
 		fontSize: 14,
 	},
 	card: {
