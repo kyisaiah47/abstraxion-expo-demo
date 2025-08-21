@@ -218,18 +218,17 @@ export default function MarketplaceScreen() {
 						fontWeight: "600",
 						color: "#111827",
 					},
-					headerLeft: () => (
-						<TouchableOpacity
-							style={styles.backButton}
-							onPress={() => router.back()}
-						>
-							<Text style={styles.backButtonText}>← Back</Text>
-						</TouchableOpacity>
-					),
 				}}
 			/>
 
 			<View style={styles.content}>
+				<TouchableOpacity
+					style={styles.backButton}
+					onPress={() => router.back()}
+				>
+					<Text style={styles.backButtonText}>← Back to Dashboard</Text>
+				</TouchableOpacity>
+
 				<Text style={styles.subheading}>
 					{loading ? "Loading..." : `${jobs.length} available jobs`}
 				</Text>
@@ -338,8 +337,10 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	backButton: {
-		paddingHorizontal: 16,
+		paddingHorizontal: 0,
 		paddingVertical: 8,
+		marginBottom: 8,
+		alignSelf: "flex-start",
 	},
 	backButtonText: {
 		fontSize: 16,
