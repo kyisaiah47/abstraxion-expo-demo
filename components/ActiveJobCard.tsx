@@ -22,7 +22,11 @@ export default function ActiveJobCard({
 			<View
 				style={[
 					styles.activeJobCard,
-					{ justifyContent: "center", alignItems: "center" },
+					{
+						justifyContent: "center",
+						alignItems: "center",
+						flexDirection: "column",
+					},
 				]}
 			>
 				<Text style={{ color: "#666", fontSize: 16 }}>
