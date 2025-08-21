@@ -1,66 +1,66 @@
 {
-  "expo": {
-    "name": "proof-of-work",
-    "slug": "proof-of-work",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "proof-of-work",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.proof-of-work",
-      "infoPlist": {
-        "NSCameraUsageDescription": "This app needs camera access to scan QR codes.",
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.anonymous.abstraxionexpodemo",
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ]
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "6b541d2a-3a2c-4030-afe0-8730a6485003"
-      }
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/fa87d886-8fbc-4c41-b6b5-e6019dd9f4e2"
-    }
-  }
+	"expo": {
+		"name": "proof-of-work",
+		"slug": "proof-of-work",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/images/icon.png",
+		"scheme": "proof-of-work",
+		"userInterfaceStyle": "automatic",
+		"newArchEnabled": true,
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.proofofwork.app",
+			"infoPlist": {
+				"NSCameraUsageDescription": "This app needs camera access to scan QR codes.",
+				"ITSAppUsesNonExemptEncryption": false
+			}
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/images/adaptive-icon.png",
+				"backgroundColor": "#ffffff"
+			},
+			"package": "com.proofofwork.app",
+			"permissions": [
+				"android.permission.CAMERA",
+				"android.permission.RECORD_AUDIO"
+			]
+		},
+		"plugins": [
+			"expo-router",
+			[
+				"expo-splash-screen",
+				{
+					"image": "./assets/images/splash-icon.png",
+					"imageWidth": 200,
+					"resizeMode": "contain",
+					"backgroundColor": "#ffffff"
+				}
+			],
+			[
+				"expo-camera",
+				{
+					"cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+					"microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+					"recordAudioAndroid": true
+				}
+			]
+		],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"extra": {
+			"router": {},
+			"eas": {
+				"projectId": "6b541d2a-3a2c-4030-afe0-8730a6485003"
+			}
+		},
+		"runtimeVersion": {
+			"policy": "appVersion"
+		},
+		"updates": {
+			"url": "https://u.expo.dev/fa87d886-8fbc-4c41-b6b5-e6019dd9f4e2"
+		}
+	}
 }
