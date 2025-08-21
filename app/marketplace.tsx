@@ -218,6 +218,14 @@ export default function MarketplaceScreen() {
 						fontWeight: "600",
 						color: "#111827",
 					},
+					headerLeft: () => (
+						<TouchableOpacity
+							style={styles.backButton}
+							onPress={() => router.back()}
+						>
+							<Text style={styles.backButtonText}>← Back</Text>
+						</TouchableOpacity>
+					),
 				}}
 			/>
 
@@ -329,6 +337,15 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 	},
+	backButton: {
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+	},
+	backButtonText: {
+		fontSize: 16,
+		color: "#111827",
+		fontWeight: "500",
+	},
 	subheading: {
 		fontSize: 14,
 		color: "#6B7280",
@@ -376,14 +393,14 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	tag: {
-		backgroundColor: "#E0E7FF",
+		backgroundColor: "#E5E7EB",
 		paddingHorizontal: 8,
 		paddingVertical: 4,
 		borderRadius: 12,
 	},
 	tagText: {
 		fontSize: 12,
-		color: "#4338CA",
+		color: "#374151",
 		fontWeight: "500",
 	},
 	jobMeta: {
@@ -399,7 +416,7 @@ const styles = StyleSheet.create({
 	paymentText: {
 		fontSize: 14,
 		fontWeight: "600",
-		color: "#059669",
+		color: "#111827",
 	},
 	dateText: {
 		fontSize: 12,
@@ -408,11 +425,11 @@ const styles = StyleSheet.create({
 	},
 	deadlineText: {
 		fontSize: 12,
-		color: "#EF4444",
+		color: "#6B7280",
 		marginBottom: 12,
 	},
 	acceptButton: {
-		backgroundColor: "#2563EB",
+		backgroundColor: "#111827",
 		paddingVertical: 12,
 		paddingHorizontal: 16,
 		borderRadius: 8,
