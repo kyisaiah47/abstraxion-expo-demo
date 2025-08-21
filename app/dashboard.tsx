@@ -12,7 +12,7 @@ import {
 	useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
 import Toast from "react-native-toast-message";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
 import QRScanner from "./qr-scanner";
@@ -51,52 +51,55 @@ export default function DashboardScreen() {
 	const [totalEarnings, setTotalEarnings] = useState(0);
 	const [error, setError] = useState<string | null>(null);
 
+	// Load jobs from blockchain
+	const loadJobs = useCallback(
+		async (service: ContractService) => {
+			try {
+				setLoadingJobs(true);
+				setError(null);
+
+				const allJobs = await service.queryJobs();
+				setJobs(allJobs);
+
+				if (data?.bech32Address) {
+					// Calculate total earnings
+					const earnings = service.calculateTotalEarnings(
+						allJobs,
+						data.bech32Address
+					);
+					setTotalEarnings(earnings);
+
+					// Find active job for current user
+					const userActiveJob = service.getActiveJobForUser(
+						allJobs,
+						data.bech32Address
+					);
+					setActiveJob(userActiveJob);
+				}
+			} catch (error) {
+				console.error("Failed to load jobs:", error);
+				setError("Failed to load jobs from blockchain");
+				Toast.show({
+					type: "error",
+					text1: "Network Error",
+					text2: "Failed to load jobs from blockchain",
+					position: "bottom",
+				});
+			} finally {
+				setLoadingJobs(false);
+			}
+		},
+		[data?.bech32Address]
+	);
+
 	// Initialize contract service when account and client are available
 	useEffect(() => {
-		if (data && client) {
+		if (data && client && data.bech32Address) {
 			const service = new ContractService(data, client);
 			setContractService(service);
 			loadJobs(service);
 		}
-	}, [data, client]);
-
-	// Load jobs from blockchain
-	const loadJobs = async (service: ContractService) => {
-		try {
-			setLoadingJobs(true);
-			setError(null);
-
-			const allJobs = await service.queryJobs();
-			setJobs(allJobs);
-
-			if (data) {
-				// Calculate total earnings
-				const earnings = service.calculateTotalEarnings(
-					allJobs,
-					data.bech32Address
-				);
-				setTotalEarnings(earnings);
-
-				// Find active job for current user
-				const userActiveJob = service.getActiveJobForUser(
-					allJobs,
-					data.bech32Address
-				);
-				setActiveJob(userActiveJob);
-			}
-		} catch (error) {
-			console.error("Failed to load jobs:", error);
-			setError("Failed to load jobs from blockchain");
-			Toast.show({
-				type: "error",
-				text1: "Network Error",
-				text2: "Failed to load jobs from blockchain",
-				position: "bottom",
-			});
-		} finally {
-			setLoadingJobs(false);
-		}
-	};
+	}, [data?.bech32Address, client]);
 
 	function truncateAddress(address: string | undefined | null): string {
 		if (!address) return "";

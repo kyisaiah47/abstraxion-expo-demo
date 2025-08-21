@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
 	View,
 	Text,
@@ -6,7 +6,6 @@ import {
 	Image,
 	TouchableOpacity,
 	ActivityIndicator,
-	Animated,
 } from "react-native";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { useRouter } from "expo-router";
