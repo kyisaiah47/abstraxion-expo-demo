@@ -23,6 +23,7 @@ import MetricsRow from "../components/MetricsRow";
 import ActiveJobCard from "../components/ActiveJobCard";
 import BottomActions from "../components/BottomActions";
 import TreasuryStatusCard from "../components/TreasuryStatusCard";
+import SimpleTreasuryStatusCard from "../components/SimpleTreasuryStatusCard";
 import { Modalize } from "react-native-modalize";
 import { ContractService, type Job } from "../lib/contractService";
 import {
@@ -307,12 +308,10 @@ export default function DashboardScreen() {
 					totalEarnings={totalEarnings}
 					userAddress={data?.bech32Address}
 				/>
-				{TREASURY_CONFIG.enabled && (
-					<TreasuryStatusCard
-						contractService={contractService}
-						onPress={() => router.push("./treasury-management" as any)}
-					/>
-				)}
+				<SimpleTreasuryStatusCard
+					treasuryEnabled={TREASURY_CONFIG.enabled}
+					onPress={() => router.push("./treasury-management" as any)}
+				/>
 				<View style={{ flex: 1, width: "100%" }}>
 					{loadingJobs ? (
 						<ActivityIndicator

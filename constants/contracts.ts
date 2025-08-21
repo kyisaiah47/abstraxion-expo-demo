@@ -7,11 +7,10 @@ export const CONTRACT_CONFIG = {
 };
 
 export const TREASURY_CONFIG = {
-	// Treasury contract for gasless transactions
 	address: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS || "",
-	enabled: !!process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS,
-	minBalanceThreshold: 1.0, // 1 XION minimum
-	gasEstimate: 200000, // ~0.2 XION per transaction
+	enabled: !!process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS, // Enable if address is configured
+	minimumBalance: 1.0, // 1 XION minimum to sponsor gas
+	averageGasCost: 0.2, // ~0.2 XION per transaction estimate
 };
 
 export const CONTRACT_MESSAGES = {

@@ -4,8 +4,13 @@ import {
 	JobStatus,
 	XION_DECIMALS,
 	XION_DENOM,
+	TREASURY_CONFIG,
 } from "../constants/contracts";
-import { TreasuryService, TreasuryExecuteResult } from "./treasury";
+import {
+	TreasuryService,
+	TreasuryExecuteResult,
+	TreasuryStatus,
+} from "./treasuryOfficial";
 
 export interface Job {
 	id: number;
@@ -44,16 +49,12 @@ export class ContractService {
 	private client: ContractClient;
 	private treasuryService?: TreasuryService;
 
-	constructor(
-		account: ContractAccount,
-		client: ContractClient,
-		treasuryAddress?: string
-	) {
+	constructor(account: any, client: any, treasuryAddress?: string) {
 		this.account = account;
 		this.client = client;
 
-		// Initialize Treasury service if address provided
-		if (treasuryAddress) {
+		// Initialize Treasury service if configured and enabled
+		if (treasuryAddress && TREASURY_CONFIG.enabled) {
 			this.treasuryService = new TreasuryService(
 				account,
 				client,
@@ -61,9 +62,7 @@ export class ContractService {
 				CONTRACT_CONFIG.address
 			);
 		}
-	}
-
-	// ======= QUERY FUNCTIONS (FREE, NO GAS) =======
+	} // ======= QUERY FUNCTIONS (FREE, NO GAS) =======
 
 	async queryJobs(): Promise<Job[]> {
 		try {
@@ -493,7 +492,7 @@ export class ContractService {
 			// Try Treasury first if available
 			if (this.treasuryService) {
 				console.log("🏦 Attempting payment release through Treasury...");
-				return await this.treasuryService.executePaymentRelease(jobId);
+				return await this.treasuryService.executeProofAcceptance(jobId);
 			}
 
 			// Fallback to direct payment
@@ -530,7 +529,7 @@ export class ContractService {
 			// Try Treasury first if available
 			if (this.treasuryService) {
 				console.log("🏦 Attempting job rejection through Treasury...");
-				return await this.treasuryService.executeJobRejection(jobId);
+				return await this.treasuryService.executeProofRejection(jobId);
 			}
 
 			// Fallback to direct payment
@@ -613,7 +612,7 @@ export class ContractService {
 
 		try {
 			const status = await this.treasuryService.getTreasuryStatus();
-			return status.isAvailable && status.canSponsorGas;
+			return status.isConnected && status.canSponsorGas;
 		} catch (error) {
 			console.error("Failed to check Treasury availability:", error);
 			return false;

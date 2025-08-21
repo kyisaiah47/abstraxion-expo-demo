@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { ContractService } from "../lib/contractService";
 import { TREASURY_CONFIG } from "../constants/contracts";
@@ -29,15 +29,7 @@ export function TreasuryStatusCard({
 	});
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		if (contractService && TREASURY_CONFIG.enabled) {
-			loadTreasuryStatus();
-		} else {
-			setLoading(false);
-		}
-	}, [contractService]);
-
-	const loadTreasuryStatus = async () => {
+	const loadTreasuryStatus = useCallback(async () => {
 		try {
 			setLoading(true);
 			if (contractService) {
@@ -49,7 +41,15 @@ export function TreasuryStatusCard({
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [contractService]);
+
+	useEffect(() => {
+		if (contractService && TREASURY_CONFIG.enabled) {
+			loadTreasuryStatus();
+		} else {
+			setLoading(false);
+		}
+	}, [contractService, loadTreasuryStatus]);
 
 	const getStatusColor = () => {
 		if (!status.isAvailable) return "#EF4444"; // Red
