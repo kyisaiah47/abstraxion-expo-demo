@@ -146,7 +146,7 @@ export default function CreateScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: DesignSystem.colors.surface.primary,
+		backgroundColor: "#f8f8f8",
 	},
 
 	keyboardView: {

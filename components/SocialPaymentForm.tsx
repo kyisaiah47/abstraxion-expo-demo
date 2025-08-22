@@ -6,16 +6,15 @@ import {
 	TextInput,
 	Pressable,
 	Alert,
+	Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { DesignSystem } from "@/constants/DesignSystem";
 import {
 	PaymentFormData,
 	PaymentType,
 	ProofType,
 	User,
 } from "@/types/proofpay";
-import { UserService } from "@/lib/userService";
 
 interface SocialPaymentFormProps {
 	paymentType: PaymentType;
@@ -25,23 +24,27 @@ interface SocialPaymentFormProps {
 const PROOF_TYPE_OPTIONS = [
 	{
 		id: "none" as ProofType,
-		icon: "ban" as const,
-		emoji: "🚫",
+		label: "None",
+		icon: "ban",
+		disabled: true,
 	},
 	{
 		id: "text" as ProofType,
-		icon: "chatbubble-outline" as const,
-		emoji: "💬",
+		label: "Text Proof",
+		icon: "chatbubble-outline",
+		disabled: false,
 	},
 	{
 		id: "photo" as ProofType,
-		icon: "camera-outline" as const,
-		emoji: "📸",
+		label: "Photo Proof",
+		icon: "camera-outline",
+		disabled: false,
 	},
 	{
 		id: "zktls" as ProofType,
-		icon: "shield-checkmark-outline" as const,
-		emoji: "🔒",
+		label: "zkTLS Proof",
+		icon: "shield-checkmark-outline",
+		disabled: false,
 	},
 ];
 
@@ -56,46 +59,27 @@ export default function SocialPaymentForm({
 		proofType: "none",
 	});
 
-	const [searchQuery, setSearchQuery] = useState("");
-	const [searchResults, setSearchResults] = useState<User[]>([]);
-	const [selectedUser, setSelectedUser] = useState<User | null>(null);
+	const [selectedUser] = useState<User | null>(null);
+	const [showProofDropdown, setShowProofDropdown] = useState(false);
+	const [showAmountModal, setShowAmountModal] = useState(false);
+	const [cursorVisible, setCursorVisible] = useState(true);
+
+	// Blinking cursor animation
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setCursorVisible((prev) => !prev);
+		}, 500);
+		return () => clearInterval(interval);
+	}, []);
 
 	// Update form type when prop changes
 	useEffect(() => {
 		setFormData((prev) => ({ ...prev, type: paymentType }));
 	}, [paymentType]);
 
-	// Handle user search
-	useEffect(() => {
-		const searchUsers = async () => {
-			if (searchQuery.trim().length < 2) {
-				setSearchResults([]);
-				return;
-			}
-
-			try {
-				const results = await UserService.searchUsers(searchQuery);
-				setSearchResults(results);
-			} catch (error) {
-				console.error("Search error:", error);
-			}
-		};
-
-		const debounceTimer = setTimeout(searchUsers, 300);
-		return () => clearTimeout(debounceTimer);
-	}, [searchQuery]);
-
-	const handleUserSelect = (user: User) => {
-		setSelectedUser(user);
-		setFormData((prev) => ({ ...prev, recipientUserId: user.id }));
-		setSearchQuery(user.displayName);
-		setSearchResults([]);
-	};
-
-	const clearSelectedUser = () => {
-		setSelectedUser(null);
-		setFormData((prev) => ({ ...prev, recipientUserId: undefined }));
-		setSearchQuery("");
+	const formatAmount = (amount: number) => {
+		if (amount === 0) return "$0";
+		return `$${amount.toLocaleString()}`;
 	};
 
 	const handleSubmit = () => {
@@ -118,227 +102,192 @@ export default function SocialPaymentForm({
 		onSubmit(formData);
 	};
 
-	const getFormLabels = () => {
+	const getSubmitButtonText = () => {
 		switch (paymentType) {
 			case "request_help":
-				return {
-					title: "Request Help",
-					recipientLabel: "Who can help you?",
-					amountLabel: "Thank you amount",
-					descriptionLabel: "What do you need help with?",
-					descriptionPlaceholder:
-						"e.g., Help me move furniture, Pick me up from airport...",
-					proofLabel: "How should they confirm completion?",
-					submitText: "Ask for Help",
-					submitIcon: "heart" as const,
-				};
+				return "Ask for Help";
 			case "request_money":
-				return {
-					title: "Request Money",
-					recipientLabel: "Who owes you money?",
-					amountLabel: "Amount to request",
-					descriptionLabel: "What's this for?",
-					descriptionPlaceholder:
-						"e.g., Dinner we split last night, Concert ticket...",
-					proofLabel: "What proof do you want?",
-					submitText: "Request Payment",
-					submitIcon: "card-outline" as const,
-				};
+				return "Request";
 			case "send_money":
-				return {
-					title: "Send Money",
-					recipientLabel: "Who are you paying?",
-					amountLabel: "Amount to send",
-					descriptionLabel: "What's this for?",
-					descriptionPlaceholder: "e.g., Thanks for dinner, Paying you back...",
-					proofLabel: "What proof do you need?",
-					submitText: "Send Money",
-					submitIcon: "send" as const,
-				};
+				return "Pay";
 		}
 	};
 
-	const labels = getFormLabels();
 	const isSubmitDisabled =
 		!selectedUser || formData.amount <= 0 || !formData.description.trim();
 
 	return (
 		<View style={styles.container}>
-			<View style={styles.formSection}>
-				{/* Horizontal Row: Person Search + Amount */}
-				<View style={styles.horizontalInputRow}>
-					{/* User Search/Selection */}
-					<View style={[styles.inputContainer, styles.personInputContainer]}>
-						<Text style={styles.inputLabel}>
-							{labels.recipientLabel} <Text style={styles.required}>*</Text>
-						</Text>
-
-						{selectedUser ? (
-							<View style={styles.selectedUserContainer}>
-								<View style={styles.selectedUserInfo}>
-									<View style={styles.avatarPlaceholder}>
-										<Text style={styles.avatarText}>
-											{selectedUser.displayName.charAt(0).toUpperCase()}
-										</Text>
-									</View>
-									<View style={styles.userTextContainer}>
-										<Text style={styles.selectedUserName}>
-											{selectedUser.displayName}
-										</Text>
-										<Text style={styles.selectedUserUsername}>
-											@{selectedUser.username}
-										</Text>
-									</View>
-								</View>
-								<Pressable
-									onPress={clearSelectedUser}
-									style={styles.clearButton}
-								>
-									<Ionicons
-										name="close-circle"
-										size={20}
-										color={DesignSystem.colors.text.secondary}
-									/>
-								</Pressable>
-							</View>
-						) : (
-							<>
-								<TextInput
-									style={styles.textInput}
-									value={searchQuery}
-									onChangeText={setSearchQuery}
-									placeholder="Search name or username..."
-									placeholderTextColor={DesignSystem.colors.text.tertiary}
-								/>
-
-								{searchResults.length > 0 && (
-									<View style={styles.searchResults}>
-										{searchResults.map((user) => (
-											<Pressable
-												key={user.id}
-												style={styles.searchResultItem}
-												onPress={() => handleUserSelect(user)}
-											>
-												<View style={styles.avatarPlaceholder}>
-													<Text style={styles.avatarText}>
-														{user.displayName.charAt(0).toUpperCase()}
-													</Text>
-												</View>
-												<View style={styles.userTextContainer}>
-													<Text style={styles.userName}>
-														{user.displayName}
-													</Text>
-													<Text style={styles.userUsername}>
-														@{user.username}
-													</Text>
-												</View>
-											</Pressable>
-										))}
-									</View>
-								)}
-							</>
-						)}
-					</View>
-
-					{/* Amount Input */}
-					<View style={[styles.inputContainer, styles.amountInputWrapper]}>
-						<Text style={styles.inputLabel}>
-							{labels.amountLabel} <Text style={styles.required}>*</Text>
-						</Text>
-						<View style={styles.amountInputContainer}>
-							<Text style={styles.currencySymbol}>$</Text>
-							<TextInput
-								style={styles.amountInput}
-								value={formData.amount > 0 ? formData.amount.toString() : ""}
-								onChangeText={(text) => {
-									const amount = parseFloat(text) || 0;
-									setFormData((prev) => ({ ...prev, amount }));
-								}}
-								placeholder="0"
-								placeholderTextColor={DesignSystem.colors.text.tertiary}
-								keyboardType="numeric"
+			{/* User Avatar Section */}
+			<Pressable
+				style={styles.avatarSection}
+				onPress={() => {}}
+			>
+				<View style={styles.avatarContainer}>
+					{selectedUser ? (
+						<View style={styles.avatar}>
+							<Text style={styles.avatarText}>
+								{selectedUser.displayName.charAt(0).toUpperCase()}
+							</Text>
+						</View>
+					) : (
+						<View style={styles.avatarPlaceholder}>
+							<Ionicons
+								name="camera"
+								size={40}
+								color="#999"
 							/>
 						</View>
+					)}
+					<View style={styles.addIcon}>
+						<Ionicons
+							name="add"
+							size={20}
+							color="#007AFF"
+						/>
 					</View>
 				</View>
+				{selectedUser ? (
+					<Text style={styles.userName}>{selectedUser.displayName}</Text>
+				) : (
+					<Text style={styles.userNamePlaceholder}>Select User</Text>
+				)}
+			</Pressable>
 
-				{/* Description Input - Full Width */}
-				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>
-						{labels.descriptionLabel} <Text style={styles.required}>*</Text>
-					</Text>
-					<TextInput
-						style={[styles.textInput, styles.textArea]}
-						value={formData.description}
-						onChangeText={(text) =>
-							setFormData((prev) => ({ ...prev, description: text }))
-						}
-						placeholder={labels.descriptionPlaceholder}
-						placeholderTextColor={DesignSystem.colors.text.tertiary}
-						multiline
-						numberOfLines={2}
-						textAlignVertical="top"
+			{/* Amount Display */}
+			<Pressable
+				style={styles.amountSection}
+				onPress={() => setShowAmountModal(true)}
+			>
+				<Text style={styles.amountText}>
+					{formatAmount(formData.amount)}
+					{cursorVisible && <Text style={styles.cursor}>|</Text>}
+				</Text>
+			</Pressable>
+
+			{/* Proof Type Dropdown */}
+			<View style={styles.proofSection}>
+				<Pressable
+					style={styles.proofDropdownButton}
+					onPress={() => setShowProofDropdown(true)}
+				>
+					<Ionicons
+						name="shield-outline"
+						size={20}
+						color="#666"
 					/>
-				</View>
-
-				{/* Proof Type Selector - Horizontal Icon Radio Buttons */}
-				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>Proof:</Text>
-					<View style={styles.proofTypeContainer}>
-						{PROOF_TYPE_OPTIONS.map((option) => (
-							<Pressable
-								key={option.id}
-								style={[
-									styles.proofIconButton,
-									formData.proofType === option.id &&
-										styles.proofIconButtonActive,
-								]}
-								onPress={() =>
-									setFormData((prev) => ({ ...prev, proofType: option.id }))
-								}
-							>
-								<Text
-									style={[
-										styles.proofIconEmoji,
-										formData.proofType === option.id &&
-											styles.proofIconEmojiActive,
-									]}
-								>
-									{option.emoji}
-								</Text>
-							</Pressable>
-						))}
-					</View>
-				</View>
+					<Text style={styles.proofDropdownText}>Proof type</Text>
+					<Ionicons
+						name="chevron-down"
+						size={20}
+						color="#666"
+					/>
+				</Pressable>
 			</View>
 
-			{/* Submit Button */}
+			{/* Description Input */}
+			<View style={styles.descriptionSection}>
+				<TextInput
+					style={styles.descriptionInput}
+					value={formData.description}
+					onChangeText={(text) =>
+						setFormData((prev) => ({ ...prev, description: text }))
+					}
+					placeholder="What's this for?"
+					placeholderTextColor="#999"
+					multiline
+					textAlign="center"
+				/>
+			</View>
+
+			{/* Action Button */}
 			<Pressable
 				style={[
-					styles.submitButton,
-					isSubmitDisabled && styles.submitButtonDisabled,
+					styles.actionButton,
+					isSubmitDisabled && styles.actionButtonDisabled,
 				]}
 				onPress={handleSubmit}
 				disabled={isSubmitDisabled}
 			>
-				<Ionicons
-					name={labels.submitIcon}
-					size={20}
-					color={
-						isSubmitDisabled
-							? DesignSystem.colors.text.tertiary
-							: DesignSystem.colors.text.inverse
-					}
-				/>
-				<Text
-					style={[
-						styles.submitButtonText,
-						isSubmitDisabled && styles.submitButtonTextDisabled,
-					]}
-				>
-					{labels.submitText}
-				</Text>
+				<Text style={styles.actionButtonText}>{getSubmitButtonText()}</Text>
 			</Pressable>
+
+			{/* Amount Modal */}
+			<Modal
+				visible={showAmountModal}
+				transparent
+				animationType="slide"
+				onRequestClose={() => setShowAmountModal(false)}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Enter Amount</Text>
+						<TextInput
+							style={styles.amountModalInput}
+							value={formData.amount > 0 ? formData.amount.toString() : ""}
+							onChangeText={(text) => {
+								const amount = parseFloat(text) || 0;
+								setFormData((prev) => ({ ...prev, amount }));
+							}}
+							placeholder="0"
+							keyboardType="numeric"
+							autoFocus
+						/>
+						<Pressable
+							style={styles.modalButton}
+							onPress={() => setShowAmountModal(false)}
+						>
+							<Text style={styles.modalButtonText}>Done</Text>
+						</Pressable>
+					</View>
+				</View>
+			</Modal>
+
+			{/* Proof Dropdown Modal */}
+			<Modal
+				visible={showProofDropdown}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setShowProofDropdown(false)}
+			>
+				<Pressable
+					style={styles.modalOverlay}
+					onPress={() => setShowProofDropdown(false)}
+				>
+					<View style={styles.dropdownContent}>
+						{PROOF_TYPE_OPTIONS.map((option) => (
+							<Pressable
+								key={option.id}
+								style={[
+									styles.dropdownItem,
+									option.disabled && styles.dropdownItemDisabled,
+								]}
+								onPress={() => {
+									if (!option.disabled) {
+										setFormData((prev) => ({ ...prev, proofType: option.id }));
+									}
+									setShowProofDropdown(false);
+								}}
+								disabled={option.disabled}
+							>
+								<Ionicons
+									name={option.icon as any}
+									size={20}
+									color={option.disabled ? "#ff6b6b" : "#333"}
+								/>
+								<Text
+									style={[
+										styles.dropdownItemText,
+										option.disabled && styles.dropdownItemTextDisabled,
+									]}
+								>
+									{option.label}
+								</Text>
+							</Pressable>
+						))}
+					</View>
+				</Pressable>
+			</Modal>
 		</View>
 	);
 }
@@ -346,231 +295,291 @@ export default function SocialPaymentForm({
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-	},
-
-	formSection: {
-		gap: DesignSystem.spacing["2xl"], // More white space between sections
-		marginBottom: DesignSystem.spacing["2xl"],
-	},
-
-	// Horizontal Layout for Person + Amount
-	horizontalInputRow: {
-		flexDirection: "row",
-		gap: DesignSystem.spacing.lg,
-	},
-
-	personInputContainer: {
-		flex: 7, // 70% width
-	},
-
-	amountInputWrapper: {
-		flex: 3, // 30% width
-	},
-
-	inputContainer: {
-		gap: DesignSystem.spacing.sm,
-	},
-
-	inputLabel: {
-		...DesignSystem.typography.label.medium,
-		color: DesignSystem.colors.text.secondary,
-	},
-
-	required: {
-		color: DesignSystem.colors.status.error,
-	},
-
-	textInput: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
-		padding: DesignSystem.spacing.lg,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		...DesignSystem.typography.body.medium,
-		color: DesignSystem.colors.text.primary,
-		minHeight: 48, // Slightly smaller for compact design
-	},
-
-	textArea: {
-		minHeight: 64, // Reduced from 80 for more compact design
-		textAlignVertical: "top",
-	},
-
-	// User Selection Styles
-	selectedUserContainer: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
-		padding: DesignSystem.spacing.md, // Reduced padding
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.primary[800],
-		flexDirection: "row",
+		backgroundColor: "#f8f8f8",
+		paddingHorizontal: 20,
 		alignItems: "center",
 		justifyContent: "space-between",
-		minHeight: 48,
 	},
 
-	selectedUserInfo: {
-		flexDirection: "row",
+	// User Avatar Section
+	avatarSection: {
 		alignItems: "center",
-		flex: 1,
+		marginTop: 60,
+	},
+
+	avatarContainer: {
+		position: "relative",
+		marginBottom: 16,
+	},
+
+	avatar: {
+		width: 120,
+		height: 120,
+		borderRadius: 12,
+		backgroundColor: "#007AFF",
+		alignItems: "center",
+		justifyContent: "center",
 	},
 
 	avatarPlaceholder: {
-		width: 32, // Smaller avatar
-		height: 32,
-		borderRadius: 16,
-		backgroundColor: DesignSystem.colors.primary[800],
+		width: 120,
+		height: 120,
+		borderRadius: 12,
+		backgroundColor: "#e0e0e0",
 		alignItems: "center",
 		justifyContent: "center",
-		marginRight: DesignSystem.spacing.sm,
 	},
 
 	avatarText: {
-		...DesignSystem.typography.label.small,
-		color: DesignSystem.colors.text.inverse,
+		fontSize: 48,
 		fontWeight: "600",
+		color: "#fff",
 	},
 
-	userTextContainer: {
-		flex: 1,
-	},
-
-	selectedUserName: {
-		...DesignSystem.typography.label.medium,
-		color: DesignSystem.colors.text.primary,
-		fontSize: 14,
-	},
-
-	selectedUserUsername: {
-		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
-		fontSize: 12,
+	addIcon: {
+		position: "absolute",
+		top: -5,
+		right: -5,
+		width: 30,
+		height: 30,
+		borderRadius: 15,
+		backgroundColor: "#fff",
+		alignItems: "center",
+		justifyContent: "center",
+		shadowColor: "#000",
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		shadowOffset: { width: 0, height: 2 },
 	},
 
 	userName: {
-		...DesignSystem.typography.label.medium,
-		color: DesignSystem.colors.text.primary,
+		fontSize: 24,
+		fontWeight: "600",
+		color: "#333",
 	},
 
-	userUsername: {
-		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
+	userNamePlaceholder: {
+		fontSize: 24,
+		fontWeight: "600",
+		color: "#999",
 	},
 
-	clearButton: {
-		padding: DesignSystem.spacing.xs,
+	// Amount Display
+	amountSection: {
+		alignItems: "center",
+		marginVertical: 60,
 	},
 
-	searchResults: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
+	amountText: {
+		fontSize: 64,
+		fontWeight: "300",
+		color: "#333",
+		textAlign: "center",
+	},
+
+	cursor: {
+		fontSize: 64,
+		fontWeight: "300",
+		color: "#007AFF",
+	},
+
+	// Proof Section
+	proofSection: {
+		marginVertical: 60,
+		width: "100%",
+	},
+
+	proofDropdownButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		paddingVertical: 16,
+		paddingHorizontal: 20,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		maxHeight: 160, // Reduced max height
-		position: "absolute",
-		top: "100%",
-		left: 0,
-		right: 0,
-		zIndex: 1000,
-		...DesignSystem.shadows.lg,
+		borderColor: "#e0e0e0",
+		gap: 8,
+	},
+
+	proofDropdownText: {
+		fontSize: 16,
+		fontWeight: "500",
+		color: "#666",
+	},
+
+	// Description Section
+	descriptionSection: {
+		width: "100%",
+		marginVertical: 60,
+	},
+
+	descriptionInput: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		padding: 20,
+		borderWidth: 1,
+		borderColor: "#e0e0e0",
+		fontSize: 16,
+		color: "#333",
+		textAlign: "center",
+		minHeight: 80,
+	},
+
+	// Action Button
+	actionButton: {
+		backgroundColor: "#333",
+		borderRadius: 24,
+		paddingVertical: 20,
+		paddingHorizontal: 40,
+		width: "100%",
+		alignItems: "center",
+		marginBottom: 60,
+	},
+
+	actionButtonDisabled: {
+		backgroundColor: "#ccc",
+	},
+
+	actionButtonText: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: "#fff",
+	},
+
+	// Modal Styles
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0, 0, 0, 0.5)",
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 20,
+	},
+
+	modalContent: {
+		backgroundColor: "#fff",
+		borderRadius: 20,
+		padding: 30,
+		width: "90%",
+		maxWidth: 320,
+		alignItems: "center",
+		gap: 20,
+	},
+
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: "600",
+		color: "#333",
+	},
+
+	amountModalInput: {
+		fontSize: 48,
+		fontWeight: "300",
+		color: "#333",
+		textAlign: "center",
+		borderBottomWidth: 1,
+		borderBottomColor: "#e0e0e0",
+		paddingVertical: 10,
+		minWidth: 200,
+	},
+
+	modalButton: {
+		backgroundColor: "#007AFF",
+		borderRadius: 12,
+		paddingVertical: 12,
+		paddingHorizontal: 24,
+	},
+
+	modalButtonText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#fff",
+	},
+
+	// Dropdown Styles
+	dropdownContent: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		margin: 20,
+		padding: 8,
+		shadowColor: "#000",
+		shadowOpacity: 0.15,
+		shadowRadius: 12,
+		shadowOffset: { width: 0, height: 4 },
+		elevation: 8,
+	},
+
+	dropdownItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 16,
+		paddingHorizontal: 20,
+		gap: 12,
+	},
+
+	dropdownItemDisabled: {
+		opacity: 0.5,
+	},
+
+	dropdownItemText: {
+		fontSize: 16,
+		fontWeight: "500",
+		color: "#333",
+	},
+
+	dropdownItemTextDisabled: {
+		color: "#ff6b6b",
+	},
+
+	// User search styles
+	searchResults: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		margin: 20,
+		padding: 8,
+		shadowColor: "#000",
+		shadowOpacity: 0.15,
+		shadowRadius: 12,
+		shadowOffset: { width: 0, height: 4 },
+		elevation: 8,
+		maxHeight: 200,
 	},
 
 	searchResultItem: {
 		flexDirection: "row",
 		alignItems: "center",
-		padding: DesignSystem.spacing.md,
-		borderBottomWidth: 1,
-		borderBottomColor: DesignSystem.colors.border.tertiary,
+		paddingVertical: 16,
+		paddingHorizontal: 20,
+		gap: 12,
 	},
 
-	// Amount Input Styles - Venmo-like
-	amountInputContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
-		borderWidth: 2, // Thicker border for prominence
-		borderColor: DesignSystem.colors.border.secondary,
-		paddingHorizontal: DesignSystem.spacing.lg,
-		minHeight: 48,
-	},
-
-	currencySymbol: {
-		...DesignSystem.typography.h3, // Large and prominent like Venmo
-		color: DesignSystem.colors.primary[800],
-		marginRight: DesignSystem.spacing.xs,
-		fontWeight: "600",
-	},
-
-	amountInput: {
-		flex: 1,
-		...DesignSystem.typography.h3, // Large amount input like Venmo
-		color: DesignSystem.colors.text.primary,
-		fontWeight: "600",
-		textAlign: "left",
-	},
-
-	// Proof Type Selector - Icon Radio Buttons
-	proofTypeContainer: {
-		flexDirection: "row",
-		gap: DesignSystem.spacing.md,
-		justifyContent: "space-between",
-	},
-
-	proofIconButton: {
-		width: 48,
-		height: 48,
-		borderRadius: 24,
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderWidth: 2,
-		borderColor: DesignSystem.colors.border.secondary,
+	searchUserAvatar: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		backgroundColor: "#007AFF",
 		alignItems: "center",
 		justifyContent: "center",
+	},
+
+	searchUserAvatarText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#fff",
+	},
+
+	searchUserInfo: {
 		flex: 1,
 	},
 
-	proofIconButtonActive: {
-		borderColor: DesignSystem.colors.primary[800],
-		backgroundColor:
-			DesignSystem.colors.primary[50] || DesignSystem.colors.surface.secondary,
-		...DesignSystem.shadows.sm,
+	searchUserName: {
+		fontSize: 16,
+		fontWeight: "500",
+		color: "#333",
 	},
 
-	proofIconEmoji: {
-		fontSize: 20,
-	},
-
-	proofIconEmojiActive: {
-		fontSize: 22, // Slightly larger when active
-	},
-
-	// Submit Button Styles - Prominent
-	submitButton: {
-		backgroundColor: DesignSystem.colors.primary[800],
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["2xl"], // Larger padding for prominence
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: DesignSystem.spacing.sm,
-		...DesignSystem.shadows.lg,
-		minHeight: 56, // Taller button
-		marginTop: DesignSystem.spacing.xl,
-	},
-
-	submitButtonText: {
-		...DesignSystem.typography.h4,
-		color: DesignSystem.colors.text.inverse,
-		fontWeight: "600",
-	},
-
-	submitButtonDisabled: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-	},
-
-	submitButtonTextDisabled: {
-		color: DesignSystem.colors.text.tertiary,
+	searchUserUsername: {
+		fontSize: 14,
+		color: "#666",
 	},
 });
