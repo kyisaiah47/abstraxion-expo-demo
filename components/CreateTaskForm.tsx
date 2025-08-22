@@ -19,6 +19,28 @@ const TIME_LIMIT_OPTIONS = [
 	{ label: "1h", value: "1 hour" },
 	{ label: "24h", value: "24 hours" },
 	{ label: "3d", value: "3 days" },
+	{ label: "Flexible", value: "flexible" },
+];
+
+const PROOF_TYPE_OPTIONS = [
+	{
+		id: "text",
+		label: "Just tell me what you did",
+		subtitle: "Simple description",
+		icon: "chatbubble-outline" as const,
+	},
+	{
+		id: "photo",
+		label: "Send a quick photo",
+		subtitle: "Visual confirmation",
+		icon: "camera-outline" as const,
+	},
+	{
+		id: "zktls",
+		label: "zkTLS verification",
+		subtitle: "For important tasks",
+		icon: "shield-checkmark-outline" as const,
+	},
 ];
 
 export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
@@ -26,6 +48,7 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 		description: "",
 		reward: 0,
 		deadline: undefined,
+		proofType: "text", // Default to simple text description
 	});
 	const [customDeadline, setCustomDeadline] = useState("");
 	const [selectedTimeLimit, setSelectedTimeLimit] = useState<string | null>(
@@ -34,12 +57,12 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 
 	const handleSubmit = () => {
 		if (!formData.description.trim()) {
-			Alert.alert("Error", "Please describe what proof is required");
+			Alert.alert("Error", "Please tell us what you need help with");
 			return;
 		}
 
 		if (formData.reward <= 0) {
-			Alert.alert("Error", "Please enter a valid reward amount");
+			Alert.alert("Error", "Please enter an amount to show your appreciation");
 			return;
 		}
 
@@ -65,7 +88,7 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 				{/* Description Input */}
 				<View style={styles.inputContainer}>
 					<Text style={styles.inputLabel}>
-						What proof is required? <Text style={styles.required}>*</Text>
+						What do you need help with? <Text style={styles.required}>*</Text>
 					</Text>
 					<TextInput
 						style={[styles.textInput, styles.textArea]}
@@ -73,7 +96,7 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 						onChangeText={(text) =>
 							setFormData({ ...formData, description: text })
 						}
-						placeholder="e.g., Take a photo of your coffee, Write a review, Answer a survey…"
+						placeholder="e.g., Help me move furniture, Pick me up from airport, Buy groceries while you're out..."
 						placeholderTextColor={DesignSystem.colors.text.tertiary}
 						multiline
 						numberOfLines={4}
@@ -81,10 +104,67 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 					/>
 				</View>
 
+				{/* Proof Type Selector */}
+				<View style={styles.inputContainer}>
+					<Text style={styles.inputLabel}>
+						How should they confirm completion?
+					</Text>
+					<View style={styles.proofTypeContainer}>
+						{PROOF_TYPE_OPTIONS.map((option) => (
+							<Pressable
+								key={option.id}
+								style={[
+									styles.proofTypeOption,
+									formData.proofType === option.id &&
+										styles.proofTypeOptionActive,
+								]}
+								onPress={() =>
+									setFormData({ ...formData, proofType: option.id as any })
+								}
+							>
+								<View style={styles.proofTypeOptionContent}>
+									<View style={styles.proofTypeHeader}>
+										<Ionicons
+											name={option.icon}
+											size={20}
+											color={
+												formData.proofType === option.id
+													? DesignSystem.colors.primary[800]
+													: DesignSystem.colors.text.secondary
+											}
+										/>
+										<View style={styles.proofTypeTextContainer}>
+											<Text
+												style={[
+													styles.proofTypeLabel,
+													formData.proofType === option.id &&
+														styles.proofTypeLabelActive,
+												]}
+											>
+												{option.label}
+											</Text>
+											<Text style={styles.proofTypeSubtitle}>
+												{option.subtitle}
+											</Text>
+										</View>
+									</View>
+									{formData.proofType === option.id && (
+										<Ionicons
+											name="checkmark-circle"
+											size={20}
+											color={DesignSystem.colors.primary[800]}
+										/>
+									)}
+								</View>
+							</Pressable>
+						))}
+					</View>
+				</View>
+
 				{/* Reward Input */}
 				<View style={styles.inputContainer}>
 					<Text style={styles.inputLabel}>
-						Reward <Text style={styles.required}>*</Text>
+						Show appreciation <Text style={styles.required}>*</Text>
 					</Text>
 					<View style={styles.amountInputContainer}>
 						<Text style={styles.currencySymbol}>$</Text>
@@ -102,14 +182,14 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 					</View>
 					{formData.reward <= 0 && (
 						<Text style={styles.validationText}>
-							Reward must be greater than zero to create a task
+							A little appreciation goes a long way 💝
 						</Text>
 					)}
 				</View>
 
 				{/* Time Limit */}
 				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>Time Limit</Text>
+					<Text style={styles.inputLabel}>When do you need this done?</Text>
 
 					<View style={styles.timeLimitChips}>
 						{TIME_LIMIT_OPTIONS.map((option) => (
@@ -143,7 +223,7 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 							setSelectedTimeLimit(null);
 							setFormData({ ...formData, deadline: text });
 						}}
-						placeholder="e.g., 24 hours, By tomorrow, etc."
+						placeholder="e.g., By tomorrow evening, whenever works..."
 						placeholderTextColor={DesignSystem.colors.text.tertiary}
 					/>
 				</View>
@@ -159,7 +239,7 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 				disabled={isSubmitDisabled}
 			>
 				<Ionicons
-					name="add-circle"
+					name="heart"
 					size={20}
 					color={
 						isSubmitDisabled
@@ -173,7 +253,7 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 						isSubmitDisabled && styles.submitButtonTextDisabled,
 					]}
 				>
-					Create Task
+					Ask for Help
 				</Text>
 			</Pressable>
 		</View>
@@ -302,5 +382,57 @@ const styles = StyleSheet.create({
 		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.status.error,
 		marginTop: DesignSystem.spacing.xs,
+	},
+
+	// Proof Type Selector Styles
+	proofTypeContainer: {
+		gap: DesignSystem.spacing.md,
+	},
+
+	proofTypeOption: {
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderRadius: DesignSystem.radius.lg,
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.secondary,
+		padding: DesignSystem.spacing.lg,
+	},
+
+	proofTypeOptionActive: {
+		borderColor: DesignSystem.colors.primary[800],
+		backgroundColor:
+			DesignSystem.colors.primary[50] || DesignSystem.colors.surface.elevated,
+	},
+
+	proofTypeOptionContent: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+
+	proofTypeHeader: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: DesignSystem.spacing.md,
+		flex: 1,
+	},
+
+	proofTypeTextContainer: {
+		flex: 1,
+	},
+
+	proofTypeLabel: {
+		...DesignSystem.typography.label.medium,
+		color: DesignSystem.colors.text.primary,
+	},
+
+	proofTypeLabelActive: {
+		color: DesignSystem.colors.primary[800],
+		fontWeight: "600",
+	},
+
+	proofTypeSubtitle: {
+		...DesignSystem.typography.body.small,
+		color: DesignSystem.colors.text.secondary,
+		marginTop: 2,
 	},
 });

@@ -56,11 +56,11 @@ export default function CreateScreen() {
 
 		// Show success and navigate back or stay on create
 		Alert.alert(
-			"Task Created!",
-			`Your task has been created with code: ${code}`,
+			"Help Request Sent! 🙏",
+			`Your request has been shared with code: ${code}`,
 			[
 				{ text: "Share QR", onPress: () => setShowQRModal(true) },
-				{ text: "OK", onPress: () => router.push("/(tabs)/activity") },
+				{ text: "Great!", onPress: () => router.push("/(tabs)/activity") },
 			]
 		);
 	};
@@ -79,7 +79,7 @@ export default function CreateScreen() {
 			<View style={styles.modalOverlay}>
 				<View style={styles.modalContent}>
 					<View style={styles.modalHeader}>
-						<Text style={styles.modalTitle}>Share Task</Text>
+						<Text style={styles.modalTitle}>Share Request</Text>
 						<Pressable onPress={() => setShowQRModal(false)}>
 							<Ionicons
 								name="close"
@@ -97,7 +97,9 @@ export default function CreateScreen() {
 								color={DesignSystem.colors.text.secondary}
 							/>
 						</View>
-						<Text style={styles.qrSubtext}>QR code for task: {taskCode}</Text>
+						<Text style={styles.qrSubtext}>
+							Share this with friends: {taskCode}
+						</Text>
 					</View>
 
 					<Pressable
@@ -117,8 +119,8 @@ export default function CreateScreen() {
 			edges={["top"]}
 		>
 			<SophisticatedHeader
-				title="Start a Task"
-				subtitle="Set proof conditions for payment"
+				title="Ask for Help"
+				subtitle="Get help from friends with fair appreciation"
 				onLogout={handleLogout}
 			/>
 
@@ -137,8 +139,8 @@ export default function CreateScreen() {
 
 					{/* Info Block */}
 					<InfoCard
-						title="Proof Verified"
-						body="Payments are secured with cryptographic verification"
+						title="Secured by Crypto"
+						body="Payments are protected with cryptographic verification"
 						icon="shield-checkmark"
 					/>
 
@@ -152,7 +154,7 @@ export default function CreateScreen() {
 							size={20}
 							color={DesignSystem.colors.text.primary}
 						/>
-						<Text style={styles.shareButtonText}>Share QR</Text>
+						<Text style={styles.shareButtonText}>Share with Friends</Text>
 					</Pressable>
 
 					{/* Bottom Spacer */}

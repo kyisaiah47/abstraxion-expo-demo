@@ -33,4 +33,5 @@ export interface TaskFormData {
 	description: string;
 	reward: number;
 	deadline?: string;
+	proofType?: "text" | "photo" | "zktls";
 }
