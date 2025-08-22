@@ -5,6 +5,8 @@ import {
 	Alert,
 	Text,
 	TouchableOpacity,
+	ScrollView,
+	StyleSheet,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import {
@@ -14,15 +16,10 @@ import {
 import Toast from "react-native-toast-message";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
 import QRScanner from "./qr-scanner";
 import JobCreateSheet from "./create";
-import { styles } from "./dashboard.styles";
-import ProfileRow from "../components/ProfileRow";
-import MetricsRow from "../components/MetricsRow";
-import ActiveJobCard from "../components/ActiveJobCard";
-import BottomActions from "../components/BottomActions";
-import TreasuryStatusCard from "../components/TreasuryStatusCard";
 import { Modalize } from "react-native-modalize";
 import { ContractService, type Job } from "../lib/contractService";
 import {
@@ -237,7 +234,7 @@ export default function DashboardScreen() {
 	// Show loading screen if still connecting
 	if (!data || !client) {
 		return (
-			<SafeAreaView style={styles.safeArea}>
+			<SafeAreaView style={styles.container}>
 				<View
 					style={[
 						styles.container,
@@ -257,7 +254,7 @@ export default function DashboardScreen() {
 	// Show error screen if there's a network error
 	if (error && !loadingJobs) {
 		return (
-			<SafeAreaView style={styles.safeArea}>
+			<SafeAreaView style={styles.container}>
 				<View
 					style={[
 						styles.container,
@@ -293,61 +290,501 @@ export default function DashboardScreen() {
 	}
 
 	return (
-		<SafeAreaView style={styles.safeArea}>
-			<View style={styles.container}>
-				<ProfileRow
-					data={data}
-					copyToClipboard={copyToClipboard}
-					handleLogout={handleLogout}
-					truncateAddress={truncateAddress}
-				/>
-				<MetricsRow
-					loadingJobs={loadingJobs}
-					jobs={jobs}
-					totalEarnings={totalEarnings}
-					userAddress={data?.bech32Address}
-				/>
-				<View style={{ flex: 1, width: "100%" }}>
+		<SafeAreaView style={styles.container}>
+			{/* Header */}
+			<View style={styles.header}>
+				<Text style={styles.headerTitle}>Proof of Work</Text>
+				<View style={styles.headerRight}>
+					<TouchableOpacity
+						style={styles.walletButton}
+						onPress={copyToClipboard}
+					>
+						<Ionicons
+							name="wallet-outline"
+							size={16}
+							color="#666"
+						/>
+						<Text style={styles.walletText}>
+							{truncateAddress(data?.bech32Address)}
+						</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={styles.notificationButton}>
+						<Ionicons
+							name="notifications-outline"
+							size={20}
+							color="#666"
+						/>
+					</TouchableOpacity>
+				</View>
+			</View>
+
+			<ScrollView
+				style={styles.scrollContainer}
+				showsVerticalScrollIndicator={false}
+			>
+				{/* Quick Actions Card */}
+				<View style={styles.card}>
+					<Text style={styles.cardTitle}>Quick Actions</Text>
+					<View style={styles.actionGrid}>
+						<TouchableOpacity
+							style={styles.actionButton}
+							onPress={() => router.push("/jobs")}
+						>
+							<Ionicons
+								name="search-outline"
+								size={24}
+								color="#191919"
+							/>
+							<Text style={styles.actionButtonText}>Find Jobs</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={styles.actionButton}
+							onPress={() => createModalRef.current?.open()}
+						>
+							<Ionicons
+								name="add-circle-outline"
+								size={24}
+								color="#191919"
+							/>
+							<Text style={styles.actionButtonText}>Post Job</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={styles.actionButton}
+							onPress={handleScanQR}
+						>
+							<Ionicons
+								name="qr-code-outline"
+								size={24}
+								color="#191919"
+							/>
+							<Text style={styles.actionButtonText}>Scan QR</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+
+				{/* Earnings Summary Card */}
+				<View style={styles.card}>
+					<Text style={styles.cardTitle}>Earnings Summary</Text>
+					<View style={styles.earningsContent}>
+						<View style={styles.earningsRow}>
+							<Text style={styles.earningsLabel}>Total Earnings</Text>
+							<Text style={styles.earningsValue}>
+								{(totalEarnings / XION_DECIMALS).toFixed(2)} XION
+							</Text>
+						</View>
+						<View style={styles.earningsRow}>
+							<Text style={styles.earningsLabel}>Jobs Completed</Text>
+							<Text style={styles.earningsValue}>
+								{
+									jobs.filter(
+										(job) =>
+											job.freelancer === data?.bech32Address &&
+											job.status === "Completed"
+									).length
+								}
+							</Text>
+						</View>
+						<View style={styles.earningsRow}>
+							<Text style={styles.earningsLabel}>Success Rate</Text>
+							<Text style={styles.earningsValue}>100%</Text>
+						</View>
+					</View>
+				</View>
+
+				{/* Recent Activity Card */}
+				<View style={styles.card}>
+					<View style={styles.cardHeader}>
+						<Text style={styles.cardTitle}>Recent Activity</Text>
+						<TouchableOpacity onPress={() => router.push("/recent-activity")}>
+							<Text style={styles.viewAllText}>View All</Text>
+						</TouchableOpacity>
+					</View>
+
 					{loadingJobs ? (
-						<ActivityIndicator
-							size="large"
-							style={{ marginTop: 40 }}
-						/>
+						<ActivityIndicator style={styles.loading} />
+					) : jobs.length === 0 ? (
+						<View style={styles.emptyState}>
+							<Ionicons
+								name="document-outline"
+								size={32}
+								color="#ccc"
+							/>
+							<Text style={styles.emptyStateText}>No recent activity</Text>
+							<Text style={styles.emptyStateSubtext}>
+								Start by finding or posting a job
+							</Text>
+						</View>
 					) : (
-						<ActiveJobCard
-							activeJob={activeJob}
-							modalRef={modalRef}
-							truncateAddress={truncateAddress}
-							userAddress={data?.bech32Address}
-						/>
+						<View style={styles.activityList}>
+							{jobs.slice(0, 3).map((job, index) => (
+								<View
+									key={job.id}
+									style={styles.activityItem}
+								>
+									<View style={styles.activityIcon}>
+										<Ionicons
+											name={
+												job.status === "Completed"
+													? "checkmark-circle"
+													: "time-outline"
+											}
+											size={20}
+											color={job.status === "Completed" ? "#10B981" : "#F59E0B"}
+										/>
+									</View>
+									<View style={styles.activityContent}>
+										<Text
+											style={styles.activityTitle}
+											numberOfLines={1}
+										>
+											{job.description}
+										</Text>
+										<Text style={styles.activitySubtitle}>
+											{(job.payment / XION_DECIMALS).toFixed(2)} XION •{" "}
+											{job.status}
+										</Text>
+									</View>
+									<Text style={styles.activityTime}>2h ago</Text>
+								</View>
+							))}
+						</View>
 					)}
 				</View>
 
-				<BottomActions
-					handleScanQR={handleScanQR}
-					createModalRef={createModalRef}
-				/>
-				<Modalize
-					ref={modalRef}
-					adjustToContentHeight
-					handlePosition="inside"
-				>
-					<ProofSubmissionSheet
-						job={activeJob}
-						onSubmit={handleSubmitProof}
+				{/* zkTLS Demo Card */}
+				<View style={styles.card}>
+					<Text style={styles.cardTitle}>Verification Demo</Text>
+					<Text style={styles.cardDescription}>
+						Try our cryptographic proof system with real GitHub data
+					</Text>
+					<TouchableOpacity
+						style={styles.demoButton}
+						onPress={() => router.push("/zktls-demo")}
+					>
+						<Ionicons
+							name="shield-checkmark-outline"
+							size={20}
+							color="#191919"
+						/>
+						<Text style={styles.demoButtonText}>Try zkTLS Demo</Text>
+						<Ionicons
+							name="chevron-forward"
+							size={16}
+							color="#666"
+						/>
+					</TouchableOpacity>
+				</View>
+
+				{/* Bottom Spacing */}
+				<View style={styles.bottomSpacing} />
+			</ScrollView>
+
+			{/* Bottom Navigation */}
+			<View style={styles.bottomNav}>
+				<TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
+					<Ionicons
+						name="grid-outline"
+						size={20}
+						color="#191919"
 					/>
-				</Modalize>
-				<Modalize
-					ref={createModalRef}
-					adjustToContentHeight
-					handlePosition="inside"
+					<Text style={[styles.navText, styles.navTextActive]}>Dashboard</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					style={styles.navItem}
+					onPress={() => router.push("/jobs")}
 				>
-					<JobCreateSheet
-						onCreate={handleCreateJob}
-						creating={postingJob}
+					<Ionicons
+						name="briefcase-outline"
+						size={20}
+						color="#666"
 					/>
-				</Modalize>
+					<Text style={styles.navText}>Jobs</Text>
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.navItem}>
+					<Ionicons
+						name="person-outline"
+						size={20}
+						color="#666"
+					/>
+					<Text style={styles.navText}>Profile</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					style={styles.navItem}
+					onPress={handleLogout}
+				>
+					<Ionicons
+						name="menu-outline"
+						size={20}
+						color="#666"
+					/>
+					<Text style={styles.navText}>More</Text>
+				</TouchableOpacity>
 			</View>
+
+			{/* Modals */}
+			<Modalize
+				ref={modalRef}
+				adjustToContentHeight
+				handlePosition="inside"
+			>
+				<ProofSubmissionSheet
+					job={activeJob}
+					onSubmit={handleSubmitProof}
+				/>
+			</Modalize>
+			<Modalize
+				ref={createModalRef}
+				adjustToContentHeight
+				handlePosition="inside"
+			>
+				<JobCreateSheet
+					onCreate={handleCreateJob}
+					creating={postingJob}
+				/>
+			</Modalize>
 		</SafeAreaView>
 	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		backgroundColor: "#ffffff",
+	},
+
+	// Header
+	header: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		paddingHorizontal: 20,
+		paddingVertical: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: "#f0f0f0",
+	},
+	headerTitle: {
+		fontSize: 24,
+		fontWeight: "700",
+		color: "#191919",
+		letterSpacing: -0.5,
+	},
+	headerRight: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 12,
+	},
+	walletButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#f8f9fa",
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 8,
+		gap: 6,
+	},
+	walletText: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#666",
+	},
+	notificationButton: {
+		padding: 8,
+	},
+
+	// Scroll Container
+	scrollContainer: {
+		flex: 1,
+		paddingHorizontal: 20,
+	},
+
+	// Cards
+	card: {
+		backgroundColor: "#ffffff",
+		borderRadius: 12,
+		padding: 20,
+		marginTop: 16,
+		shadowColor: "#000",
+		shadowOpacity: 0.03,
+		shadowRadius: 8,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 2,
+		borderWidth: 1,
+		borderColor: "#f0f0f0",
+	},
+	cardTitle: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: "#191919",
+		marginBottom: 16,
+	},
+	cardHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 16,
+	},
+	cardDescription: {
+		fontSize: 14,
+		color: "#666",
+		lineHeight: 20,
+		marginBottom: 16,
+	},
+	viewAllText: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#191919",
+	},
+
+	// Quick Actions
+	actionGrid: {
+		flexDirection: "row",
+		gap: 12,
+	},
+	actionButton: {
+		flex: 1,
+		alignItems: "center",
+		backgroundColor: "#f8f9fa",
+		paddingVertical: 20,
+		paddingHorizontal: 16,
+		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: "#e1e5e9",
+		gap: 8,
+	},
+	actionButtonText: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#191919",
+		textAlign: "center",
+	},
+
+	// Earnings
+	earningsContent: {
+		gap: 16,
+	},
+	earningsRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	earningsLabel: {
+		fontSize: 14,
+		color: "#666",
+		fontWeight: "400",
+	},
+	earningsValue: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#191919",
+	},
+
+	// Activity List
+	activityList: {
+		gap: 16,
+	},
+	activityItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 12,
+	},
+	activityIcon: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		backgroundColor: "#f8f9fa",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	activityContent: {
+		flex: 1,
+		gap: 2,
+	},
+	activityTitle: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#191919",
+	},
+	activitySubtitle: {
+		fontSize: 13,
+		color: "#666",
+	},
+	activityTime: {
+		fontSize: 12,
+		color: "#999",
+	},
+
+	// Demo Button
+	demoButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#f8f9fa",
+		paddingVertical: 16,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: "#e1e5e9",
+		gap: 8,
+	},
+	demoButtonText: {
+		flex: 1,
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#191919",
+	},
+
+	// Empty State
+	emptyState: {
+		alignItems: "center",
+		paddingVertical: 32,
+		gap: 8,
+	},
+	emptyStateText: {
+		fontSize: 16,
+		fontWeight: "500",
+		color: "#666",
+	},
+	emptyStateSubtext: {
+		fontSize: 14,
+		color: "#999",
+		textAlign: "center",
+	},
+
+	// Loading
+	loading: {
+		paddingVertical: 32,
+	},
+
+	// Bottom Navigation
+	bottomNav: {
+		flexDirection: "row",
+		backgroundColor: "#ffffff",
+		borderTopWidth: 1,
+		borderTopColor: "#f0f0f0",
+		paddingTop: 12,
+		paddingBottom: 28,
+		paddingHorizontal: 20,
+	},
+	navItem: {
+		flex: 1,
+		alignItems: "center",
+		paddingVertical: 8,
+		gap: 4,
+	},
+	navItemActive: {
+		backgroundColor: "#f8f9fa",
+		borderRadius: 8,
+	},
+	navText: {
+		fontSize: 12,
+		fontWeight: "500",
+		color: "#666",
+	},
+	navTextActive: {
+		color: "#191919",
+	},
+
+	// Bottom Spacing
+	bottomSpacing: {
+		height: 20,
+	},
+});
