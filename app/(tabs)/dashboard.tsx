@@ -298,39 +298,34 @@ export default function DashboardScreen() {
 				onCopy={copyToClipboard}
 			/>
 
+			{/* Earnings Summary Subheader - Marketplace layout */}
+			<View style={styles.dashboardSubheaderMarketplaceRow}>
+				<Text style={styles.dashboardSubheaderText}>
+					{
+						jobs.filter(
+							(job) =>
+								job.worker === data?.bech32Address && job.status === "Completed"
+						).length
+					}{" "}
+					completed jobs
+				</Text>
+				<View style={styles.dashboardChip}>
+					<Ionicons
+						name="wallet-outline"
+						size={14}
+						color="#059669"
+						style={{ marginRight: 4 }}
+					/>
+					<Text style={styles.dashboardChipText}>
+						Earnings: {(totalEarnings / XION_DECIMALS).toFixed(2)} XION
+					</Text>
+				</View>
+			</View>
+
 			<ScrollView
 				style={styles.scrollContainer}
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Earnings Summary Card */}
-				<View style={styles.card}>
-					<Text style={styles.cardTitle}>Earnings Summary</Text>
-					<View style={styles.earningsContent}>
-						<View style={styles.earningsRow}>
-							<Text style={styles.earningsLabel}>Total Earnings</Text>
-							<Text style={styles.earningsValue}>
-								{(totalEarnings / XION_DECIMALS).toFixed(2)} XION
-							</Text>
-						</View>
-						<View style={styles.earningsRow}>
-							<Text style={styles.earningsLabel}>Jobs Completed</Text>
-							<Text style={styles.earningsValue}>
-								{
-									jobs.filter(
-										(job) =>
-											job.worker === data?.bech32Address &&
-											job.status === "Completed"
-									).length
-								}
-							</Text>
-						</View>
-						<View style={styles.earningsRow}>
-							<Text style={styles.earningsLabel}>Success Rate</Text>
-							<Text style={styles.earningsValue}>100%</Text>
-						</View>
-					</View>
-				</View>
-
 				{/* Recent Activity Card */}
 				<View style={styles.card}>
 					<View style={styles.cardHeader}>
@@ -413,6 +408,47 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+	dashboardSubheaderMarketplaceRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 12,
+		paddingVertical: 6,
+		marginBottom: 4,
+		backgroundColor: "#fff",
+		paddingHorizontal: 20,
+		borderBottomWidth: 1,
+		borderBottomColor: "#F3F4F6",
+		minHeight: 0,
+		height: undefined,
+	},
+	dashboardSubheaderText: {
+		fontSize: 12,
+		color: "#6B7280",
+		fontWeight: "400",
+		marginBottom: 0,
+		letterSpacing: 0.2,
+		paddingVertical: 0,
+		marginTop: 0,
+		marginLeft: 0,
+		marginRight: 0,
+		minHeight: 0,
+		height: undefined,
+	},
+	dashboardChip: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#F3F4F6",
+		borderRadius: 16,
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		gap: 4,
+	},
+	dashboardChipText: {
+		fontSize: 12,
+		color: "#374151",
+		fontWeight: "500",
+	},
 	container: {
 		flex: 1,
 		backgroundColor: "#ffffff",
