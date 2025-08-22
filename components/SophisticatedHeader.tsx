@@ -11,6 +11,7 @@ interface SophisticatedHeaderProps {
 	subtitle?: string;
 	showBackButton?: boolean;
 	onBackPress?: () => void;
+	onLogout?: () => void;
 	rightAction?: React.ReactNode;
 	variant?: "default" | "transparent" | "minimal";
 }
@@ -20,14 +21,19 @@ export default function SophisticatedHeader({
 	subtitle,
 	showBackButton = false,
 	onBackPress,
+	onLogout,
 	rightAction,
 	variant = "default",
 }: SophisticatedHeaderProps) {
 	const insets = useSafeAreaInsets();
 
 	const handleLogout = () => {
-		// TODO: Implement logout logic
-		router.replace("/");
+		if (onLogout) {
+			onLogout();
+		} else {
+			// Fallback - redirect to home/login
+			router.replace("/");
+		}
 	};
 
 	const handleBack = () => {

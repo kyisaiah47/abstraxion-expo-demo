@@ -1,7 +1,7 @@
 /**
  * Unified zkTLS Proof Experience
- * 
- * Single-page proof generation that combines demo explanation 
+ *
+ * Single-page proof generation that combines demo explanation
  * with actual verification workflow
  */
 
@@ -30,7 +30,8 @@ import TrustFooter from "../components/TrustFooter";
 // Mock job for demo purposes
 const demoJob = {
 	id: 999,
-	description: "Create a landing page for Acme Corp with hero section and contact form",
+	description:
+		"Create a landing page for Acme Corp with hero section and contact form",
 	client: "xion1demoklj43k5j34k5j43k5j34k5j34k5j34k5j34",
 	worker: "xion1worker123456789012345678901234567890123",
 	escrow_amount: { denom: "uxion", amount: "1000000" },
@@ -54,12 +55,42 @@ export default function ZKTLSDemoScreen() {
 	const router = useRouter();
 
 	const templateOptions = [
-		{ key: "landing_page", label: "Landing Page", description: "Business or product landing page", icon: "rocket" as const },
-		{ key: "blog_post", label: "Blog Post", description: "Article or blog content", icon: "document-text" as const },
-		{ key: "portfolio", label: "Portfolio Site", description: "Personal or professional portfolio", icon: "person" as const },
-		{ key: "ecommerce", label: "E-commerce Site", description: "Online store or marketplace", icon: "storefront" as const },
-		{ key: "documentation", label: "Documentation", description: "Technical documentation site", icon: "library" as const },
-		{ key: "custom", label: "Custom Website", description: "Custom website implementation", icon: "code-slash" as const },
+		{
+			key: "landing_page",
+			label: "Landing Page",
+			description: "Business or product landing page",
+			icon: "rocket" as const,
+		},
+		{
+			key: "blog_post",
+			label: "Blog Post",
+			description: "Article or blog content",
+			icon: "document-text" as const,
+		},
+		{
+			key: "portfolio",
+			label: "Portfolio Site",
+			description: "Personal or professional portfolio",
+			icon: "person" as const,
+		},
+		{
+			key: "ecommerce",
+			label: "E-commerce Site",
+			description: "Online store or marketplace",
+			icon: "storefront" as const,
+		},
+		{
+			key: "documentation",
+			label: "Documentation",
+			description: "Technical documentation site",
+			icon: "library" as const,
+		},
+		{
+			key: "custom",
+			label: "Custom Website",
+			description: "Custom website implementation",
+			icon: "code-slash" as const,
+		},
 	];
 
 	const handleTemplateSelect = (templateKey: string) => {
@@ -206,15 +237,20 @@ export default function ZKTLSDemoScreen() {
 					{/* Progress indicator */}
 					<View style={styles.progressContainer}>
 						<View style={styles.progressBar}>
-							<View 
+							<View
 								style={[
-									styles.progressFill, 
-									{ 
-										width: currentStep === "overview" ? "25%" : 
-											   currentStep === "setup" ? "50%" :
-											   currentStep === "verification" ? "75%" : "100%" 
-									}
-								]} 
+									styles.progressFill,
+									{
+										width:
+											currentStep === "overview"
+												? "25%"
+												: currentStep === "setup"
+												? "50%"
+												: currentStep === "verification"
+												? "75%"
+												: "100%",
+									},
+								]}
 							/>
 						</View>
 						<Text style={styles.progressText}>
@@ -253,7 +289,7 @@ export default function ZKTLSDemoScreen() {
 
 							<View style={styles.stepsContainer}>
 								<Text style={styles.sectionTitle}>How it works</Text>
-								
+
 								<StepCard
 									stepNumber={1}
 									title="Complete Website"
@@ -261,7 +297,7 @@ export default function ZKTLSDemoScreen() {
 									icon="code-slash"
 									isActive={false}
 								/>
-								
+
 								<StepCard
 									stepNumber={2}
 									title="Generate Proof"
@@ -269,7 +305,7 @@ export default function ZKTLSDemoScreen() {
 									icon="shield-checkmark"
 									isActive={false}
 								/>
-								
+
 								<StepCard
 									stepNumber={3}
 									title="Release Payment"
@@ -280,7 +316,10 @@ export default function ZKTLSDemoScreen() {
 							</View>
 
 							<Pressable
-								style={[styles.primaryButton, { opacity: isConfigured ? 1 : 0.6 }]}
+								style={[
+									styles.primaryButton,
+									{ opacity: isConfigured ? 1 : 0.6 },
+								]}
 								onPress={() => setCurrentStep("setup")}
 							>
 								<Text style={styles.primaryButtonText}>Start Verification</Text>
@@ -328,7 +367,9 @@ export default function ZKTLSDemoScreen() {
 							</View>
 
 							<View style={styles.section}>
-								<Text style={styles.inputLabel}>Expected Content (Optional)</Text>
+								<Text style={styles.inputLabel}>
+									Expected Content (Optional)
+								</Text>
 								<TextInput
 									style={[styles.textInput, styles.textArea]}
 									placeholder="Describe key elements that should be present..."
@@ -347,9 +388,12 @@ export default function ZKTLSDemoScreen() {
 								>
 									<Text style={styles.secondaryButtonText}>Back</Text>
 								</Pressable>
-								
+
 								<Pressable
-									style={[styles.primaryButton, { opacity: isGeneratingProof ? 0.6 : 1, flex: 1 }]}
+									style={[
+										styles.primaryButton,
+										{ opacity: isGeneratingProof ? 0.6 : 1, flex: 1 },
+									]}
 									onPress={generateProof}
 									disabled={isGeneratingProof}
 								>
@@ -369,28 +413,39 @@ export default function ZKTLSDemoScreen() {
 								body="Complete the verification process to prove your website delivery."
 							/>
 
-							<Pressable style={styles.primaryButton} onPress={openVerificationUrl}>
-								<Ionicons 
-									name="globe" 
-									size={20} 
-									color={DesignSystem.colors.text.inverse} 
+							<Pressable
+								style={styles.primaryButton}
+								onPress={openVerificationUrl}
+							>
+								<Ionicons
+									name="globe"
+									size={20}
+									color={DesignSystem.colors.text.inverse}
 									style={{ marginRight: DesignSystem.spacing.sm }}
 								/>
-								<Text style={styles.primaryButtonText}>Open Verification Page</Text>
+								<Text style={styles.primaryButtonText}>
+									Open Verification Page
+								</Text>
 							</Pressable>
 
-							<Pressable style={styles.secondaryButton} onPress={handleVerificationComplete}>
-								<Ionicons 
-									name="checkmark" 
-									size={20} 
-									color={DesignSystem.colors.primary[700]} 
+							<Pressable
+								style={styles.secondaryButton}
+								onPress={handleVerificationComplete}
+							>
+								<Ionicons
+									name="checkmark"
+									size={20}
+									color={DesignSystem.colors.primary[700]}
 									style={{ marginRight: DesignSystem.spacing.sm }}
 								/>
-								<Text style={styles.secondaryButtonText}>I've Completed Verification</Text>
+								<Text style={styles.secondaryButtonText}>
+									I've Completed Verification
+								</Text>
 							</Pressable>
 
 							<Text style={styles.note}>
-								After completing verification in your browser, return here to finalize.
+								After completing verification in your browser, return here to
+								finalize.
 							</Text>
 						</>
 					)}
@@ -401,15 +456,29 @@ export default function ZKTLSDemoScreen() {
 								title="Proof Generated Successfully"
 								subtitle="Website delivery verified with cryptographic proof"
 								details={[
-									{ icon: "globe", text: "Website Status: Live and accessible" },
-									{ icon: "shield-checkmark", text: "Verification Method: zkTLS Protocol" },
+									{
+										icon: "globe",
+										text: "Website Status: Live and accessible",
+									},
+									{
+										icon: "shield-checkmark",
+										text: "Verification Method: zkTLS Protocol",
+									},
 									{ icon: "lock-closed", text: "Proof Type: Cryptographic" },
-									{ icon: "card", text: "Payment Status: Released automatically" },
+									{
+										icon: "card",
+										text: "Payment Status: Released automatically",
+									},
 								]}
 							/>
 
-							<Pressable style={styles.primaryButton} onPress={resetFlow}>
-								<Text style={styles.primaryButtonText}>Try Another Verification</Text>
+							<Pressable
+								style={styles.primaryButton}
+								onPress={resetFlow}
+							>
+								<Text style={styles.primaryButtonText}>
+									Try Another Verification
+								</Text>
 							</Pressable>
 
 							<TrustFooter />
@@ -419,7 +488,8 @@ export default function ZKTLSDemoScreen() {
 			</ScrollView>
 		</SafeAreaView>
 	);
-}const styles = StyleSheet.create({
+}
+const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: DesignSystem.colors.surface.primary,

@@ -23,6 +23,21 @@ export default function CreateScreen() {
 	const [showQRModal, setShowQRModal] = useState(false);
 	const [taskCode, setTaskCode] = useState("");
 
+	const { logout } =
+		require("@burnt-labs/abstraxion-react-native").useAbstraxionAccount();
+
+	const handleLogout = async () => {
+		try {
+			console.log("Attempting to logout...");
+			await logout();
+			console.log("Logout successful");
+			router.replace("/");
+		} catch (error) {
+			console.error("Logout failed:", error);
+			Alert.alert("Error", "Failed to sign out. Please try again.");
+		}
+	};
+
 	const generateTaskCode = (): string => {
 		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		let result = "";
@@ -104,6 +119,7 @@ export default function CreateScreen() {
 			<SophisticatedHeader
 				title="Start a Task"
 				subtitle="Set proof conditions for payment"
+				onLogout={handleLogout}
 			/>
 
 			<KeyboardAvoidingView

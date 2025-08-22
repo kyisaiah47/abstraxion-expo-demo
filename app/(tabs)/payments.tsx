@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
@@ -11,6 +11,21 @@ import { DesignSystem } from "@/constants/DesignSystem";
 import { Payment } from "@/types/proofpay";
 
 export default function PaymentsScreen() {
+	const { logout } =
+		require("@burnt-labs/abstraxion-react-native").useAbstraxionAccount();
+
+	const handleLogout = async () => {
+		try {
+			console.log("Attempting to logout...");
+			await logout();
+			console.log("Logout successful");
+			router.replace("/");
+		} catch (error) {
+			console.error("Logout failed:", error);
+			Alert.alert("Error", "Failed to sign out. Please try again.");
+		}
+	};
+
 	// Mock data - will be replaced with real data
 	const userBalance = {
 		total: 1250.75,
@@ -68,6 +83,7 @@ export default function PaymentsScreen() {
 			<SophisticatedHeader
 				title="Verified Payments"
 				subtitle="All payments secured by mathematical proof"
+				onLogout={handleLogout}
 			/>
 
 			<ScrollView

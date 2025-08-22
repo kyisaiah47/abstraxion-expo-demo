@@ -1,21 +1,10 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
 import SophisticatedTabBar from "@/components/SophisticatedTabBar";
 import { DesignSystem } from "@/constants/DesignSystem";
 
 export default function TabLayout() {
-	const router = useRouter();
-
-	const handleScanQR = () => {
-		router.push("/qr-scanner");
-	};
-
-	const handlePostJob = () => {
-		router.push("/create");
-	};
-
 	return (
 		<View style={styles.container}>
 			<Tabs

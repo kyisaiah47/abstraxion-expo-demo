@@ -317,6 +317,7 @@ export default function ProofIDScreen() {
 			<SophisticatedHeader
 				title="Proof ID"
 				subtitle="Your proof-backed identity on XION"
+				onLogout={handleLogout}
 			/>
 
 			<ScrollView

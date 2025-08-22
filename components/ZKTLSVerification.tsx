@@ -172,9 +172,9 @@ export function ZKTLSVerification({
 	if (!isConfigured) {
 		return (
 			<InfoCard
-				icon="warning"
+				icon="shield"
 				title="zkTLS Configuration Required"
-				body="Website verification requires Reclaim Protocol setup. Contact your administrator to configure zkTLS verification."
+				body="Website verification requires Reclaim Protocol setup. Contact your administrator to configure zkTLS verification for secure proof generation."
 			/>
 		);
 	}
@@ -261,7 +261,7 @@ export function ZKTLSVerification({
 					<InfoCard
 						icon="checkmark-circle"
 						title="Verification URL Generated"
-						body="Complete the verification process to prove your website delivery."
+						body="Complete the secure verification process to generate cryptographic proof of your website delivery."
 					/>
 
 					<Pressable
@@ -288,13 +288,13 @@ export function ZKTLSVerification({
 							style={{ marginRight: DesignSystem.spacing.sm }}
 						/>
 						<Text style={styles.secondaryButtonText}>
-							I've Completed Verification
+							I&apos;ve Completed Verification
 						</Text>
 					</Pressable>
 
 					<Text style={styles.note}>
-						After completing verification in your browser, return here to
-						finalize the job.
+						After completing secure verification in your browser, return here to
+						finalize proof generation and trigger payment release.
 					</Text>
 				</View>
 			)}
@@ -303,14 +303,14 @@ export function ZKTLSVerification({
 				<View style={styles.content}>
 					<ProofVerifiedCard
 						title="Verification Complete!"
-						subtitle="Your website delivery has been cryptographically verified. Payment should be released automatically."
+						subtitle="Your website delivery has been cryptographically verified. Payment will be released automatically upon confirmation."
 						details={[
 							{ icon: "globe", text: "Website accessibility confirmed" },
 							{
 								icon: "shield-checkmark",
 								text: "Cryptographic proof generated",
 							},
-							{ icon: "card", text: "Payment released automatically" },
+							{ icon: "card", text: "Payment processing automatically" },
 						]}
 					/>
 				</View>
