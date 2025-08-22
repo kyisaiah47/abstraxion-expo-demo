@@ -116,7 +116,7 @@ export default function ZKTLSDemoScreen() {
 							<ThemedText style={styles.subtitle}>
 								Prove you own the GitHub account that delivered the code
 							</ThemedText>
-						</View>{" "}
+						</View>
 						<View style={styles.infoCard}>
 							<ThemedText style={styles.cardTitle}>How it works:</ThemedText>
 							<View style={styles.stepList}>
