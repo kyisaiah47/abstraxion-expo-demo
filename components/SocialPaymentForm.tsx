@@ -6,7 +6,6 @@ import {
 	TextInput,
 	Pressable,
 	Alert,
-	ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DesignSystem } from "@/constants/DesignSystem";
@@ -26,23 +25,23 @@ interface SocialPaymentFormProps {
 const PROOF_TYPE_OPTIONS = [
 	{
 		id: "none" as ProofType,
-		label: "No proof",
-		icon: "heart-outline" as const,
+		icon: "ban" as const,
+		emoji: "🚫",
 	},
 	{
 		id: "text" as ProofType,
-		label: "Text",
 		icon: "chatbubble-outline" as const,
+		emoji: "💬",
 	},
 	{
 		id: "photo" as ProofType,
-		label: "Photo",
 		icon: "camera-outline" as const,
+		emoji: "📸",
 	},
 	{
 		id: "zktls" as ProofType,
-		label: "zkTLS",
 		icon: "shield-checkmark-outline" as const,
+		emoji: "🔒",
 	},
 ];
 
@@ -164,104 +163,106 @@ export default function SocialPaymentForm({
 		!selectedUser || formData.amount <= 0 || !formData.description.trim();
 
 	return (
-		<ScrollView
-			style={styles.container}
-			showsVerticalScrollIndicator={false}
-		>
+		<View style={styles.container}>
 			<View style={styles.formSection}>
-				{/* User Search/Selection */}
-				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>
-						{labels.recipientLabel} <Text style={styles.required}>*</Text>
-					</Text>
+				{/* Horizontal Row: Person Search + Amount */}
+				<View style={styles.horizontalInputRow}>
+					{/* User Search/Selection */}
+					<View style={[styles.inputContainer, styles.personInputContainer]}>
+						<Text style={styles.inputLabel}>
+							{labels.recipientLabel} <Text style={styles.required}>*</Text>
+						</Text>
 
-					{selectedUser ? (
-						<View style={styles.selectedUserContainer}>
-							<View style={styles.selectedUserInfo}>
-								<View style={styles.avatarPlaceholder}>
-									<Text style={styles.avatarText}>
-										{selectedUser.displayName.charAt(0).toUpperCase()}
-									</Text>
+						{selectedUser ? (
+							<View style={styles.selectedUserContainer}>
+								<View style={styles.selectedUserInfo}>
+									<View style={styles.avatarPlaceholder}>
+										<Text style={styles.avatarText}>
+											{selectedUser.displayName.charAt(0).toUpperCase()}
+										</Text>
+									</View>
+									<View style={styles.userTextContainer}>
+										<Text style={styles.selectedUserName}>
+											{selectedUser.displayName}
+										</Text>
+										<Text style={styles.selectedUserUsername}>
+											@{selectedUser.username}
+										</Text>
+									</View>
 								</View>
-								<View style={styles.userTextContainer}>
-									<Text style={styles.selectedUserName}>
-										{selectedUser.displayName}
-									</Text>
-									<Text style={styles.selectedUserUsername}>
-										@{selectedUser.username}
-									</Text>
-								</View>
+								<Pressable
+									onPress={clearSelectedUser}
+									style={styles.clearButton}
+								>
+									<Ionicons
+										name="close-circle"
+										size={20}
+										color={DesignSystem.colors.text.secondary}
+									/>
+								</Pressable>
 							</View>
-							<Pressable
-								onPress={clearSelectedUser}
-								style={styles.clearButton}
-							>
-								<Ionicons
-									name="close-circle"
-									size={24}
-									color={DesignSystem.colors.text.secondary}
+						) : (
+							<>
+								<TextInput
+									style={styles.textInput}
+									value={searchQuery}
+									onChangeText={setSearchQuery}
+									placeholder="Search name or username..."
+									placeholderTextColor={DesignSystem.colors.text.tertiary}
 								/>
-							</Pressable>
-						</View>
-					) : (
-						<>
+
+								{searchResults.length > 0 && (
+									<View style={styles.searchResults}>
+										{searchResults.map((user) => (
+											<Pressable
+												key={user.id}
+												style={styles.searchResultItem}
+												onPress={() => handleUserSelect(user)}
+											>
+												<View style={styles.avatarPlaceholder}>
+													<Text style={styles.avatarText}>
+														{user.displayName.charAt(0).toUpperCase()}
+													</Text>
+												</View>
+												<View style={styles.userTextContainer}>
+													<Text style={styles.userName}>
+														{user.displayName}
+													</Text>
+													<Text style={styles.userUsername}>
+														@{user.username}
+													</Text>
+												</View>
+											</Pressable>
+										))}
+									</View>
+								)}
+							</>
+						)}
+					</View>
+
+					{/* Amount Input */}
+					<View style={[styles.inputContainer, styles.amountInputWrapper]}>
+						<Text style={styles.inputLabel}>
+							{labels.amountLabel} <Text style={styles.required}>*</Text>
+						</Text>
+						<View style={styles.amountInputContainer}>
+							<Text style={styles.currencySymbol}>$</Text>
 							<TextInput
-								style={styles.textInput}
-								value={searchQuery}
-								onChangeText={setSearchQuery}
-								placeholder="Search by name or username..."
+								style={styles.amountInput}
+								value={formData.amount > 0 ? formData.amount.toString() : ""}
+								onChangeText={(text) => {
+									const amount = parseFloat(text) || 0;
+									setFormData((prev) => ({ ...prev, amount }));
+								}}
+								placeholder="0"
 								placeholderTextColor={DesignSystem.colors.text.tertiary}
+								keyboardType="numeric"
 							/>
-
-							{searchResults.length > 0 && (
-								<View style={styles.searchResults}>
-									{searchResults.map((user) => (
-										<Pressable
-											key={user.id}
-											style={styles.searchResultItem}
-											onPress={() => handleUserSelect(user)}
-										>
-											<View style={styles.avatarPlaceholder}>
-												<Text style={styles.avatarText}>
-													{user.displayName.charAt(0).toUpperCase()}
-												</Text>
-											</View>
-											<View style={styles.userTextContainer}>
-												<Text style={styles.userName}>{user.displayName}</Text>
-												<Text style={styles.userUsername}>
-													@{user.username}
-												</Text>
-											</View>
-										</Pressable>
-									))}
-								</View>
-							)}
-						</>
-					)}
-				</View>
-
-				{/* Amount Input */}
-				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>
-						{labels.amountLabel} <Text style={styles.required}>*</Text>
-					</Text>
-					<View style={styles.amountInputContainer}>
-						<Text style={styles.currencySymbol}>$</Text>
-						<TextInput
-							style={styles.amountInput}
-							value={formData.amount > 0 ? formData.amount.toString() : ""}
-							onChangeText={(text) => {
-								const amount = parseFloat(text) || 0;
-								setFormData((prev) => ({ ...prev, amount }));
-							}}
-							placeholder="0.00"
-							placeholderTextColor={DesignSystem.colors.text.tertiary}
-							keyboardType="numeric"
-						/>
+						</View>
 					</View>
 				</View>
 
-				{/* Description Input */}
+				{/* Description Input - Full Width */}
 				<View style={styles.inputContainer}>
 					<Text style={styles.inputLabel}>
 						{labels.descriptionLabel} <Text style={styles.required}>*</Text>
@@ -275,22 +276,22 @@ export default function SocialPaymentForm({
 						placeholder={labels.descriptionPlaceholder}
 						placeholderTextColor={DesignSystem.colors.text.tertiary}
 						multiline
-						numberOfLines={3}
+						numberOfLines={2}
 						textAlignVertical="top"
 					/>
 				</View>
 
-				{/* Proof Type Selector */}
+				{/* Proof Type Selector - Horizontal Icon Radio Buttons */}
 				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>{labels.proofLabel}</Text>
+					<Text style={styles.inputLabel}>Proof:</Text>
 					<View style={styles.proofTypeContainer}>
 						{PROOF_TYPE_OPTIONS.map((option) => (
 							<Pressable
 								key={option.id}
 								style={[
-									styles.proofTypeButton,
+									styles.proofIconButton,
 									formData.proofType === option.id &&
-										styles.proofTypeButtonActive,
+										styles.proofIconButtonActive,
 								]}
 								onPress={() =>
 									setFormData((prev) => ({ ...prev, proofType: option.id }))
@@ -298,12 +299,12 @@ export default function SocialPaymentForm({
 							>
 								<Text
 									style={[
-										styles.proofTypeButtonText,
+										styles.proofIconEmoji,
 										formData.proofType === option.id &&
-											styles.proofTypeButtonTextActive,
+											styles.proofIconEmojiActive,
 									]}
 								>
-									{option.label}
+									{option.emoji}
 								</Text>
 							</Pressable>
 						))}
@@ -338,7 +339,7 @@ export default function SocialPaymentForm({
 					{labels.submitText}
 				</Text>
 			</Pressable>
-		</ScrollView>
+		</View>
 	);
 }
 
@@ -348,8 +349,22 @@ const styles = StyleSheet.create({
 	},
 
 	formSection: {
+		gap: DesignSystem.spacing["2xl"], // More white space between sections
+		marginBottom: DesignSystem.spacing["2xl"],
+	},
+
+	// Horizontal Layout for Person + Amount
+	horizontalInputRow: {
+		flexDirection: "row",
 		gap: DesignSystem.spacing.lg,
-		marginBottom: DesignSystem.spacing.xl,
+	},
+
+	personInputContainer: {
+		flex: 7, // 70% width
+	},
+
+	amountInputWrapper: {
+		flex: 3, // 30% width
 	},
 
 	inputContainer: {
@@ -373,11 +388,11 @@ const styles = StyleSheet.create({
 		borderColor: DesignSystem.colors.border.secondary,
 		...DesignSystem.typography.body.medium,
 		color: DesignSystem.colors.text.primary,
-		minHeight: 44,
+		minHeight: 48, // Slightly smaller for compact design
 	},
 
 	textArea: {
-		minHeight: 80,
+		minHeight: 64, // Reduced from 80 for more compact design
 		textAlignVertical: "top",
 	},
 
@@ -385,12 +400,13 @@ const styles = StyleSheet.create({
 	selectedUserContainer: {
 		backgroundColor: DesignSystem.colors.surface.elevated,
 		borderRadius: DesignSystem.radius.lg,
-		padding: DesignSystem.spacing.lg,
+		padding: DesignSystem.spacing.md, // Reduced padding
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.primary[800],
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "space-between",
+		minHeight: 48,
 	},
 
 	selectedUserInfo: {
@@ -400,17 +416,17 @@ const styles = StyleSheet.create({
 	},
 
 	avatarPlaceholder: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
+		width: 32, // Smaller avatar
+		height: 32,
+		borderRadius: 16,
 		backgroundColor: DesignSystem.colors.primary[800],
 		alignItems: "center",
 		justifyContent: "center",
-		marginRight: DesignSystem.spacing.md,
+		marginRight: DesignSystem.spacing.sm,
 	},
 
 	avatarText: {
-		...DesignSystem.typography.label.medium,
+		...DesignSystem.typography.label.small,
 		color: DesignSystem.colors.text.inverse,
 		fontWeight: "600",
 	},
@@ -422,11 +438,13 @@ const styles = StyleSheet.create({
 	selectedUserName: {
 		...DesignSystem.typography.label.medium,
 		color: DesignSystem.colors.text.primary,
+		fontSize: 14,
 	},
 
 	selectedUserUsername: {
 		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.text.secondary,
+		fontSize: 12,
 	},
 
 	userName: {
@@ -448,93 +466,100 @@ const styles = StyleSheet.create({
 		borderRadius: DesignSystem.radius.lg,
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
-		maxHeight: 200,
+		maxHeight: 160, // Reduced max height
+		position: "absolute",
+		top: "100%",
+		left: 0,
+		right: 0,
+		zIndex: 1000,
+		...DesignSystem.shadows.lg,
 	},
 
 	searchResultItem: {
 		flexDirection: "row",
 		alignItems: "center",
-		padding: DesignSystem.spacing.lg,
+		padding: DesignSystem.spacing.md,
 		borderBottomWidth: 1,
 		borderBottomColor: DesignSystem.colors.border.tertiary,
 	},
 
-	// Amount Input Styles
+	// Amount Input Styles - Venmo-like
 	amountInputContainer: {
 		flexDirection: "row",
 		alignItems: "center",
 		backgroundColor: DesignSystem.colors.surface.elevated,
 		borderRadius: DesignSystem.radius.lg,
-		borderWidth: 1,
+		borderWidth: 2, // Thicker border for prominence
 		borderColor: DesignSystem.colors.border.secondary,
-		paddingHorizontal: DesignSystem.spacing["2xl"],
+		paddingHorizontal: DesignSystem.spacing.lg,
+		minHeight: 48,
 	},
 
 	currencySymbol: {
-		...DesignSystem.typography.body.large,
-		color: DesignSystem.colors.text.secondary,
-		marginRight: DesignSystem.spacing.sm,
+		...DesignSystem.typography.h3, // Large and prominent like Venmo
+		color: DesignSystem.colors.primary[800],
+		marginRight: DesignSystem.spacing.xs,
+		fontWeight: "600",
 	},
 
 	amountInput: {
 		flex: 1,
-		...DesignSystem.typography.body.large,
+		...DesignSystem.typography.h3, // Large amount input like Venmo
 		color: DesignSystem.colors.text.primary,
-		minHeight: 56,
+		fontWeight: "600",
+		textAlign: "left",
 	},
 
-	// Proof Type Selector Styles
+	// Proof Type Selector - Icon Radio Buttons
 	proofTypeContainer: {
 		flexDirection: "row",
-		gap: DesignSystem.spacing.sm,
-		flexWrap: "wrap",
+		gap: DesignSystem.spacing.md,
+		justifyContent: "space-between",
 	},
 
-	proofTypeButton: {
+	proofIconButton: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
 		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.md,
-		borderWidth: 1,
+		borderWidth: 2,
 		borderColor: DesignSystem.colors.border.secondary,
-		paddingVertical: DesignSystem.spacing.sm,
-		paddingHorizontal: DesignSystem.spacing.md,
-		flex: 1,
-		minWidth: 70,
 		alignItems: "center",
+		justifyContent: "center",
+		flex: 1,
 	},
 
-	proofTypeButtonActive: {
+	proofIconButtonActive: {
 		borderColor: DesignSystem.colors.primary[800],
-		backgroundColor: DesignSystem.colors.primary[800],
+		backgroundColor:
+			DesignSystem.colors.primary[50] || DesignSystem.colors.surface.secondary,
+		...DesignSystem.shadows.sm,
 	},
 
-	proofTypeButtonText: {
-		...DesignSystem.typography.label.small,
-		color: DesignSystem.colors.text.primary,
-		fontWeight: "500",
-		textAlign: "center",
+	proofIconEmoji: {
+		fontSize: 20,
 	},
 
-	proofTypeButtonTextActive: {
-		color: DesignSystem.colors.text.inverse,
-		fontWeight: "600",
+	proofIconEmojiActive: {
+		fontSize: 22, // Slightly larger when active
 	},
 
-	// Submit Button Styles
+	// Submit Button Styles - Prominent
 	submitButton: {
 		backgroundColor: DesignSystem.colors.primary[800],
-		borderRadius: DesignSystem.radius.lg,
-		padding: DesignSystem.spacing.lg,
+		borderRadius: DesignSystem.radius.xl,
+		padding: DesignSystem.spacing["2xl"], // Larger padding for prominence
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
 		gap: DesignSystem.spacing.sm,
 		...DesignSystem.shadows.lg,
-		minHeight: 48,
-		marginBottom: DesignSystem.spacing.xl,
+		minHeight: 56, // Taller button
+		marginTop: DesignSystem.spacing.xl,
 	},
 
 	submitButtonText: {
-		...DesignSystem.typography.label.large,
+		...DesignSystem.typography.h4,
 		color: DesignSystem.colors.text.inverse,
 		fontWeight: "600",
 	},

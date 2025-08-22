@@ -96,19 +96,19 @@ const styles = StyleSheet.create({
 	container: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: DesignSystem.spacing["3xl"], // Larger gap between TASK and money group
+		gap: DesignSystem.spacing.xl, // Smaller gap for compact layout
 	},
 
-	// TASK tab (primary)
+	// TASK tab (primary) - made more compact
 	taskTab: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: DesignSystem.spacing.sm,
-		paddingVertical: DesignSystem.spacing.lg,
-		paddingHorizontal: DesignSystem.spacing["2xl"],
+		gap: DesignSystem.spacing.xs,
+		paddingVertical: DesignSystem.spacing.md,
+		paddingHorizontal: DesignSystem.spacing.lg,
 		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.xl,
+		borderRadius: DesignSystem.radius.lg,
 		borderWidth: 2,
 		borderColor: DesignSystem.colors.border.secondary,
 	},
@@ -116,33 +116,33 @@ const styles = StyleSheet.create({
 	taskTabActive: {
 		backgroundColor: DesignSystem.colors.primary[800],
 		borderColor: DesignSystem.colors.primary[800],
-		...DesignSystem.shadows.md,
+		...DesignSystem.shadows.sm,
 	},
 
 	taskTabLabel: {
-		...DesignSystem.typography.h4,
+		...DesignSystem.typography.label.large,
 		color: DesignSystem.colors.text.primary,
 		fontWeight: "700",
-		fontSize: 18,
+		fontSize: 16,
 	},
 
 	taskTabLabelActive: {
 		color: DesignSystem.colors.text.inverse,
 	},
 
-	// Money tabs group
+	// Money tabs group - more compact
 	moneyTabsGroup: {
 		flexDirection: "row",
 		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
+		borderRadius: DesignSystem.radius.md,
 		padding: 2,
-		gap: 2,
+		gap: 1,
 	},
 
 	moneyTab: {
-		paddingVertical: DesignSystem.spacing.md,
-		paddingHorizontal: DesignSystem.spacing.lg,
-		borderRadius: DesignSystem.radius.md,
+		paddingVertical: DesignSystem.spacing.sm,
+		paddingHorizontal: DesignSystem.spacing.md,
+		borderRadius: DesignSystem.radius.sm,
 	},
 
 	moneyTabActive: {
@@ -151,10 +151,10 @@ const styles = StyleSheet.create({
 	},
 
 	moneyTabLabel: {
-		...DesignSystem.typography.label.medium,
+		...DesignSystem.typography.label.small,
 		color: DesignSystem.colors.text.secondary,
 		fontWeight: "600",
-		fontSize: 14,
+		fontSize: 13,
 	},
 
 	moneyTabLabelActive: {

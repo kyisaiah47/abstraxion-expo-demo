@@ -3,7 +3,6 @@ import {
 	View,
 	Text,
 	StyleSheet,
-	ScrollView,
 	KeyboardAvoidingView,
 	Platform,
 	Alert,
@@ -15,7 +14,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SocialPaymentForm from "@/components/SocialPaymentForm";
 import PaymentTabSwitcher from "@/components/PaymentTabSwitcher";
-import InfoCard from "@/components/InfoCard";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { PaymentFormData, PaymentType } from "@/types/proofpay";
 
@@ -115,12 +113,7 @@ export default function CreateScreen() {
 				style={styles.keyboardView}
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 			>
-				<ScrollView
-					style={styles.scrollView}
-					contentContainerStyle={styles.scrollContent}
-					keyboardShouldPersistTaps="handled"
-					showsVerticalScrollIndicator={false}
-				>
+				<View style={styles.content}>
 					{/* Payment Type Tabs */}
 					<PaymentTabSwitcher
 						activeTab={activeTab}
@@ -133,16 +126,16 @@ export default function CreateScreen() {
 						onSubmit={handleSubmit}
 					/>
 
-					{/* Info Block */}
-					<InfoCard
-						title="Secured by Crypto"
-						body="All payments are protected with cryptographic verification on XION"
-						icon="shield-checkmark"
-					/>
-
-					{/* Bottom Spacer */}
-					<View style={styles.bottomSpacer} />
-				</ScrollView>
+					{/* Minimal Crypto Badge at Bottom */}
+					<View style={styles.cryptoBadge}>
+						<Ionicons
+							name="shield-checkmark"
+							size={16}
+							color={DesignSystem.colors.text.secondary}
+						/>
+						<Text style={styles.cryptoBadgeText}>Secured by Crypto</Text>
+					</View>
+				</View>
 			</KeyboardAvoidingView>
 
 			{renderQRModal()}
@@ -160,21 +153,31 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 
-	scrollView: {
+	content: {
 		flex: 1,
-	},
-
-	scrollContent: {
 		paddingHorizontal: DesignSystem.layout.containerPadding,
 		paddingTop: DesignSystem.spacing.xl,
-		gap: DesignSystem.spacing.xl,
+		gap: DesignSystem.spacing["2xl"], // More space between sections
+		justifyContent: "space-between",
 	},
 
-	bottomSpacer: {
-		height: 140, // Space for tab bar
+	// Minimal Crypto Badge
+	cryptoBadge: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: DesignSystem.spacing.xs,
+		paddingVertical: DesignSystem.spacing.sm,
+		marginBottom: DesignSystem.spacing.lg,
 	},
 
-	// Modal Styles
+	cryptoBadgeText: {
+		...DesignSystem.typography.body.small,
+		color: DesignSystem.colors.text.secondary,
+		fontSize: 12,
+	},
+
+	// Modal Styles (unchanged)
 	modalOverlay: {
 		flex: 1,
 		backgroundColor: "rgba(0, 0, 0, 0.5)",
