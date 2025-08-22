@@ -7,6 +7,7 @@ import {
 	TouchableOpacity,
 	ScrollView,
 	StyleSheet,
+	Image,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import {
@@ -293,7 +294,13 @@ export default function DashboardScreen() {
 		<SafeAreaView style={styles.container}>
 			{/* Header */}
 			<View style={styles.header}>
-				<Text style={styles.headerTitle}>Proof of Work</Text>
+				<View style={styles.headerLeft}>
+					<Image
+						source={require("../assets/images/icon-sm.png")}
+						style={{ width: 32, height: 32, borderRadius: 8 }}
+					/>
+					{/* <Text style={styles.headerTitle}>Proof of Work</Text> */}
+				</View>
 				<View style={styles.headerRight}>
 					<TouchableOpacity
 						style={styles.walletButton}
@@ -589,6 +596,11 @@ const styles = StyleSheet.create({
 	},
 	notificationButton: {
 		padding: 8,
+	},
+	headerLeft: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
 	},
 
 	// Scroll Container
