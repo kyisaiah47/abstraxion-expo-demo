@@ -43,11 +43,11 @@ export default function MonochromeTabBar({
 					style={styles.postJobButton}
 					onPress={onPostJob}
 				>
-					<Ionicons
+					{/* <Ionicons
 						name="add"
 						size={18}
 						color="#fff"
-					/>
+					/> */}
 					<Text style={styles.postJobText}>Post Job</Text>
 				</TouchableOpacity>
 			</View>

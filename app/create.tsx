@@ -224,6 +224,7 @@ export default function CreateJobScreen() {
 			<Stack.Screen
 				options={{
 					title: "Post New Job",
+					headerShown: true,
 					headerTitleAlign: "center",
 					headerShadowVisible: false,
 					headerStyle: {
@@ -235,7 +236,9 @@ export default function CreateJobScreen() {
 						color: "#111827",
 					},
 					headerLeft: () => (
-						<TouchableOpacity onPress={() => router.back()}>
+						<TouchableOpacity
+							onPress={() => router.replace("/(tabs)/dashboard")}
+						>
 							<Ionicons
 								name="arrow-back"
 								size={24}
@@ -825,6 +828,22 @@ const styles = StyleSheet.create({
 		gap: 8,
 	},
 	secondaryButtonText: {
+		color: "#6B7280",
+		fontSize: 16,
+		fontWeight: "600",
+	},
+	backButton: {
+		backgroundColor: "#F9FAFB",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		padding: 16,
+		borderRadius: 16,
+		borderWidth: 1,
+		borderColor: "#E5E7EB",
+		gap: 8,
+	},
+	backButtonText: {
 		color: "#6B7280",
 		fontSize: 16,
 		fontWeight: "600",

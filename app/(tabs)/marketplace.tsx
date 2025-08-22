@@ -266,7 +266,7 @@ export default function MarketplaceScreen() {
 		<SafeAreaView style={styles.container}>
 			<View style={styles.content}>
 				<View style={styles.header}>
-					<View style={styles.headerInfo}>
+					<View style={styles.headerInfoRow}>
 						<Text style={styles.subheading}>
 							{loading ? "Loading..." : `${jobs.length} available jobs`}
 						</Text>
@@ -449,8 +449,12 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		marginBottom: 16,
 	},
-	headerInfo: {
+	headerInfoRow: {
 		marginTop: 12,
+		flexDirection: "row",
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 24,
 	},
 	centered: {
 		flex: 1,
