@@ -296,6 +296,7 @@ export default function DashboardScreen() {
 			<PersistentHeader
 				address={data?.bech32Address}
 				onCopy={copyToClipboard}
+				onLogout={handleLogout}
 			/>
 
 			{/* Earnings Summary Subheader - Marketplace layout */}

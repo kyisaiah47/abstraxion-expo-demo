@@ -23,7 +23,7 @@ import Toast from "react-native-toast-message";
 
 export default function MarketplaceScreen() {
 	const router = useRouter();
-	const { data: account } = useAbstraxionAccount();
+	const { data: account, logout } = useAbstraxionAccount();
 	const { client } = useAbstraxionSigningClient();
 
 	const [jobs, setJobs] = useState<Job[]>([]);
@@ -266,7 +266,10 @@ export default function MarketplaceScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			{/* Persistent Header */}
-			<PersistentHeader address={account?.bech32Address} />
+			<PersistentHeader address={account?.bech32Address} onLogout={async () => {
+				await logout();
+				router.replace('/');
+			}} />
 			<View style={styles.content}>
 				{/* Marketplace header row below persistent header */}
 				<View style={styles.header}>

@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 interface PersistentHeaderProps {
 	address?: string;
 	onCopy?: () => void;
+	onLogout?: () => void;
 }
 
 function truncateAddress(address?: string) {
@@ -15,6 +16,7 @@ function truncateAddress(address?: string) {
 export default function PersistentHeader({
 	address,
 	onCopy,
+	onLogout,
 }: PersistentHeaderProps) {
 	return (
 		<View style={styles.header}>
@@ -37,9 +39,9 @@ export default function PersistentHeader({
 					/>
 					<Text style={styles.walletText}>{truncateAddress(address)}</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.notificationButton}>
+				<TouchableOpacity style={styles.notificationButton} onPress={onLogout}>
 					<Ionicons
-						name="notifications-outline"
+						name="log-out-outline"
 						size={20}
 						color="#666"
 					/>

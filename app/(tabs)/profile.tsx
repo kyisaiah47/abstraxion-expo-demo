@@ -28,7 +28,7 @@ export default function ProfileScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			{/* Persistent Header */}
-			<PersistentHeader address={data?.bech32Address} />
+			<PersistentHeader address={data?.bech32Address} onLogout={handleLogout} />
 
 			<View style={styles.content}>
 				{/* Profile Info */}
