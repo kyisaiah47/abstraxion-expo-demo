@@ -6,10 +6,19 @@ import {
 	TextInput,
 	Pressable,
 	Alert,
-	Modal,
+	ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { PaymentFormData, PaymentType, ProofType } from "@/types/proofpay";
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
+import {
+	useSocialOperations,
+	useUserByUsername,
+} from "@/hooks/useSocialContract";
+import { formatXionAmount } from "@/lib/socialContract";
 
 interface SocialPaymentFormProps {
 	paymentType: PaymentType;
@@ -43,37 +52,91 @@ const PROOF_TYPE_OPTIONS = [
 	},
 ];
 
-export default function SocialPaymentForm({
-	paymentType,
-	onSubmit,
-}: SocialPaymentFormProps) {
+export default function SocialPaymentForm(props: SocialPaymentFormProps) {
+	const { paymentType, onSubmit } = props;
 	const [formData, setFormData] = useState<PaymentFormData>({
 		type: paymentType,
 		amount: 0,
 		description: "",
 		proofType: "none",
 	});
-
+	const [recipient, setRecipient] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [feedback, setFeedback] = useState<string | null>(null);
 	const [showProofDropdown, setShowProofDropdown] = useState(false);
+
+	// Wallet and contract hooks
+	const { data: account, isConnected } = useAbstraxionAccount();
+	const { client: signingClient } = useAbstraxionSigningClient();
+	const { sendDirectPayment, createPaymentRequest, createHelpRequest } =
+		useSocialOperations(signingClient);
+	const {
+		user,
+		loading: userLoading,
+		refetch: refetchUser,
+	} = useUserByUsername(recipient);
 
 	// Update form type when prop changes
 	useEffect(() => {
 		setFormData((prev) => ({ ...prev, type: paymentType }));
 	}, [paymentType]);
 
-	const handleSubmit = () => {
-		// Validation
+	// Validate recipient username existence
+	useEffect(() => {
+		if (recipient && /^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
+			refetchUser();
+		}
+	}, [recipient, refetchUser]);
+
+	const handleSubmit = async () => {
+		if (!isConnected || !account?.bech32Address || !signingClient) {
+			Alert.alert("Wallet Not Connected", "Please connect your wallet.");
+			return;
+		}
+		if (!recipient || !/^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
+			Alert.alert("Error", "Enter a valid recipient username.");
+			return;
+		}
+		if (userLoading) {
+			Alert.alert("Checking recipient", "Please wait...");
+			return;
+		}
+		if (!user) {
+			Alert.alert("Error", "Recipient username not found.");
+			return;
+		}
 		if (formData.amount <= 0) {
 			Alert.alert("Error", "Please enter a valid amount");
 			return;
 		}
-
 		if (!formData.description.trim()) {
 			Alert.alert("Error", "Please add a description");
 			return;
 		}
-
-		onSubmit(formData);
+		setLoading(true);
+		setFeedback(null);
+		try {
+			const payload = {
+				to_username: recipient,
+				amount: formatXionAmount(formData.amount),
+				description: formData.description,
+				payment_type: paymentType,
+				proof_type: formData.proofType,
+			};
+			if (paymentType === "send_money") {
+				await sendDirectPayment(account.bech32Address, payload);
+			} else if (paymentType === "request_money") {
+				await createPaymentRequest(account.bech32Address, payload);
+			} else if (paymentType === "request_help") {
+				await createHelpRequest(account.bech32Address, payload);
+			}
+			setFeedback("Transaction submitted successfully!");
+			onSubmit(formData);
+		} catch (err: any) {
+			setFeedback(err?.message || "Transaction failed. Please try again.");
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	const getSubmitButtonText = () => {
@@ -105,18 +168,44 @@ export default function SocialPaymentForm({
 		);
 	};
 
-	const isSubmitDisabled = formData.amount <= 0 || !formData.description.trim();
+	const isSubmitDisabled =
+		!recipient ||
+		!user ||
+		formData.amount <= 0 ||
+		!formData.description.trim() ||
+		loading ||
+		userLoading;
 
 	return (
 		<View style={styles.container}>
-			{/* Username Display - Centered */}
+			{/* Recipient Username Input */}
 			<View style={styles.userSection}>
-				<Text style={styles.userDisplayText}>@username</Text>
+				<TextInput
+					style={styles.userDisplayText}
+					value={recipient}
+					onChangeText={setRecipient}
+					placeholder="Recipient username"
+					placeholderTextColor="#999"
+					autoCapitalize="none"
+					autoCorrect={false}
+					editable={!loading}
+				/>
+				{userLoading && (
+					<Text style={{ color: "#666", marginTop: 4 }}>
+						Checking username...
+					</Text>
+				)}
+				{recipient && !userLoading && !user && (
+					<Text style={{ color: "#ff6b6b", marginTop: 4 }}>User not found</Text>
+				)}
+				{recipient && !userLoading && user && (
+					<Text style={{ color: "#4caf50", marginTop: 4 }}>User found</Text>
+				)}
 			</View>
 
 			{/* Amount Display */}
 			<View style={styles.amountSection}>
-				<Text style={styles.currencySymbol}>$</Text>
+				<Text style={styles.currencySymbol}>Ξ</Text>
 				<TextInput
 					style={styles.amountInput}
 					value={formData.amount > 0 ? formData.amount.toString() : ""}
@@ -127,6 +216,7 @@ export default function SocialPaymentForm({
 					placeholder="0"
 					placeholderTextColor="#ccc"
 					keyboardType="numeric"
+					editable={!loading}
 				/>
 			</View>
 
@@ -135,6 +225,7 @@ export default function SocialPaymentForm({
 				<Pressable
 					style={styles.proofChipButton}
 					onPress={() => setShowProofDropdown(!showProofDropdown)}
+					disabled={loading}
 				>
 					<Ionicons
 						name={getSelectedProofType().icon as any}
@@ -172,7 +263,7 @@ export default function SocialPaymentForm({
 									}
 									setShowProofDropdown(false);
 								}}
-								disabled={option.disabled}
+								disabled={option.disabled || loading}
 							>
 								<Ionicons
 									name={option.icon as any}
@@ -205,6 +296,7 @@ export default function SocialPaymentForm({
 					placeholderTextColor="#999"
 					multiline
 					textAlign="center"
+					editable={!loading}
 				/>
 			</View>
 
@@ -217,8 +309,23 @@ export default function SocialPaymentForm({
 				onPress={handleSubmit}
 				disabled={isSubmitDisabled}
 			>
-				<Text style={styles.actionButtonText}>{getSubmitButtonText()}</Text>
+				{loading ? (
+					<ActivityIndicator color="#fff" />
+				) : (
+					<Text style={styles.actionButtonText}>{getSubmitButtonText()}</Text>
+				)}
 			</Pressable>
+			{feedback && (
+				<Text
+					style={{
+						color: feedback.includes("success") ? "#4caf50" : "#ff6b6b",
+						marginTop: 12,
+						textAlign: "center",
+					}}
+				>
+					{feedback}
+				</Text>
+			)}
 		</View>
 	);
 }
