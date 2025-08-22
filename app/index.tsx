@@ -62,7 +62,7 @@ export default function OnboardingScreen() {
 
 	useEffect(() => {
 		if (isConnected) {
-			router.replace("/dashboard");
+			router.replace("/(tabs)/dashboard");
 		}
 	}, [isConnected, router]);
 

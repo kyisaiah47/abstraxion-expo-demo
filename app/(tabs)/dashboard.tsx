@@ -19,15 +19,15 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
-import QRScanner from "./qr-scanner";
-import JobCreateSheet from "./create";
+import QRScanner from "../qr-scanner";
+import JobCreateSheet from "../create";
 import { Modalize } from "react-native-modalize";
-import { ContractService, type Job } from "../lib/contractService";
+import { ContractService, type Job } from "../../lib/contractService";
 import {
 	XION_DECIMALS,
 	CONTRACT_CONFIG,
 	TREASURY_CONFIG,
-} from "../constants/contracts";
+} from "../../constants/contracts";
 
 // Remove the old XION fetch logic and replace with contract service
 type CreateJobInput = {
@@ -296,7 +296,7 @@ export default function DashboardScreen() {
 			<View style={styles.header}>
 				<View style={styles.headerLeft}>
 					<Image
-						source={require("../assets/images/icon-sm.png")}
+						source={require("../../assets/images/icon-sm.png")}
 						style={{ width: 32, height: 32, borderRadius: 8 }}
 					/>
 					{/* <Text style={styles.headerTitle}>Proof of Work</Text> */}
@@ -335,7 +335,7 @@ export default function DashboardScreen() {
 					<View style={styles.actionGrid}>
 						<TouchableOpacity
 							style={styles.actionButton}
-							onPress={() => router.push("/marketplace")}
+							onPress={() => router.push("/(tabs)/jobs")}
 						>
 							<Ionicons
 								name="search-outline"
@@ -385,7 +385,7 @@ export default function DashboardScreen() {
 								{
 									jobs.filter(
 										(job) =>
-											job.freelancer === data?.bech32Address &&
+											job.worker === data?.bech32Address &&
 											job.status === "Completed"
 									).length
 								}
@@ -402,7 +402,9 @@ export default function DashboardScreen() {
 				<View style={styles.card}>
 					<View style={styles.cardHeader}>
 						<Text style={styles.cardTitle}>Recent Activity</Text>
-						<TouchableOpacity onPress={() => router.push("/recent-activity")}>
+						<TouchableOpacity
+							onPress={() => router.push("/(tabs)/recent-activity")}
+						>
 							<Text style={styles.viewAllText}>View All</Text>
 						</TouchableOpacity>
 					</View>
@@ -447,8 +449,10 @@ export default function DashboardScreen() {
 											{job.description}
 										</Text>
 										<Text style={styles.activitySubtitle}>
-											{(job.payment / XION_DECIMALS).toFixed(2)} XION •{" "}
-											{job.status}
+											{(
+												parseInt(job.escrow_amount.amount) / XION_DECIMALS
+											).toFixed(2)}{" "}
+											XION • {job.status}
 										</Text>
 									</View>
 									<Text style={styles.activityTime}>2h ago</Text>
@@ -485,48 +489,6 @@ export default function DashboardScreen() {
 				{/* Bottom Spacing */}
 				<View style={styles.bottomSpacing} />
 			</ScrollView>
-
-			{/* Bottom Navigation */}
-			<View style={styles.bottomNav}>
-				<TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-					<Ionicons
-						name="grid-outline"
-						size={20}
-						color="#191919"
-					/>
-					<Text style={[styles.navText, styles.navTextActive]}>Dashboard</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					style={styles.navItem}
-					onPress={() => router.push("/jobs")}
-				>
-					<Ionicons
-						name="briefcase-outline"
-						size={20}
-						color="#666"
-					/>
-					<Text style={styles.navText}>Jobs</Text>
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.navItem}>
-					<Ionicons
-						name="person-outline"
-						size={20}
-						color="#666"
-					/>
-					<Text style={styles.navText}>Profile</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					style={styles.navItem}
-					onPress={handleLogout}
-				>
-					<Ionicons
-						name="menu-outline"
-						size={20}
-						color="#666"
-					/>
-					<Text style={styles.navText}>More</Text>
-				</TouchableOpacity>
-			</View>
 
 			{/* Modals */}
 			<Modalize
@@ -757,37 +719,8 @@ const styles = StyleSheet.create({
 		paddingVertical: 32,
 	},
 
-	// Bottom Navigation
-	bottomNav: {
-		flexDirection: "row",
-		backgroundColor: "#ffffff",
-		borderTopWidth: 1,
-		borderTopColor: "#f0f0f0",
-		paddingTop: 12,
-		paddingBottom: 28,
-		paddingHorizontal: 20,
-	},
-	navItem: {
-		flex: 1,
-		alignItems: "center",
-		paddingVertical: 8,
-		gap: 4,
-	},
-	navItemActive: {
-		backgroundColor: "#f8f9fa",
-		borderRadius: 8,
-	},
-	navText: {
-		fontSize: 12,
-		fontWeight: "500",
-		color: "#666",
-	},
-	navTextActive: {
-		color: "#191919",
-	},
-
 	// Bottom Spacing
 	bottomSpacing: {
-		height: 20,
+		height: 120, // Increased for two-row navigation
 	},
 });

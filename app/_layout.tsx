@@ -65,7 +65,21 @@ export default function RootLayout() {
 							screenOptions={{
 								headerShown: false, // Hide headers for all screens
 							}}
-						></Stack>
+						>
+							<Stack.Screen name="index" />
+							<Stack.Screen
+								name="(tabs)"
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="create"
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
+								name="marketplace"
+								options={{ headerShown: false }}
+							/>
+						</Stack>
 						<StatusBar style="auto" />
 					</ThemeProvider>
 				</AbstraxionProvider>

@@ -7,8 +7,9 @@ import {
 	TextInput,
 	ScrollView,
 } from "react-native";
-import { type Job, ContractService } from "../../../lib/contractService";
-import ZKTLSVerification from "../../../components/ZKTLSVerification";
+import { type Job, ContractService } from "../../../../lib/contractService";
+import ZKTLSVerification from "../../../../components/ZKTLSVerification";
+// ...existing code...
 
 interface ProofSubmissionSheetProps {
 	job: Job | null;
