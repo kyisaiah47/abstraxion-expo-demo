@@ -6,6 +6,7 @@ import SophisticatedHeader from "@/components/SophisticatedHeader";
 import BalanceCard from "@/components/BalanceCard";
 import PaymentRow from "@/components/PaymentRow";
 import InfoCard from "@/components/InfoCard";
+import TrustFooter from "@/components/TrustFooter";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { Payment } from "@/types/proofpay";
 
@@ -53,8 +54,8 @@ export default function PaymentsScreen() {
 
 	const renderEmptyState = () => (
 		<InfoCard
-			title="No Proof, No Payment"
-			body="Mathematical verification eliminates payment disputes. Every task completion is cryptographically verified."
+			title="No proofs yet"
+			body="Start a task and your first cryptographic payment will appear here."
 			icon="shield-checkmark"
 		/>
 	);
@@ -66,7 +67,7 @@ export default function PaymentsScreen() {
 		>
 			<SophisticatedHeader
 				title="Verified Payments"
-				subtitle="Your cryptographically secured transactions"
+				subtitle="All payments secured by mathematical proof"
 			/>
 
 			<ScrollView
@@ -105,6 +106,9 @@ export default function PaymentsScreen() {
 						renderEmptyState()
 					)}
 				</View>
+
+				{/* Trust Footer */}
+				<TrustFooter />
 
 				{/* Bottom Spacer */}
 				<View style={styles.bottomSpacer} />

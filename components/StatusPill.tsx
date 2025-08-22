@@ -21,13 +21,13 @@ export default function StatusPill({ status }: StatusPillProps) {
 				return {
 					color: DesignSystem.colors.status.warning,
 					backgroundColor: DesignSystem.colors.status.warning + "20",
-					icon: "time" as keyof typeof Ionicons.glyphMap,
+					icon: "shield-outline" as keyof typeof Ionicons.glyphMap,
 				};
 			case "Payment Sent":
 				return {
 					color: DesignSystem.colors.text.secondary,
 					backgroundColor: DesignSystem.colors.surface.tertiary,
-					icon: "arrow-up" as keyof typeof Ionicons.glyphMap,
+					icon: "paper-plane" as keyof typeof Ionicons.glyphMap,
 				};
 			default:
 				return {

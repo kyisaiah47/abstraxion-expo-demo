@@ -28,15 +28,32 @@ export default function AddressChip({
 	const formatActiveSince = (date?: Date) => {
 		if (!date) return "Proof ID active since Jan 2024";
 
-		const month = date.toLocaleDateString("en-US", { month: "short" });
-		const year = date.getFullYear();
-		return `Proof ID active since ${month} ${year}`;
+		const now = new Date();
+		const diffMs = now.getTime() - date.getTime();
+		const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+		const diffMonths = Math.floor(diffDays / 30);
+		const diffYears = Math.floor(diffMonths / 12);
+
+		if (diffYears > 0) {
+			const remainingMonths = diffMonths % 12;
+			if (remainingMonths > 0) {
+				return `Member for ${diffYears} yr ${remainingMonths} mo`;
+			}
+			return `Member for ${diffYears} yr`;
+		} else if (diffMonths > 0) {
+			return `Member for ${diffMonths} mo`;
+		} else if (diffDays > 0) {
+			return `Member for ${diffDays} days`;
+		} else {
+			return "New member";
+		}
 	};
 
 	const handleCopy = async () => {
 		try {
 			await Clipboard.setStringAsync(address);
-			Alert.alert("Copied", "Address copied to clipboard");
+			// TODO: Replace with proper toast component
+			Alert.alert("Copied!", "Address copied to clipboard");
 			onCopy?.();
 		} catch (error) {
 			console.error("Failed to copy address:", error);
@@ -67,6 +84,11 @@ export default function AddressChip({
 				</Pressable>
 
 				<View style={[styles.chainBadge, isLarge && styles.chainBadgeLarge]}>
+					<Ionicons
+						name="shield-checkmark"
+						size={isLarge ? 14 : 12}
+						color={DesignSystem.colors.text.inverse}
+					/>
 					<Text style={[styles.chainText, isLarge && styles.chainTextLarge]}>
 						{chain}
 					</Text>
@@ -125,6 +147,9 @@ const styles = StyleSheet.create({
 		paddingHorizontal: DesignSystem.spacing.md,
 		paddingVertical: DesignSystem.spacing.xs,
 		borderRadius: DesignSystem.radius.md,
+		flexDirection: "row",
+		alignItems: "center",
+		gap: DesignSystem.spacing.xs,
 	},
 
 	chainBadgeLarge: {

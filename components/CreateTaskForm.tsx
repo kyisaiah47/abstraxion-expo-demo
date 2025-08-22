@@ -57,6 +57,8 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 		setFormData({ ...formData, deadline: value });
 	};
 
+	const isSubmitDisabled = !formData.description.trim() || formData.reward <= 0;
+
 	return (
 		<View style={styles.container}>
 			<View style={styles.formSection}>
@@ -98,6 +100,11 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 							keyboardType="numeric"
 						/>
 					</View>
+					{formData.reward <= 0 && (
+						<Text style={styles.validationText}>
+							Reward must be greater than zero to create a task
+						</Text>
+					)}
 				</View>
 
 				{/* Time Limit */}
@@ -144,15 +151,30 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 
 			{/* Submit Button */}
 			<Pressable
-				style={styles.submitButton}
+				style={[
+					styles.submitButton,
+					isSubmitDisabled && styles.submitButtonDisabled,
+				]}
 				onPress={handleSubmit}
+				disabled={isSubmitDisabled}
 			>
 				<Ionicons
 					name="add-circle"
 					size={20}
-					color={DesignSystem.colors.text.inverse}
+					color={
+						isSubmitDisabled
+							? DesignSystem.colors.text.tertiary
+							: DesignSystem.colors.text.inverse
+					}
 				/>
-				<Text style={styles.submitButtonText}>Create Task</Text>
+				<Text
+					style={[
+						styles.submitButtonText,
+						isSubmitDisabled && styles.submitButtonTextDisabled,
+					]}
+				>
+					Create Task
+				</Text>
 			</Pressable>
 		</View>
 	);
@@ -264,5 +286,21 @@ const styles = StyleSheet.create({
 		...DesignSystem.typography.label.large,
 		color: DesignSystem.colors.text.inverse,
 		fontWeight: "600",
+	},
+
+	submitButtonDisabled: {
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.secondary,
+	},
+
+	submitButtonTextDisabled: {
+		color: DesignSystem.colors.text.tertiary,
+	},
+
+	validationText: {
+		...DesignSystem.typography.body.small,
+		color: DesignSystem.colors.status.error,
+		marginTop: DesignSystem.spacing.xs,
 	},
 });

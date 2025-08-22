@@ -25,15 +25,15 @@ export default function TabLayout() {
 				}}
 			>
 				<Tabs.Screen
-					name="create"
-					options={{
-						title: "Create",
-					}}
-				/>
-				<Tabs.Screen
 					name="activity"
 					options={{
 						title: "Payments",
+					}}
+				/>
+				<Tabs.Screen
+					name="create"
+					options={{
+						title: "Create",
 					}}
 				/>
 				<Tabs.Screen
