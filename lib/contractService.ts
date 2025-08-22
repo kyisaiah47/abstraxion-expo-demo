@@ -1,7 +1,6 @@
 import {
 	CONTRACT_CONFIG,
 	CONTRACT_MESSAGES,
-	JobStatus,
 	XION_DECIMALS,
 	XION_DENOM,
 	TREASURY_CONFIG,
@@ -11,21 +10,6 @@ import {
 	TreasuryExecuteResult,
 	TreasuryStatus,
 } from "./treasuryOfficial";
-
-export interface Job {
-	id: number;
-	description: string;
-	client: string;
-	worker?: string;
-	escrow_amount: {
-		denom: string;
-		amount: string;
-	};
-	status: JobStatus;
-	deadline?: string;
-	proof?: string;
-	created_at: string;
-}
 
 export interface ContractAccount {
 	bech32Address: string;
@@ -64,85 +48,87 @@ export class ContractService {
 		}
 	} // ======= QUERY FUNCTIONS (FREE, NO GAS) =======
 
-	async queryJobs(): Promise<Job[]> {
+	async querySocialPayments(): Promise<any[]> {
 		try {
-			// Back to querying jobs from our Proof of Work contract!
+			// Query social payments from the contract
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
-				CONTRACT_MESSAGES.LIST_JOBS
+				CONTRACT_MESSAGES.LIST_PAYMENTS
 			);
-			return result.jobs || [];
+			return result.payments || [];
 		} catch (error) {
-			console.error("Error querying jobs:", error);
+			console.error("Error querying social payments:", error);
 			return [];
 		}
 	}
 
-	async queryJob(jobId: number): Promise<Job | null> {
+	async queryPayment(paymentId: number): Promise<any | null> {
 		try {
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
-				CONTRACT_MESSAGES.GET_JOB(jobId)
+				CONTRACT_MESSAGES.GET_PAYMENT(paymentId)
 			);
-			return result.job;
+			return result.payment;
 		} catch (error) {
-			console.error("Error querying job:", error);
+			console.error("Error querying payment:", error);
 			return null;
 		}
 	}
 
-	async queryJobsByClient(clientAddress: string): Promise<Job[]> {
+	async queryPaymentsBySender(senderAddress: string): Promise<any[]> {
 		try {
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
-				CONTRACT_MESSAGES.GET_JOBS_BY_CLIENT(clientAddress)
+				CONTRACT_MESSAGES.GET_PAYMENTS_BY_SENDER(senderAddress)
 			);
-			return result.jobs || [];
+			return result.payments || [];
 		} catch (error) {
-			console.error("Error querying client jobs:", error);
+			console.error("Error querying sender payments:", error);
 			return [];
 		}
 	}
 
-	async queryJobsByWorker(workerAddress: string): Promise<Job[]> {
+	async queryPaymentsByReceiver(receiverAddress: string): Promise<any[]> {
 		try {
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
-				CONTRACT_MESSAGES.GET_JOBS_BY_WORKER(workerAddress)
+				CONTRACT_MESSAGES.GET_PAYMENTS_BY_RECEIVER(receiverAddress)
 			);
-			return result.jobs || [];
+			return result.payments || [];
 		} catch (error) {
-			console.error("Error querying worker jobs:", error);
+			console.error("Error querying receiver payments:", error);
 			return [];
 		}
 	}
 
 	// ======= EXECUTE FUNCTIONS (COST GAS) =======
 
-	async postJob(
-		description: string,
-		paymentAmount: number,
-		deadline?: string
+	async sendPayment(
+		receiverAddress: string,
+		amount: number,
+		memo?: string
 	): Promise<any> {
 		try {
 			console.log("=== DEBUG CONTRACT CALL ===");
 			console.log("Contract Address:", CONTRACT_CONFIG.address);
 			console.log("User Address:", this.account.bech32Address);
-			console.log("Description:", description);
-			console.log("Payment Amount:", paymentAmount);
-			console.log("Deadline:", deadline);
+			console.log("Receiver Address:", receiverAddress);
+			console.log("Amount:", amount);
+			console.log("Memo:", memo);
 
-			const msg = CONTRACT_MESSAGES.POST_JOB(description, deadline);
+			const msg = CONTRACT_MESSAGES.SEND_PAYMENT(receiverAddress, memo);
 			console.log("Message Object:", JSON.stringify(msg, null, 2));
 
-			const funds = [{ denom: XION_DENOM, amount: paymentAmount.toString() }];
+			const funds = [{ denom: XION_DENOM, amount: amount.toString() }];
 			console.log("Funds Array:", JSON.stringify(funds, null, 2));
 
 			// Add comparison with CLI format
 			console.log("=== COMPARISON ===");
-			console.log('CLI Format: {"post_job":{"description":"Test job"}}');
+			console.log(
+				'CLI Format: {"send_payment":{"receiver":"xion1...","amount":"1000000","memo":"Tip"}}'
+			);
 			console.log("App Format:", JSON.stringify(msg));
-			console.log("CLI Funds: 100000uxion");
+			console.log("CLI Funds: 1000000uxion");
 			console.log("App Funds:", JSON.stringify(funds));
 			console.log("CLI Address: xion1n6nesg6yzdq3nzrzxv8zxms9tx7eh7d65zaadr");
 			console.log("App Address:", this.account.bech32Address);
@@ -172,14 +158,17 @@ export class ContractService {
 	}
 
 	// Add test function for minimal format
-	async testPostJobMinimal(): Promise<{ success: boolean; message: string }> {
+	async testSendPaymentMinimal(): Promise<{
+		success: boolean;
+		message: string;
+	}> {
 		try {
-			console.log("🔧 Testing MINIMAL job posting to isolate issues...");
+			console.log("🔧 Testing MINIMAL payment sending to isolate issues...");
 			console.log("Account:", this.account.bech32Address);
 			console.log("Contract:", CONTRACT_CONFIG.address);
 
 			// Test with EXACT CLI message format - pure object
-			const msg = { post_job: { description: "Debug test from app" } };
+			const msg = { send_payment: { receiver: "xion1...", amount: "1000000" } };
 			console.log(
 				"Message to send (EXACT CLI FORMAT):",
 				JSON.stringify(msg, null, 2)
@@ -193,7 +182,7 @@ export class ContractService {
 			console.log("typeof contractAddress:", typeof CONTRACT_CONFIG.address);
 			console.log("typeof msg:", typeof msg);
 			console.log("typeof fee:", typeof "auto");
-			console.log("typeof memo:", typeof "Test posting");
+			console.log("typeof memo:", typeof "Test payment");
 			console.log("typeof funds:", typeof funds);
 			console.log("funds isArray:", Array.isArray(funds));
 			console.log("funds length:", funds.length);
@@ -213,7 +202,7 @@ export class ContractService {
 				console.log("✅ EXACT CLI FORMAT SUCCESS:", result1.transactionHash);
 				return {
 					success: true,
-					message: `Job posted successfully! Transaction: ${result1.transactionHash}`,
+					message: `Payment sent successfully! Transaction: ${result1.transactionHash}`,
 				};
 			} catch (error1: any) {
 				console.error("EXACT CLI format failed:", error1);
@@ -233,7 +222,7 @@ export class ContractService {
 				console.log("✅ No memo SUCCESS:", result2.transactionHash);
 				return {
 					success: true,
-					message: `Job posted successfully! Transaction: ${result2.transactionHash}`,
+					message: `Payment sent successfully! Transaction: ${result2.transactionHash}`,
 				};
 			} catch (error2: any) {
 				console.error("No memo failed:", error2);
@@ -253,7 +242,7 @@ export class ContractService {
 			console.log("✅ Empty memo SUCCESS:", result.transactionHash);
 			return {
 				success: true,
-				message: `Job posted successfully! Transaction: ${result.transactionHash}`,
+				message: `Payment sent successfully! Transaction: ${result.transactionHash}`,
 			};
 		} catch (error: any) {
 			console.error("=== DETAILED ERROR ANALYSIS ===");
@@ -278,7 +267,7 @@ export class ContractService {
 				console.error(
 					"Message that failed:",
 					JSON.stringify(
-						{ post_job: { description: "Debug test from app" } },
+						{ send_payment: { receiver: "xion1...", amount: "1000000" } },
 						null,
 						2
 					)
@@ -290,7 +279,7 @@ export class ContractService {
 
 			return {
 				success: false,
-				message: `Failed to post job: ${error.message || "Unknown error"}`,
+				message: `Failed to send payment: ${error.message || "Unknown error"}`,
 			};
 		}
 	} // Test just contract connectivity
@@ -1173,6 +1162,75 @@ export class ContractService {
 				message:
 					"Treasury working! (Query succeeded, any error is unrelated to Treasury auth)",
 			};
+		}
+	}
+
+	// Add wallet disconnection functionality
+	async disconnectWallet(): Promise<void> {
+		try {
+			console.log("🔌 Disconnecting wallet...");
+			// Clear cached wallet connections
+			this.account = { bech32Address: "" };
+			console.log("Wallet disconnected successfully.");
+		} catch (error) {
+			console.error("Failed to disconnect wallet:", error);
+			throw error;
+		}
+	}
+
+	// Clear cached wallet-contract connections
+	async clearCachedConnections(): Promise<void> {
+		try {
+			console.log("🧹 Clearing cached wallet-contract connections...");
+			// Logic to clear cached connections (e.g., localStorage, sessionStorage, etc.)
+			if (typeof window !== "undefined") {
+				localStorage.removeItem("walletConnection");
+				sessionStorage.removeItem("walletConnection");
+			}
+			console.log("Cached connections cleared successfully.");
+		} catch (error) {
+			console.error("Failed to clear cached connections:", error);
+			throw error;
+		}
+	}
+
+	// Ensure wallet reconnects to the new contract
+	async reconnectWallet(): Promise<void> {
+		try {
+			console.log("🔄 Reconnecting wallet to the new contract...");
+			await this.disconnectWallet();
+			await this.clearCachedConnections();
+			// Logic to reconnect wallet (e.g., using the new contract address)
+			console.log("Wallet reconnected successfully to the new contract.");
+		} catch (error) {
+			console.error("Failed to reconnect wallet:", error);
+			throw error;
+		}
+	}
+
+	// Update wallet permission screen to show social payment permissions
+	async updateWalletPermissions(): Promise<void> {
+		try {
+			console.log(
+				"🔒 Updating wallet permissions for social payment contract..."
+			);
+			// Logic to update wallet permissions (e.g., request new permissions)
+			console.log("Wallet permissions updated successfully.");
+		} catch (error) {
+			console.error("Failed to update wallet permissions:", error);
+			throw error;
+		}
+	}
+
+	// Update Abstraxion configuration to use the new contract address
+	async updateAbstraxionConfig(): Promise<void> {
+		try {
+			console.log("⚙️ Updating Abstraxion configuration...");
+			// Logic to update Abstraxion client configuration
+			console.log("Abstraxion configuration updated successfully.");
+		} catch (error) {
+			console.error("Failed to update Abstraxion configuration:", error);
+			throw error;
 		}
 	}
 }

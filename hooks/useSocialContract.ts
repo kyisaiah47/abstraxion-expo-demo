@@ -1,4 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
+import { SocialPaymentContract, User, Payment } from "../lib/socialContract";
+import {
+	CosmWasmClient,
+	SigningCosmWasmClient,
+} from "@cosmjs/cosmwasm-stargate";
+
+// Ensure EXPO_PUBLIC_RPC_ENDPOINT is defined only once
+const EXPO_PUBLIC_RPC_ENDPOINT = process.env.EXPO_PUBLIC_RPC_ENDPOINT || "";
+
 // Payment detail hook
 export function usePaymentDetail(paymentId: string) {
 	const [payment, setPayment] = useState<Payment | null>(null);
@@ -27,26 +36,16 @@ export function usePaymentDetail(paymentId: string) {
 
 	return { payment, loading, error, refetch: fetch };
 }
-import {
-	SocialPaymentContract,
-	User,
-	Payment,
-	ProofType,
-} from "../lib/socialContract";
-import {
-	CosmWasmClient,
-	SigningCosmWasmClient,
-} from "@cosmjs/cosmwasm-stargate";
 
 // Helper to create a read-only contract instance
 async function getReadClient() {
-	return await CosmWasmClient.connect(XION_RPC_ENDPOINT);
+	return await CosmWasmClient.connect(EXPO_PUBLIC_RPC_ENDPOINT);
 }
 
 // Helper to create a write-enabled contract instance
 export async function getWriteClient(signer: any) {
 	return await SigningCosmWasmClient.connectWithSigner(
-		XION_RPC_ENDPOINT,
+		EXPO_PUBLIC_RPC_ENDPOINT,
 		signer
 	);
 }
@@ -117,11 +116,14 @@ export function useIsUsernameAvailable(username: string) {
 		setLoading(true);
 		setError(null);
 		try {
+			console.log("Checking username availability for:", username);
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
 			const result = await contract.getUser(username);
+			console.log("Contract query result:", result);
 			setAvailable(!result.user);
 		} catch (e: any) {
+			console.error("Error checking username availability:", e.message);
 			setError(e.message);
 			setAvailable(null);
 		} finally {
@@ -247,8 +249,16 @@ export function usePendingPayments(username: string) {
 	return { pending, loading, error, refetch: fetch };
 }
 
-// useSocialOperations: hook for write operations
+// Ensure `signer` is passed correctly to `getContract`
 export function useSocialOperations(signer: any) {
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const getContract = useCallback(async () => {
+		const client = await getWriteClient(signer);
+		return new SocialPaymentContract(client);
+	}, [signer]);
+
 	// Approve payment
 	const approvePayment = useCallback(
 		async (paymentId: string) => {
@@ -298,148 +308,10 @@ export function useSocialOperations(signer: any) {
 		},
 		[getContract, signer]
 	);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	const getContract = useCallback(async () => {
-		const client = await getWriteClient(signer);
-		return new SocialPaymentContract(client);
-	}, [signer]);
-
-	// Each operation returns a function
-	const registerUser = useCallback(
-		async (user: User, sender: string) => {
-			setLoading(true);
-			setError(null);
-			try {
-				const contract = await getContract();
-				return await contract.registerUser(user, sender);
-			} catch (e: any) {
-				setError(e.message);
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[getContract]
-	);
-
-	const sendFriendRequest = useCallback(
-		async (from: string, to_username: string) => {
-			setLoading(true);
-			setError(null);
-			try {
-				const contract = await getContract();
-				return await contract.sendFriendRequest(from, to_username);
-			} catch (e: any) {
-				setError(e.message);
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[getContract]
-	);
-
-	const acceptFriendRequest = useCallback(
-		async (from: string, requester_username: string) => {
-			setLoading(true);
-			setError(null);
-			try {
-				const contract = await getContract();
-				return await contract.acceptFriendRequest(from, requester_username);
-			} catch (e: any) {
-				setError(e.message);
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[getContract]
-	);
-
-	const sendDirectPayment = useCallback(
-		async (from: string, payment: any) => {
-			setLoading(true);
-			setError(null);
-			try {
-				const contract = await getContract();
-				return await contract.sendDirectPayment(from, payment);
-			} catch (e: any) {
-				setError(e.message);
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[getContract]
-	);
-
-	const createPaymentRequest = useCallback(
-		async (from: string, payment: any) => {
-			setLoading(true);
-			setError(null);
-			try {
-				const contract = await getContract();
-				return await contract.createPaymentRequest(from, payment);
-			} catch (e: any) {
-				setError(e.message);
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[getContract]
-	);
-
-	const createHelpRequest = useCallback(
-		async (from: string, payment: any) => {
-			setLoading(true);
-			setError(null);
-			try {
-				const contract = await getContract();
-				return await contract.createHelpRequest(from, payment);
-			} catch (e: any) {
-				setError(e.message);
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[getContract]
-	);
-
-	const submitProof = useCallback(
-		async (
-			from: string,
-			paymentId: string,
-			proof: { type: ProofType; data?: string }
-		) => {
-			setLoading(true);
-			setError(null);
-			try {
-				const contract = await getContract();
-				return await contract.submitProof(from, paymentId, proof);
-			} catch (e: any) {
-				setError(e.message);
-				throw e;
-			} finally {
-				setLoading(false);
-			}
-		},
-		[getContract]
-	);
 
 	return {
 		loading,
 		error,
-		registerUser,
-		sendFriendRequest,
-		acceptFriendRequest,
-		sendDirectPayment,
-		createPaymentRequest,
-		createHelpRequest,
-		submitProof,
 		approvePayment,
 		rejectPayment,
 	};

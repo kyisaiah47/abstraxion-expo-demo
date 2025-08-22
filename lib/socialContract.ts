@@ -4,9 +4,18 @@ import {
 } from "@cosmjs/cosmwasm-stargate";
 
 // RPC endpoint and contract address
-export const XION_RPC_ENDPOINT = "https://testnet-rpc.xion-api.com:443";
+export const EXPO_PUBLIC_RPC_ENDPOINT =
+	process.env.EXPO_PUBLIC_RPC_ENDPOINT ||
+	"https://rpc.xion-testnet-2.burnt.com:443";
+export const EXPO_PUBLIC_REST_ENDPOINT =
+	process.env.EXPO_PUBLIC_REST_ENDPOINT ||
+	"https://api.xion-testnet-2.burnt.com:443";
 export const SOCIAL_CONTRACT_ADDRESS =
 	"xion1gk050spal94tpjw0lvfdkzdm0ef837peh8wy025c74jwy07vwe9q4z0nty";
+
+// Add logging to verify the contract address being used
+console.log("Using contract address:", SOCIAL_CONTRACT_ADDRESS);
+console.log("Environment variables:", process.env);
 
 // User interface
 export interface User {

@@ -31,9 +31,9 @@ const treasuryConfig = {
 	gasPrice: "0.001uxion",
 	rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
 	restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
-	callbackUrl: "proof-of-work://",
+	callbackUrl: "proofpay://auth",
 	// Force Abstraxion to use our app's scheme
-	redirectUri: "proof-of-work://auth",
+	redirectUri: "proofpay://auth",
 	// Alternative: use a custom domain if deep links don't work
 	// redirectUri: "https://your-domain.com/auth-callback"
 };

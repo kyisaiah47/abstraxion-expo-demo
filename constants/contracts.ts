@@ -1,6 +1,6 @@
 export const CONTRACT_CONFIG = {
 	// Back to our original Proof of Work contract - Treasury authorization proven working!
-	address: "xion1x9wlxg2xs9ft0h20z7t6rmnexhzwwws3qgkmm2j803rcdr4jrrys4gt6cv", // Proof of Work contract
+	address: "xion1gk050spal94tpjw0lvfdkzdm0ef837peh8wy025c74jwy07vwe9q4z0nty", // Updated to social payment contract
 	rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
 	restUrl: "https://api.xion-testnet-2.burnt.com:443",
 	chainId: "xion-testnet-2",
@@ -28,46 +28,26 @@ export const RECLAIM_CONFIG = {
 };
 
 export const CONTRACT_MESSAGES = {
-	// Proof of Work contract query messages
-	LIST_JOBS: { list_jobs: {} },
-	GET_JOB: (jobId: number) => ({ get_job: { job_id: jobId } }),
-	GET_JOBS_BY_CLIENT: (client: string) => ({ get_jobs_by_client: { client } }),
-	GET_JOBS_BY_WORKER: (worker: string) => ({ get_jobs_by_worker: { worker } }),
-
-	// Proof of Work contract execute messages
-	POST_JOB: (description: string, deadline?: string) => {
-		const msg: any = { post_job: { description } };
-		if (deadline !== null && deadline !== undefined && deadline !== "") {
-			msg.post_job.deadline = deadline;
-		}
-		console.log("Generated POST_JOB message:", JSON.stringify(msg, null, 2));
-		return msg;
-	},
-	POST_JOB_MINIMAL: (description: string) => ({ post_job: { description } }),
-	ACCEPT_JOB: (jobId: number) => ({ accept_job: { job_id: jobId } }),
-	SUBMIT_PROOF: (jobId: number, proof: string) => ({
-		submit_proof: { job_id: jobId, proof },
+	// Social payment contract query messages
+	GET_USER: (username: string) => ({ get_user: { username } }),
+	GET_USER_BY_USERNAME: (username: string) => ({
+		get_user_by_username: { username },
 	}),
-	ACCEPT_PROOF: (jobId: number) => ({ accept_proof: { job_id: jobId } }),
-	REJECT_PROOF: (jobId: number) => ({ reject_proof: { job_id: jobId } }),
-	CANCEL_JOB: (jobId: number) => ({ cancel_job: { job_id: jobId } }),
+	IS_USERNAME_AVAILABLE: (username: string) => ({
+		is_username_available: { username },
+	}),
 
-	// zkTLS integration messages (future contract upgrade)
-	SUBMIT_ZKTLS_PROOF: (
-		jobId: number,
-		proofData: string,
-		reclaimProof: string,
-		deliveryUrl: string
+	// Social payment contract execute messages
+	REGISTER_USER: (
+		username: string,
+		displayName: string,
+		profilePicture: string
 	) => ({
-		submit_zktls_proof: {
-			job_id: jobId,
-			proof_data: proofData,
-			reclaim_proof: reclaimProof,
-			delivery_url: deliveryUrl,
+		register_user: {
+			username,
+			display_name: displayName,
+			profile_picture: profilePicture,
 		},
-	}),
-	VERIFY_ZKTLS_PROOF: (jobId: number) => ({
-		verify_zktls_proof: { job_id: jobId },
 	}),
 };
 

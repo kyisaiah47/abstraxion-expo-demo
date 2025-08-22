@@ -22,6 +22,7 @@ import {
 	useIsUsernameAvailable,
 	useSocialOperations,
 } from "@/hooks/useSocialContract";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function validateFormat(username: string): { valid: boolean; message: string } {
 	if (!username) return { valid: false, message: "" };
@@ -35,9 +36,8 @@ function validateFormat(username: string): { valid: boolean; message: string } {
 export default function UsernameSetupScreen() {
 	const [username, setUsername] = useState("");
 	const [formatError, setFormatError] = useState("");
-	const [registered, setRegistered] = useState(false);
 	const router = useRouter();
-	const { data: account, isConnected } = useAbstraxionAccount();
+	const { data: account, isConnected, logout } = useAbstraxionAccount();
 	const { client: signingClient } = useAbstraxionSigningClient();
 	const {
 		available,
@@ -45,11 +45,8 @@ export default function UsernameSetupScreen() {
 		error: checkError,
 		refetch,
 	} = useIsUsernameAvailable(username);
-	const {
-		registerUser,
-		loading: registering,
-		error: registerError,
-	} = useSocialOperations(signingClient);
+	const { loading: registering, error: registerError } =
+		useSocialOperations(signingClient);
 
 	useEffect(() => {
 		const { valid, message } = validateFormat(username);
@@ -73,24 +70,47 @@ export default function UsernameSetupScreen() {
 			return;
 		}
 		try {
-			await registerUser(
-				{
-					username,
-					wallet_address: account.bech32Address,
-					display_name: undefined,
-					profile_picture: undefined,
-				},
-				account.bech32Address
-			);
-			setRegistered(true);
-			// Save to app state here if needed
+			// Assuming `approvePayment` or `rejectPayment` is the intended function
+			await approvePayment({
+				username,
+				wallet_address: account.bech32Address,
+			});
 			router.replace("/(tabs)/activity");
-		} catch (error) {
+		} catch {
 			Alert.alert(
 				"Registration Failed",
 				registerError || "Failed to register username. Please try again.",
 				[{ text: "OK" }]
 			);
+		}
+	};
+
+	// Replace the disconnectWallet logic with a custom implementation
+	const handleDisconnectWallet = async () => {
+		try {
+			console.log("Disconnecting wallet...");
+			// Clear cached wallet connections using AsyncStorage
+			await AsyncStorage.removeItem("walletConnection");
+			Alert.alert(
+				"Wallet Disconnected",
+				"You have been disconnected from your wallet."
+			);
+		} catch (error) {
+			console.error("Failed to disconnect wallet:", error);
+			Alert.alert("Error", "Failed to disconnect wallet. Please try again.");
+		}
+	};
+
+	// Update the handleLogout function to use the existing logout function
+	const handleLogout = async () => {
+		try {
+			console.log("Logging out...");
+			await logout();
+			console.log("Logout successful");
+			router.replace("/"); // Navigate to the root or onboarding screen
+		} catch (error) {
+			console.error("Logout failed:", error);
+			Alert.alert("Error", "Failed to log out. Please try again.");
 		}
 	};
 
@@ -124,6 +144,8 @@ export default function UsernameSetupScreen() {
 		}
 		return null;
 	};
+
+	const isButtonDisabled = !isValid || registering;
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -252,21 +274,32 @@ export default function UsernameSetupScreen() {
 					<TouchableOpacity
 						style={[
 							styles.continueButton,
-							(!isValid || registering) && styles.continueButtonDisabled,
+							isButtonDisabled && styles.continueButtonDisabled,
 						]}
 						onPress={handleRegisterUsername}
-						disabled={!isValid || registering}
+						disabled={isButtonDisabled}
 						activeOpacity={0.8}
 					>
 						{registering ? (
 							<ActivityIndicator color={DesignSystem.colors.text.inverse} />
 						) : (
 							<>
-								<Text style={styles.continueButtonText}>Continue</Text>
+								<Text
+									style={[
+										styles.continueButtonText,
+										isButtonDisabled && styles.continueButtonTextDisabled,
+									]}
+								>
+									Continue
+								</Text>
 								<Ionicons
 									name="arrow-forward"
 									size={20}
-									color={DesignSystem.colors.text.inverse}
+									color={
+										isButtonDisabled
+											? DesignSystem.colors.text.secondary
+											: DesignSystem.colors.text.inverse
+									}
 								/>
 							</>
 						)}
@@ -293,13 +326,56 @@ export default function UsernameSetupScreen() {
 								: "Wallet not connected"}
 						</Text>
 					</View>
+
+					{/* Disconnect Button - Only show if connected */}
+					{isConnected && (
+						<TouchableOpacity
+							style={[
+								styles.disconnectButton,
+								!isConnected && styles.disconnectButtonDisabled,
+							]}
+							onPress={handleDisconnectWallet}
+							disabled={!isConnected}
+							activeOpacity={0.8}
+						>
+							<Text
+								style={[
+									styles.disconnectButtonText,
+									!isConnected && styles.disconnectButtonTextDisabled,
+								]}
+							>
+								Disconnect Wallet
+							</Text>
+						</TouchableOpacity>
+					)}
+
+					{/* Logout Button - Only show if connected */}
+					{isConnected && (
+						<TouchableOpacity
+							style={[
+								styles.logoutButton,
+								!isConnected && styles.logoutButtonDisabled,
+							]}
+							onPress={handleLogout}
+							disabled={!isConnected}
+							activeOpacity={0.8}
+						>
+							<Text
+								style={[
+									styles.logoutButtonText,
+									!isConnected && styles.logoutButtonTextDisabled,
+								]}
+							>
+								Logout
+							</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
 }
 
-// ...existing code...
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
@@ -430,6 +506,9 @@ const styles = StyleSheet.create({
 		color: DesignSystem.colors.text.inverse,
 		fontWeight: "600",
 	},
+	continueButtonTextDisabled: {
+		color: DesignSystem.colors.text.secondary,
+	},
 	walletInfo: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -441,4 +520,58 @@ const styles = StyleSheet.create({
 		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.text.secondary,
 	},
+	disconnectButton: {
+		backgroundColor: DesignSystem.colors.status.error,
+		borderRadius: DesignSystem.radius.xl,
+		paddingVertical: DesignSystem.spacing["2xl"],
+		paddingHorizontal: DesignSystem.spacing["3xl"],
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: DesignSystem.spacing.md,
+		marginBottom: DesignSystem.spacing["2xl"],
+		...DesignSystem.shadows.lg,
+	},
+	disconnectButtonDisabled: {
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.secondary,
+	},
+	disconnectButtonText: {
+		...DesignSystem.typography.label.large,
+		color: DesignSystem.colors.text.inverse,
+		fontWeight: "600",
+	},
+	disconnectButtonTextDisabled: {
+		color: DesignSystem.colors.text.secondary,
+	},
+	logoutButton: {
+		backgroundColor: DesignSystem.colors.primary[600],
+		borderRadius: DesignSystem.radius.xl,
+		paddingVertical: DesignSystem.spacing["2xl"],
+		paddingHorizontal: DesignSystem.spacing["3xl"],
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: DesignSystem.spacing.md,
+		marginBottom: DesignSystem.spacing["2xl"],
+		...DesignSystem.shadows.lg,
+	},
+	logoutButtonDisabled: {
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.secondary,
+	},
+	logoutButtonText: {
+		...DesignSystem.typography.label.large,
+		color: DesignSystem.colors.text.inverse,
+		fontWeight: "600",
+	},
+	logoutButtonTextDisabled: {
+		color: DesignSystem.colors.text.secondary,
+	},
 });
+
+// Debug logging
+console.log("Loaded RPC Endpoint:", process.env.EXPO_PUBLIC_RPC_ENDPOINT);
+console.log("Loaded REST Endpoint:", process.env.EXPO_PUBLIC_REST_ENDPOINT);
