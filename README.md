@@ -1,128 +1,133 @@
 # Proof of Work - Social Payments Platform
 
-A blockchain-powered social payment app that revolutionizes how friends handle money with built-in verification and accountability.
+# PET-Toolkit: Proof-of-Work Social Payment App
 
-## 🚀 Overview
-
-Proof of Work combines the simplicity of Venmo with the security of blockchain verification. Send payments, request money, and create verifiable tasks with cryptographic proof - all within your social network.
-
-**"Venmo meets mathematics"** - Simple P2P payments with zero-knowledge proof verification for complete transparency.
+A modern social payment app inspired by Venmo, with proof-of-work and blockchain security. Request help, send/request payments, and verify actions with text, photo, or zkTLS proofs. All payments are secured by the XION blockchain.
 
 ## ✨ Key Features
 
 ### 🔄 Three Payment Flows
 
+## 🚀 Features
+
+- **Social Payments:** Request help, send money, or request payments from friends
+- **Proof-of-Work:** Attach proof to payments (None, Text, Photo, zkTLS)
+- **Venmo-Style UI:** Clean, minimal, and intuitive interface
+- **Username Registration:** Onboarding flow for new users with username validation
+- **Tab Navigation:** Switch between Help, Request, and Pay tabs
+- **Blockchain Security:** All transactions are secured by XION blockchain
+- **Crypto Badge:** Subtle badge for blockchain security
+- **Activity Feed:** View recent payment and help activity
+- **Profile Management:** View and edit user profile, wallet, and settings
 - **Task Requests**: "Help me move furniture for $50" - request work with verifiable completion
-- **Payment Requests**: "You owe me $20 for dinner" - request money with optional proof
 - **Direct Payments**: "Thanks for helping!" - send money with optional verification
 
-### 🛡️ Proof Verification System
+## �️ Tech Stack
 
-- **Text Proof**: Simple description of work completed
-- **Photo Proof**: Visual confirmation with image upload
-- **zkTLS Verification**: Advanced cryptographic proof using zero-knowledge protocols
-- **No Proof**: Trust-based payments for close friends
-
-### 👥 Social Network
-
-- Username-based user discovery (@username)
-- Friend requests and management
-- Global user search and connection
-- Blockchain-based identity system
-
-### 🔐 Cryptographic Security
-
-- All transactions secured on XION blockchain
-- Zero-knowledge proofs for maximum privacy
-- Immutable payment history
-- Trustless verification system
-
-## 🛠️ Technical Stack
-
-### Frontend
-
+- **React Native** (Expo)
+- **Expo Router** (tab navigation)
+- **TypeScript**
+- **XION Blockchain** (smart contract integration)
+- **Abstraxion** (wallet authentication)
+- **Custom Design System** (for colors, spacing, typography)
 - **React Native** with Expo Router for cross-platform mobile
-- **TypeScript** for type safety
 - **Tailwind CSS** for styling
-- Native camera and file upload integration
 
-### Blockchain
+## 📁 Folder Structure
 
-- **XION Blockchain** for transactions and smart contracts
-- **XION Dave SDK** for zkTLS and payment processing
-- **Abstraxion** for wallet integration and authentication
-- **IPFS** for decentralized file storage
+```
+app/
+	(tabs)/
+		create.tsx         # Main payment form
+		activity.tsx       # Recent activity feed
+		profile.tsx        # User profile
+	username-setup.tsx   # Username onboarding
+components/
+	SocialPaymentForm.tsx    # Main payment form UI
+	PaymentTabSwitcher.tsx   # Tab navigation
+	...other UI components
+constants/
+	Colors.ts
+	DesignSystem.ts
+hooks/
+	useThemeColor.ts
+android/ios/              # Native project files
+assets/                   # Fonts and images
+```
 
-### Smart Contract Features
-
-- User registration and username management
-- Friend network on-chain storage
-- Payment escrow and release mechanisms
-- Proof verification and validation
-- zkTLS integration for advanced verification
-
-## 📱 User Experience
-
-### Simple Onboarding
-
-1. Connect wallet with Abstraxion
-2. Choose unique @username
 3. Start sending payments and requests
 
 ### Intuitive Payment Flow
 
-1. Select payment type (Task/Request/Payment)
-2. Choose recipient and amount
-3. Add description and proof requirements
-4. Send transaction
+## 📝 Key Screens
 
-### Verification Process
+- **Create Tab:**
 
-1. Recipient completes task/provides proof
-2. Submits verification through app
-3. Payment automatically releases upon approval
-4. Both parties maintain permanent record
+  - Select payment type (Help, Request, Pay)
+  - Enter recipient username (display only, not editable)
+  - Enter amount (inline editable)
+  - Select proof type (None, Text, Photo, zkTLS)
+  - Add description (with tab-specific placeholder)
+  - Submit payment/help request
 
-## 🏆 Hackathon Achievement
+- **Activity Tab:**
 
-**🥇 Checkpoint 1 Winner** - Selected as one of 3 winners from 2000+ participants in XION's "Proof of Concept" hackathon.
+  - View recent payments and help requests
 
-### Problem Solved
+- **Profile Tab:**
 
-Traditional social payments lack accountability and verification, leading to disputes and broken trust. Proof of Work adds cryptographic verification to ensure fair exchanges.
+  - View and edit user profile, wallet address, and settings
+
+- **Username Setup:**
+  - Onboarding for new users with real-time validation
 
 ### Innovation
 
 - First social payment app with integrated zkTLS verification
-- Blockchain-based friend networks with permanent transaction history
-- Three-tier proof system for different trust levels
-- Mobile-first design for mainstream adoption
 
-## 🚀 Getting Started
+## 🛡️ Proof Types
 
-### Prerequisites
+- **None:** No proof required
+- **Text Proof:** Enter a short explanation
+- **Photo Proof:** Attach a photo
+- **zkTLS Proof:** Zero-knowledge proof for advanced verification
 
-- Node.js 18+
-- Expo CLI
-- React Native development environment
-- XION testnet wallet
-
-### Installation
-
-```bash
 # Clone the repository
+
+## � Blockchain Security
+
+All payments and requests are cryptographically secured and recorded on the XION blockchain. The app uses Abstraxion for wallet authentication and smart contract interaction.
 git clone https://github.com/kyisaiah47/proof-of-work.git
-cd proof-of-work
+
+## 🚦 Getting Started
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Start the app:**
+   ```bash
+   npx expo start
+   ```
+3. **Open in Expo Go or simulator:**
+   - Scan the QR code in terminal
+   - Or press `i` for iOS, `a` for Android, `w` for web
 
 # Install dependencies
-npm install
+
+## 🏆 Hackathon Achievement
+
+- **Checkpoint 1 Winner** - Selected as one of 3 winners from 2000+ participants in XION's "Proof of Concept" hackathon.
 
 # Start the development server
-npm start
-```
 
-### Development Setup
+````
+## 📄 License
 
+MIT
+
+
+For questions or contributions, open an issue or pull request on GitHub.
 ```bash
 # Run on iOS simulator
 npm run ios
@@ -132,7 +137,7 @@ npm run android
 
 # Run on web
 npm run web
-```
+````
 
 ## 🔗 Key Integrations
 
