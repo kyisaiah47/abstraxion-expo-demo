@@ -9,12 +9,7 @@ import {
 	Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-	PaymentFormData,
-	PaymentType,
-	ProofType,
-	User,
-} from "@/types/proofpay";
+import { PaymentFormData, PaymentType, ProofType } from "@/types/proofpay";
 
 interface SocialPaymentFormProps {
 	paymentType: PaymentType;
@@ -26,7 +21,7 @@ const PROOF_TYPE_OPTIONS = [
 		id: "none" as ProofType,
 		label: "None",
 		icon: "ban",
-		disabled: true,
+		disabled: false,
 	},
 	{
 		id: "text" as ProofType,
@@ -59,36 +54,15 @@ export default function SocialPaymentForm({
 		proofType: "none",
 	});
 
-	const [selectedUser] = useState<User | null>(null);
 	const [showProofDropdown, setShowProofDropdown] = useState(false);
-	const [showAmountModal, setShowAmountModal] = useState(false);
-	const [cursorVisible, setCursorVisible] = useState(true);
-
-	// Blinking cursor animation
-	useEffect(() => {
-		const interval = setInterval(() => {
-			setCursorVisible((prev) => !prev);
-		}, 500);
-		return () => clearInterval(interval);
-	}, []);
 
 	// Update form type when prop changes
 	useEffect(() => {
 		setFormData((prev) => ({ ...prev, type: paymentType }));
 	}, [paymentType]);
 
-	const formatAmount = (amount: number) => {
-		if (amount === 0) return "$0";
-		return `$${amount.toLocaleString()}`;
-	};
-
 	const handleSubmit = () => {
 		// Validation
-		if (!selectedUser) {
-			Alert.alert("Error", "Please select a recipient");
-			return;
-		}
-
 		if (formData.amount <= 0) {
 			Alert.alert("Error", "Please enter a valid amount");
 			return;
@@ -107,82 +81,116 @@ export default function SocialPaymentForm({
 			case "request_help":
 				return "Ask for Help";
 			case "request_money":
-				return "Request";
+				return "Request Payment";
 			case "send_money":
-				return "Pay";
+				return "Send Payment";
 		}
 	};
 
-	const isSubmitDisabled =
-		!selectedUser || formData.amount <= 0 || !formData.description.trim();
+	const getDescriptionPlaceholder = () => {
+		switch (paymentType) {
+			case "request_help":
+				return "e.g., Help me move furniture, Pick me up from airport...";
+			case "request_money":
+				return "e.g., Dinner we split last night, Concert ticket...";
+			case "send_money":
+				return "e.g., Thanks for dinner, Paying you back...";
+		}
+	};
+
+	const getSelectedProofType = () => {
+		return (
+			PROOF_TYPE_OPTIONS.find((option) => option.id === formData.proofType) ||
+			PROOF_TYPE_OPTIONS[0]
+		);
+	};
+
+	const isSubmitDisabled = formData.amount <= 0 || !formData.description.trim();
 
 	return (
 		<View style={styles.container}>
-			{/* User Avatar Section */}
-			<Pressable
-				style={styles.avatarSection}
-				onPress={() => {}}
-			>
-				<View style={styles.avatarContainer}>
-					{selectedUser ? (
-						<View style={styles.avatar}>
-							<Text style={styles.avatarText}>
-								{selectedUser.displayName.charAt(0).toUpperCase()}
-							</Text>
-						</View>
-					) : (
-						<View style={styles.avatarPlaceholder}>
-							<Ionicons
-								name="camera"
-								size={40}
-								color="#999"
-							/>
-						</View>
-					)}
-					<View style={styles.addIcon}>
-						<Ionicons
-							name="add"
-							size={20}
-							color="#007AFF"
-						/>
-					</View>
-				</View>
-				{selectedUser ? (
-					<Text style={styles.userName}>{selectedUser.displayName}</Text>
-				) : (
-					<Text style={styles.userNamePlaceholder}>Select User</Text>
-				)}
-			</Pressable>
+			{/* Username Display - Centered */}
+			<View style={styles.userSection}>
+				<Text style={styles.userDisplayText}>@username</Text>
+			</View>
 
 			{/* Amount Display */}
-			<Pressable
-				style={styles.amountSection}
-				onPress={() => setShowAmountModal(true)}
-			>
-				<Text style={styles.amountText}>
-					{formatAmount(formData.amount)}
-					{cursorVisible && <Text style={styles.cursor}>|</Text>}
-				</Text>
-			</Pressable>
+			<View style={styles.amountSection}>
+				<Text style={styles.currencySymbol}>$</Text>
+				<TextInput
+					style={styles.amountInput}
+					value={formData.amount > 0 ? formData.amount.toString() : ""}
+					onChangeText={(text) => {
+						const amount = parseFloat(text) || 0;
+						setFormData((prev) => ({ ...prev, amount }));
+					}}
+					placeholder="0"
+					placeholderTextColor="#ccc"
+					keyboardType="numeric"
+				/>
+			</View>
 
-			{/* Proof Type Dropdown */}
+			{/* Proof Type Chip Dropdown */}
 			<View style={styles.proofSection}>
 				<Pressable
-					style={styles.proofDropdownButton}
-					onPress={() => setShowProofDropdown(true)}
+					style={styles.proofChipButton}
+					onPress={() => setShowProofDropdown(!showProofDropdown)}
 				>
 					<Ionicons
-						name="shield-outline"
-						size={20}
-						color="#666"
+						name={getSelectedProofType().icon as any}
+						size={16}
+						color={formData.proofType === "none" ? "#ff6b6b" : "#666"}
 					/>
-					<Text style={styles.proofDropdownText}>Proof type</Text>
+					<Text
+						style={[
+							styles.proofChipText,
+							formData.proofType === "none" && styles.proofChipTextDisabled,
+						]}
+					>
+						{getSelectedProofType().label}
+					</Text>
 					<Ionicons
-						name="chevron-down"
-						size={20}
+						name={showProofDropdown ? "chevron-up" : "chevron-down"}
+						size={16}
 						color="#666"
 					/>
 				</Pressable>
+
+				{/* Dropdown Menu */}
+				{showProofDropdown && (
+					<View style={styles.dropdownMenu}>
+						{PROOF_TYPE_OPTIONS.map((option) => (
+							<Pressable
+								key={option.id}
+								style={[
+									styles.dropdownMenuItem,
+									option.disabled && styles.dropdownMenuItemDisabled,
+								]}
+								onPress={() => {
+									if (!option.disabled) {
+										setFormData((prev) => ({ ...prev, proofType: option.id }));
+									}
+									setShowProofDropdown(false);
+								}}
+								disabled={option.disabled}
+							>
+								<Ionicons
+									name={option.icon as any}
+									size={16}
+									color={option.disabled ? "#ff6b6b" : "#333"}
+								/>
+								<Text
+									style={[
+										styles.dropdownMenuItemText,
+										option.disabled && styles.dropdownMenuItemTextDisabled,
+									]}
+								>
+									{option.label}
+								</Text>
+							</Pressable>
+						))}
+					</View>
+				)}
 			</View>
 
 			{/* Description Input */}
@@ -193,7 +201,7 @@ export default function SocialPaymentForm({
 					onChangeText={(text) =>
 						setFormData((prev) => ({ ...prev, description: text }))
 					}
-					placeholder="What's this for?"
+					placeholder={getDescriptionPlaceholder()}
 					placeholderTextColor="#999"
 					multiline
 					textAlign="center"
@@ -211,83 +219,6 @@ export default function SocialPaymentForm({
 			>
 				<Text style={styles.actionButtonText}>{getSubmitButtonText()}</Text>
 			</Pressable>
-
-			{/* Amount Modal */}
-			<Modal
-				visible={showAmountModal}
-				transparent
-				animationType="slide"
-				onRequestClose={() => setShowAmountModal(false)}
-			>
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>Enter Amount</Text>
-						<TextInput
-							style={styles.amountModalInput}
-							value={formData.amount > 0 ? formData.amount.toString() : ""}
-							onChangeText={(text) => {
-								const amount = parseFloat(text) || 0;
-								setFormData((prev) => ({ ...prev, amount }));
-							}}
-							placeholder="0"
-							keyboardType="numeric"
-							autoFocus
-						/>
-						<Pressable
-							style={styles.modalButton}
-							onPress={() => setShowAmountModal(false)}
-						>
-							<Text style={styles.modalButtonText}>Done</Text>
-						</Pressable>
-					</View>
-				</View>
-			</Modal>
-
-			{/* Proof Dropdown Modal */}
-			<Modal
-				visible={showProofDropdown}
-				transparent
-				animationType="fade"
-				onRequestClose={() => setShowProofDropdown(false)}
-			>
-				<Pressable
-					style={styles.modalOverlay}
-					onPress={() => setShowProofDropdown(false)}
-				>
-					<View style={styles.dropdownContent}>
-						{PROOF_TYPE_OPTIONS.map((option) => (
-							<Pressable
-								key={option.id}
-								style={[
-									styles.dropdownItem,
-									option.disabled && styles.dropdownItemDisabled,
-								]}
-								onPress={() => {
-									if (!option.disabled) {
-										setFormData((prev) => ({ ...prev, proofType: option.id }));
-									}
-									setShowProofDropdown(false);
-								}}
-								disabled={option.disabled}
-							>
-								<Ionicons
-									name={option.icon as any}
-									size={20}
-									color={option.disabled ? "#ff6b6b" : "#333"}
-								/>
-								<Text
-									style={[
-										styles.dropdownItemText,
-										option.disabled && styles.dropdownItemTextDisabled,
-									]}
-								>
-									{option.label}
-								</Text>
-							</Pressable>
-						))}
-					</View>
-				</Pressable>
-			</Modal>
 		</View>
 	);
 }
@@ -298,120 +229,125 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f8f8f8",
 		paddingHorizontal: 20,
 		alignItems: "center",
-		justifyContent: "space-between",
+		justifyContent: "flex-start",
+		paddingTop: 40,
 	},
 
-	// User Avatar Section
-	avatarSection: {
-		alignItems: "center",
-		marginTop: 60,
-	},
-
-	avatarContainer: {
-		position: "relative",
-		marginBottom: 16,
-	},
-
-	avatar: {
-		width: 120,
-		height: 120,
-		borderRadius: 12,
-		backgroundColor: "#007AFF",
+	// User Selection Section - Centered
+	userSection: {
 		alignItems: "center",
 		justifyContent: "center",
+		marginBottom: 40,
+		width: "100%",
 	},
 
-	avatarPlaceholder: {
-		width: 120,
-		height: 120,
-		borderRadius: 12,
-		backgroundColor: "#e0e0e0",
-		alignItems: "center",
-		justifyContent: "center",
-	},
-
-	avatarText: {
-		fontSize: 48,
-		fontWeight: "600",
-		color: "#fff",
-	},
-
-	addIcon: {
-		position: "absolute",
-		top: -5,
-		right: -5,
-		width: 30,
-		height: 30,
-		borderRadius: 15,
-		backgroundColor: "#fff",
-		alignItems: "center",
-		justifyContent: "center",
-		shadowColor: "#000",
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-		shadowOffset: { width: 0, height: 2 },
-	},
-
-	userName: {
-		fontSize: 24,
-		fontWeight: "600",
-		color: "#333",
-	},
-
-	userNamePlaceholder: {
-		fontSize: 24,
-		fontWeight: "600",
+	userDisplayText: {
+		fontSize: 18,
+		fontWeight: "500",
 		color: "#999",
+		textAlign: "center",
 	},
 
 	// Amount Display
 	amountSection: {
+		flexDirection: "row",
 		alignItems: "center",
-		marginVertical: 60,
+		justifyContent: "center",
+		marginBottom: 40,
+		gap: 0,
 	},
 
-	amountText: {
+	currencySymbol: {
+		fontSize: 64,
+		fontWeight: "300",
+		color: "#333",
+	},
+
+	amountInput: {
 		fontSize: 64,
 		fontWeight: "300",
 		color: "#333",
 		textAlign: "center",
+		minWidth: 40,
 	},
 
-	cursor: {
-		fontSize: 64,
-		fontWeight: "300",
-		color: "#007AFF",
-	},
-
-	// Proof Section
+	// Proof Section - Small chip style
 	proofSection: {
-		marginVertical: 60,
-		width: "100%",
+		marginBottom: 40,
+		alignItems: "center",
+		justifyContent: "center",
+		position: "relative",
+		zIndex: 1000,
 	},
 
-	proofDropdownButton: {
+	proofChipButton: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
 		backgroundColor: "#fff",
-		borderRadius: 16,
-		paddingVertical: 16,
-		paddingHorizontal: 20,
+		borderRadius: 20,
+		paddingVertical: 10,
+		paddingHorizontal: 16,
 		borderWidth: 1,
 		borderColor: "#e0e0e0",
-		gap: 8,
+		gap: 6,
+		alignSelf: "center",
 	},
 
-	proofDropdownText: {
-		fontSize: 16,
+	proofChipText: {
+		fontSize: 14,
 		fontWeight: "500",
 		color: "#666",
+	},
+
+	proofChipTextDisabled: {
+		color: "#ff6b6b",
+	},
+
+	// Dropdown Menu Styles
+	dropdownMenu: {
+		position: "absolute",
+		top: 42,
+		backgroundColor: "#fff",
+		borderRadius: 12,
+		paddingVertical: 8,
+		borderWidth: 1,
+		borderColor: "#e0e0e0",
+		shadowColor: "#000",
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 4,
+		minWidth: 150,
+		zIndex: 1001,
+	},
+
+	dropdownMenuItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		gap: 10,
+	},
+
+	dropdownMenuItemDisabled: {
+		opacity: 0.5,
+	},
+
+	dropdownMenuItemText: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#333",
+	},
+
+	dropdownMenuItemTextDisabled: {
+		color: "#ff6b6b",
 	},
 
 	// Description Section
 	descriptionSection: {
 		width: "100%",
-		marginVertical: 60,
+		marginBottom: 40,
 	},
 
 	descriptionInput: {
@@ -423,7 +359,7 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: "#333",
 		textAlign: "center",
-		minHeight: 80,
+		minHeight: 60,
 	},
 
 	// Action Button
@@ -434,7 +370,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 40,
 		width: "100%",
 		alignItems: "center",
-		marginBottom: 60,
+		marginBottom: 40,
 	},
 
 	actionButtonDisabled: {
@@ -447,7 +383,7 @@ const styles = StyleSheet.create({
 		color: "#fff",
 	},
 
-	// Modal Styles
+	// Modal Styles (kept for potential future use)
 	modalOverlay: {
 		flex: 1,
 		backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -496,7 +432,7 @@ const styles = StyleSheet.create({
 		color: "#fff",
 	},
 
-	// Dropdown Styles
+	// Legacy Dropdown Styles (now unused)
 	dropdownContent: {
 		backgroundColor: "#fff",
 		borderRadius: 16,

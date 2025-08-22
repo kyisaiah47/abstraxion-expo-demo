@@ -131,9 +131,11 @@ export default function CreateScreen() {
 						<Ionicons
 							name="shield-checkmark"
 							size={16}
-							color={DesignSystem.colors.text.secondary}
+							color="#666"
 						/>
-						<Text style={styles.cryptoBadgeText}>Secured by Crypto</Text>
+						<Text style={styles.cryptoBadgeText}>
+							Secured by XION blockchain
+						</Text>
 					</View>
 				</View>
 			</KeyboardAvoidingView>
@@ -166,15 +168,15 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: DesignSystem.spacing.xs,
-		paddingVertical: DesignSystem.spacing.sm,
-		marginBottom: DesignSystem.spacing.lg,
+		gap: 6,
+		paddingVertical: 8,
+		marginBottom: 12,
 	},
 
 	cryptoBadgeText: {
-		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
 		fontSize: 12,
+		color: "#666",
+		fontWeight: "400",
 	},
 
 	// Modal Styles (unchanged)
