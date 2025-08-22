@@ -1,620 +1,236 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
-	View,
-	Text,
-	StyleSheet,
-	ScrollView,
-	TextInput,
-	Pressable,
-	KeyboardAvoidingView,
-	Platform,
-	Alert,
-	Share,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import SophisticatedHeader from "@/components/SophisticatedHeader";
-import { DesignSystem } from "@/constants/DesignSystem";
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  Modal,
+  Pressable,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import SophisticatedHeader from '@/components/SophisticatedHeader';
+import CreateTaskForm from '@/components/CreateTaskForm';
+import InfoCard from '@/components/InfoCard';
+import { DesignSystem } from '@/constants/DesignSystem';
+import { TaskFormData } from '@/types/proofpay';
 
-interface TaskFormData {
-	description: string;
-	amount: string;
-	deadline: string;
-}
+export default function CreateScreen() {
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [taskCode, setTaskCode] = useState('');
 
-export default function ProofPayCreate() {
-	const [step, setStep] = useState<"form" | "generated">("form");
-	const [formData, setFormData] = useState<TaskFormData>({
-		description: "",
-		amount: "",
-		deadline: "",
-	});
-	const [taskCode, setTaskCode] = useState("");
+  const generateTaskCode = (): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
 
-	const generateTaskCode = (): string => {
-		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		let result = "";
-		for (let i = 0; i < 8; i++) {
-			result += chars.charAt(Math.floor(Math.random() * chars.length));
-		}
-		return result;
-	};
+  const handleSubmit = (payload: TaskFormData) => {
+    console.log('Creating task:', payload);
+    
+    // Generate task code
+    const code = generateTaskCode();
+    setTaskCode(code);
+    
+    // Show success and navigate back or stay on create
+    Alert.alert(
+      'Task Created!',
+      `Your task has been created with code: ${code}`,
+      [
+        { text: 'Share QR', onPress: () => setShowQRModal(true) },
+        { text: 'OK', onPress: () => router.push('/(tabs)/activity') },
+      ]
+    );
+  };
 
-	const handleSubmit = () => {
-		if (!formData.description.trim() || !formData.amount.trim()) {
-			Alert.alert("Error", "Please fill in all required fields");
-			return;
-		}
+  const handleShareQR = () => {
+    setShowQRModal(true);
+  };
 
-		const amount = parseFloat(formData.amount);
-		if (isNaN(amount) || amount <= 0) {
-			Alert.alert("Error", "Please enter a valid amount");
-			return;
-		}
+  const renderQRModal = () => (
+    <Modal
+      visible={showQRModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowQRModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Share Task</Text>
+            <Pressable onPress={() => setShowQRModal(false)}>
+              <Ionicons name="close" size={24} color={DesignSystem.colors.text.primary} />
+            </Pressable>
+          </View>
+          
+          <View style={styles.qrContainer}>
+            <View style={styles.qrPlaceholder}>
+              <Ionicons name="qr-code" size={80} color={DesignSystem.colors.text.secondary} />
+            </View>
+            <Text style={styles.qrSubtext}>QR code for task: {taskCode}</Text>
+          </View>
+          
+          <Pressable 
+            style={styles.modalButton} 
+            onPress={() => setShowQRModal(false)}
+          >
+            <Text style={styles.modalButtonText}>Close</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
 
-		// Generate task code and move to generated step
-		const code = generateTaskCode();
-		setTaskCode(code);
-		setStep("generated");
-	};
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <SophisticatedHeader
+        title="Start a Task"
+        subtitle="Create a verified payment request"
+      />
 
-	const handleShare = async () => {
-		try {
-			const shareMessage = `Complete this task for $${formData.amount}!\n\n"${formData.description}"\n\nUse code: ${taskCode}\n\nDownload ProofPay to get paid!`;
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Task Creation Form */}
+          <CreateTaskForm onSubmit={handleSubmit} />
 
-			await Share.share({
-				message: shareMessage,
-				title: "ProofPay Task",
-			});
-		} catch (error) {
-			console.error("Error sharing:", error);
-		}
-	};
+          {/* Info Block */}
+          <InfoCard
+            title="Proof Verified"
+            body="Payments are secured with cryptographic verification"
+            icon="shield-checkmark"
+          />
 
-	const handleCreateAnother = () => {
-		setStep("form");
-		setFormData({
-			description: "",
-			amount: "",
-			deadline: "",
-		});
-		setTaskCode("");
-	};
+          {/* Secondary Action */}
+          <Pressable style={styles.shareButton} onPress={handleShareQR}>
+            <Ionicons name="qr-code-outline" size={20} color={DesignSystem.colors.text.primary} />
+            <Text style={styles.shareButtonText}>Share QR</Text>
+          </Pressable>
 
-	const renderForm = () => (
-		<ScrollView
-			style={styles.scrollView}
-			contentContainerStyle={styles.scrollContent}
-			keyboardShouldPersistTaps="handled"
-		>
-			<View style={styles.formSection}>
-				<Text style={styles.sectionTitle}>What needs to be done?</Text>
+          {/* Bottom Spacer */}
+          <View style={styles.bottomSpacer} />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>
-						Task Description <Text style={styles.required}>*</Text>
-					</Text>
-					<TextInput
-						style={[styles.textInput, styles.textArea]}
-						value={formData.description}
-						onChangeText={(text) =>
-							setFormData({ ...formData, description: text })
-						}
-						placeholder="e.g., Take a photo of your coffee, Write a review, Answer a survey..."
-						placeholderTextColor={DesignSystem.colors.text.tertiary}
-						multiline
-						numberOfLines={4}
-						textAlignVertical="top"
-					/>
-				</View>
-
-				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>
-						Payment Amount <Text style={styles.required}>*</Text>
-					</Text>
-					<View style={styles.amountInputContainer}>
-						<Text style={styles.currencySymbol}>$</Text>
-						<TextInput
-							style={styles.amountInput}
-							value={formData.amount}
-							onChangeText={(text) =>
-								setFormData({ ...formData, amount: text })
-							}
-							placeholder="0.00"
-							placeholderTextColor={DesignSystem.colors.text.tertiary}
-							keyboardType="numeric"
-						/>
-					</View>
-				</View>
-
-				<View style={styles.inputContainer}>
-					<Text style={styles.inputLabel}>Deadline (Optional)</Text>
-					<TextInput
-						style={styles.textInput}
-						value={formData.deadline}
-						onChangeText={(text) =>
-							setFormData({ ...formData, deadline: text })
-						}
-						placeholder="e.g., 24 hours, By tomorrow, etc."
-						placeholderTextColor={DesignSystem.colors.text.tertiary}
-					/>
-				</View>
-			</View>
-
-			<View style={styles.infoSection}>
-				<View style={styles.infoCard}>
-					<Ionicons
-						name="shield-checkmark"
-						size={24}
-						color={DesignSystem.colors.primary[700]}
-					/>
-					<View style={styles.infoContent}>
-						<Text style={styles.infoTitle}>Verified Completion</Text>
-						<Text style={styles.infoSubtitle}>
-							Payments are secured with cryptographic proof verification
-						</Text>
-					</View>
-				</View>
-			</View>
-
-			<View style={styles.buttonContainer}>
-				<Pressable
-					style={styles.createButton}
-					onPress={handleSubmit}
-				>
-					<LinearGradient
-						colors={[
-							DesignSystem.colors.primary[700],
-							DesignSystem.colors.primary[900],
-						]}
-						style={StyleSheet.absoluteFillObject}
-						start={{ x: 0, y: 0 }}
-						end={{ x: 1, y: 1 }}
-					/>
-					<Ionicons
-						name="add-circle"
-						size={20}
-						color={DesignSystem.colors.text.inverse}
-					/>
-					<Text style={styles.createButtonText}>Create Task</Text>
-				</Pressable>
-			</View>
-		</ScrollView>
-	);
-
-	const renderGenerated = () => (
-		<ScrollView
-			style={styles.scrollView}
-			contentContainerStyle={styles.scrollContent}
-			showsVerticalScrollIndicator={false}
-		>
-			<View style={styles.successSection}>
-				<View style={styles.successIcon}>
-					<Ionicons
-						name="checkmark-circle"
-						size={48}
-						color={DesignSystem.colors.status.success}
-					/>
-				</View>
-				<Text style={styles.successTitle}>Task Created!</Text>
-				<Text style={styles.successSubtitle}>
-					Share this with someone to get started
-				</Text>
-			</View>
-
-			<View style={styles.taskCard}>
-				<View style={styles.taskHeader}>
-					<Text style={styles.taskTitle}>{formData.description}</Text>
-					<View style={styles.taskAmount}>
-						<Text style={styles.taskAmountText}>${formData.amount}</Text>
-					</View>
-				</View>
-
-				{formData.deadline && (
-					<View style={styles.taskDeadline}>
-						<Ionicons
-							name="time-outline"
-							size={16}
-							color={DesignSystem.colors.text.secondary}
-						/>
-						<Text style={styles.taskDeadlineText}>
-							Deadline: {formData.deadline}
-						</Text>
-					</View>
-				)}
-			</View>
-
-			<View style={styles.codeSection}>
-				<Text style={styles.codeLabel}>Task Code</Text>
-				<View style={styles.codeContainer}>
-					<Text style={styles.codeText}>{taskCode}</Text>
-					<Pressable
-						style={styles.copyButton}
-						onPress={() => {
-							// Copy to clipboard logic would go here
-							Alert.alert("Copied!", "Task code copied to clipboard");
-						}}
-					>
-						<Ionicons
-							name="copy-outline"
-							size={20}
-							color={DesignSystem.colors.primary[700]}
-						/>
-					</Pressable>
-				</View>
-			</View>
-
-			<View style={styles.qrSection}>
-				<Text style={styles.qrLabel}>Share Link</Text>
-				<View style={styles.qrContainer}>
-					<View style={styles.qrPlaceholder}>
-						<Ionicons
-							name="qr-code"
-							size={80}
-							color={DesignSystem.colors.text.secondary}
-						/>
-					</View>
-				</View>
-				<Text style={styles.qrSubtext}>QR code coming soon!</Text>
-			</View>
-
-			<View style={styles.actionButtons}>
-				<Pressable
-					style={styles.shareButton}
-					onPress={handleShare}
-				>
-					<Ionicons
-						name="share-outline"
-						size={20}
-						color={DesignSystem.colors.text.inverse}
-					/>
-					<Text style={styles.shareButtonText}>Share Task</Text>
-				</Pressable>
-
-				<Pressable
-					style={styles.anotherButton}
-					onPress={handleCreateAnother}
-				>
-					<Text style={styles.anotherButtonText}>Create Another</Text>
-				</Pressable>
-			</View>
-		</ScrollView>
-	);
-
-	return (
-		<SafeAreaView
-			style={styles.container}
-			edges={["top"]}
-		>
-			<SophisticatedHeader
-				title={step === "form" ? "Create Task" : "Task Created"}
-				subtitle={
-					step === "form"
-						? "Set up a new P2P task"
-						: "Share with others to get started"
-				}
-				showBackButton={step === "generated"}
-				onBackPress={handleCreateAnother}
-			/>
-
-			<KeyboardAvoidingView
-				style={styles.keyboardView}
-				behavior={Platform.OS === "ios" ? "padding" : "height"}
-			>
-				{step === "form" ? renderForm() : renderGenerated()}
-			</KeyboardAvoidingView>
-		</SafeAreaView>
-	);
+      {renderQRModal()}
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: DesignSystem.colors.surface.primary,
-	},
+  container: {
+    flex: 1,
+    backgroundColor: DesignSystem.colors.surface.primary,
+  },
 
-	keyboardView: {
-		flex: 1,
-	},
+  keyboardView: {
+    flex: 1,
+  },
 
-	scrollView: {
-		flex: 1,
-	},
+  scrollView: {
+    flex: 1,
+  },
 
-	scrollContent: {
-		paddingHorizontal: DesignSystem.layout.containerPadding,
-		paddingTop: DesignSystem.spacing["2xl"],
-		paddingBottom: 120, // Space for tab bar
-	},
+  scrollContent: {
+    paddingHorizontal: DesignSystem.layout.containerPadding,
+    paddingTop: DesignSystem.spacing['2xl'],
+    gap: DesignSystem.spacing['4xl'],
+  },
 
-	// Form Styles
-	formSection: {
-		gap: DesignSystem.spacing["3xl"],
-	},
+  shareButton: {
+    backgroundColor: DesignSystem.colors.surface.elevated,
+    borderRadius: DesignSystem.radius.xl,
+    padding: DesignSystem.spacing['2xl'],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: DesignSystem.spacing.md,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.secondary,
+    minHeight: 56,
+  },
 
-	sectionTitle: {
-		...DesignSystem.typography.h3,
-		color: DesignSystem.colors.text.primary,
-		textAlign: "center",
-		marginBottom: DesignSystem.spacing.xl,
-	},
+  shareButtonText: {
+    ...DesignSystem.typography.label.large,
+    color: DesignSystem.colors.text.primary,
+  },
 
-	inputContainer: {
-		gap: DesignSystem.spacing.md,
-	},
+  bottomSpacer: {
+    height: 140, // Space for tab bar
+  },
 
-	inputLabel: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
-	},
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: DesignSystem.spacing['2xl'],
+  },
 
-	required: {
-		color: DesignSystem.colors.status.error,
-	},
+  modalContent: {
+    backgroundColor: DesignSystem.colors.surface.elevated,
+    borderRadius: DesignSystem.radius.xl,
+    padding: DesignSystem.spacing['3xl'],
+    width: '100%',
+    maxWidth: 320,
+    gap: DesignSystem.spacing['2xl'],
+  },
 
-	textInput: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
-		padding: DesignSystem.spacing["2xl"],
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		...DesignSystem.typography.body.large,
-		color: DesignSystem.colors.text.primary,
-		minHeight: 56,
-	},
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 
-	textArea: {
-		minHeight: 120,
-		textAlignVertical: "top",
-	},
+  modalTitle: {
+    ...DesignSystem.typography.h3,
+    color: DesignSystem.colors.text.primary,
+  },
 
-	amountInputContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		paddingHorizontal: DesignSystem.spacing["2xl"],
-	},
+  qrContainer: {
+    alignItems: 'center',
+    gap: DesignSystem.spacing.lg,
+  },
 
-	currencySymbol: {
-		...DesignSystem.typography.body.large,
-		color: DesignSystem.colors.text.secondary,
-		marginRight: DesignSystem.spacing.sm,
-	},
+  qrPlaceholder: {
+    width: 160,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DesignSystem.colors.surface.tertiary,
+    borderRadius: DesignSystem.radius.lg,
+  },
 
-	amountInput: {
-		flex: 1,
-		...DesignSystem.typography.body.large,
-		color: DesignSystem.colors.text.primary,
-		minHeight: 56,
-	},
+  qrSubtext: {
+    ...DesignSystem.typography.body.small,
+    color: DesignSystem.colors.text.secondary,
+    textAlign: 'center',
+  },
 
-	infoSection: {
-		marginTop: DesignSystem.spacing["4xl"],
-	},
+  modalButton: {
+    backgroundColor: DesignSystem.colors.primary[800],
+    borderRadius: DesignSystem.radius.lg,
+    padding: DesignSystem.spacing.lg,
+    alignItems: 'center',
+  },
 
-	infoCard: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["2xl"],
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		gap: DesignSystem.spacing.lg,
-	},
-
-	infoContent: {
-		flex: 1,
-		gap: DesignSystem.spacing.xs,
-	},
-
-	infoTitle: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
-	},
-
-	infoSubtitle: {
-		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
-		lineHeight: 18,
-	},
-
-	buttonContainer: {
-		marginTop: DesignSystem.spacing["4xl"],
-	},
-
-	createButton: {
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["2xl"],
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: DesignSystem.spacing.md,
-		...DesignSystem.shadows.lg,
-		overflow: "hidden",
-	},
-
-	createButtonText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.inverse,
-	},
-
-	// Generated Styles
-	successSection: {
-		alignItems: "center",
-		marginBottom: DesignSystem.spacing["4xl"],
-		gap: DesignSystem.spacing.lg,
-	},
-
-	successIcon: {
-		marginBottom: DesignSystem.spacing.md,
-	},
-
-	successTitle: {
-		...DesignSystem.typography.h2,
-		color: DesignSystem.colors.text.primary,
-		textAlign: "center",
-	},
-
-	successSubtitle: {
-		...DesignSystem.typography.body.large,
-		color: DesignSystem.colors.text.secondary,
-		textAlign: "center",
-	},
-
-	taskCard: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["3xl"],
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		marginBottom: DesignSystem.spacing["3xl"],
-		...DesignSystem.shadows.sm,
-	},
-
-	taskHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-start",
-		marginBottom: DesignSystem.spacing.lg,
-	},
-
-	taskTitle: {
-		...DesignSystem.typography.body.large,
-		color: DesignSystem.colors.text.primary,
-		flex: 1,
-		marginRight: DesignSystem.spacing.md,
-	},
-
-	taskAmount: {
-		backgroundColor: DesignSystem.colors.primary[800],
-		paddingHorizontal: DesignSystem.spacing.lg,
-		paddingVertical: DesignSystem.spacing.sm,
-		borderRadius: DesignSystem.radius.md,
-	},
-
-	taskAmountText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.inverse,
-	},
-
-	taskDeadline: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: DesignSystem.spacing.sm,
-	},
-
-	taskDeadlineText: {
-		...DesignSystem.typography.body.medium,
-		color: DesignSystem.colors.text.secondary,
-	},
-
-	codeSection: {
-		marginBottom: DesignSystem.spacing["3xl"],
-	},
-
-	codeLabel: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
-		marginBottom: DesignSystem.spacing.md,
-		textAlign: "center",
-	},
-
-	codeContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
-		padding: DesignSystem.spacing["2xl"],
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		gap: DesignSystem.spacing.md,
-	},
-
-	codeText: {
-		...DesignSystem.typography.h3,
-		color: DesignSystem.colors.text.primary,
-		flex: 1,
-		textAlign: "center",
-		letterSpacing: 2,
-	},
-
-	copyButton: {
-		padding: DesignSystem.spacing.sm,
-	},
-
-	qrSection: {
-		alignItems: "center",
-		marginBottom: DesignSystem.spacing["4xl"],
-		gap: DesignSystem.spacing.lg,
-	},
-
-	qrLabel: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
-	},
-
-	qrContainer: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		padding: DesignSystem.spacing["2xl"],
-		borderRadius: DesignSystem.radius.xl,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		...DesignSystem.shadows.sm,
-	},
-
-	qrPlaceholder: {
-		width: 160,
-		height: 160,
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: DesignSystem.colors.surface.tertiary,
-		borderRadius: DesignSystem.radius.lg,
-	},
-
-	qrSubtext: {
-		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.tertiary,
-		textAlign: "center",
-	},
-
-	actionButtons: {
-		gap: DesignSystem.spacing.lg,
-	},
-
-	shareButton: {
-		backgroundColor: DesignSystem.colors.primary[800],
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["2xl"],
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: DesignSystem.spacing.md,
-		...DesignSystem.shadows.lg,
-	},
-
-	shareButtonText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.inverse,
-	},
-
-	anotherButton: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["2xl"],
-		alignItems: "center",
-		justifyContent: "center",
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-	},
-
-	anotherButtonText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
-	},
+  modalButtonText: {
+    ...DesignSystem.typography.label.large,
+    color: DesignSystem.colors.text.inverse,
+  },
 });

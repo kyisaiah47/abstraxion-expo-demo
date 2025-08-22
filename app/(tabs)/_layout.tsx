@@ -33,13 +33,13 @@ export default function TabLayout() {
 				<Tabs.Screen
 					name="activity"
 					options={{
-						title: "Activity",
+						title: "Payments",
 					}}
 				/>
 				<Tabs.Screen
 					name="profile"
 					options={{
-						title: "Profile",
+						title: "Proof ID",
 					}}
 				/>
 				{/* Hide these from tab bar - they should be stack pages */}
