@@ -266,10 +266,13 @@ export default function MarketplaceScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			{/* Persistent Header */}
-			<PersistentHeader address={account?.bech32Address} onLogout={async () => {
-				await logout();
-				router.replace('/');
-			}} />
+			<PersistentHeader
+				address={account?.bech32Address}
+				onLogout={async () => {
+					await logout();
+					router.replace("/");
+				}}
+			/>
 			<View style={styles.content}>
 				{/* Marketplace header row below persistent header */}
 				<View style={styles.header}>

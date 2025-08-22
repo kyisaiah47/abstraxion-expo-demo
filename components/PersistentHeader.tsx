@@ -39,7 +39,10 @@ export default function PersistentHeader({
 					/>
 					<Text style={styles.walletText}>{truncateAddress(address)}</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.notificationButton} onPress={onLogout}>
+				<TouchableOpacity
+					style={styles.notificationButton}
+					onPress={onLogout}
+				>
 					<Ionicons
 						name="log-out-outline"
 						size={20}
