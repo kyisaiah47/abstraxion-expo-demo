@@ -13,7 +13,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import SophisticatedHeader from "@/components/SophisticatedHeader";
 import SocialPaymentForm from "@/components/SocialPaymentForm";
 import PaymentTabSwitcher from "@/components/PaymentTabSwitcher";
 import InfoCard from "@/components/InfoCard";
@@ -24,22 +23,6 @@ export default function CreateScreen() {
 	const [activeTab, setActiveTab] = useState<PaymentType>("request_help");
 	const [showQRModal, setShowQRModal] = useState(false);
 	const [requestCode, setRequestCode] = useState("");
-
-	const { logout } =
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		require("@burnt-labs/abstraxion-react-native").useAbstraxionAccount();
-
-	const handleLogout = async () => {
-		try {
-			console.log("Attempting to logout...");
-			await logout();
-			console.log("Logout successful");
-			router.replace("/");
-		} catch (error) {
-			console.error("Logout failed:", error);
-			Alert.alert("Error", "Failed to sign out. Please try again.");
-		}
-	};
 
 	const generateRequestCode = (): string => {
 		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -128,12 +111,6 @@ export default function CreateScreen() {
 			style={styles.container}
 			edges={["top"]}
 		>
-			<SophisticatedHeader
-				title="Social Payments"
-				subtitle="Send, request, and get help from friends"
-				onLogout={handleLogout}
-			/>
-
 			<KeyboardAvoidingView
 				style={styles.keyboardView}
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -189,8 +166,8 @@ const styles = StyleSheet.create({
 
 	scrollContent: {
 		paddingHorizontal: DesignSystem.layout.containerPadding,
-		paddingTop: DesignSystem.spacing["2xl"],
-		gap: DesignSystem.spacing["4xl"],
+		paddingTop: DesignSystem.spacing.xl,
+		gap: DesignSystem.spacing.xl,
 	},
 
 	bottomSpacer: {

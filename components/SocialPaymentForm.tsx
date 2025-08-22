@@ -26,26 +26,22 @@ interface SocialPaymentFormProps {
 const PROOF_TYPE_OPTIONS = [
 	{
 		id: "none" as ProofType,
-		label: "No proof needed",
-		subtitle: "Just trust",
+		label: "No proof",
 		icon: "heart-outline" as const,
 	},
 	{
 		id: "text" as ProofType,
-		label: "Tell me what you did",
-		subtitle: "Simple description",
+		label: "Text",
 		icon: "chatbubble-outline" as const,
 	},
 	{
 		id: "photo" as ProofType,
-		label: "Send a photo",
-		subtitle: "Visual confirmation",
+		label: "Photo",
 		icon: "camera-outline" as const,
 	},
 	{
 		id: "zktls" as ProofType,
-		label: "zkTLS verification",
-		subtitle: "Cryptographic proof",
+		label: "zkTLS",
 		icon: "shield-checkmark-outline" as const,
 	},
 ];
@@ -64,7 +60,6 @@ export default function SocialPaymentForm({
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchResults, setSearchResults] = useState<User[]>([]);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
-	const [isSearching, setIsSearching] = useState(false);
 
 	// Update form type when prop changes
 	useEffect(() => {
@@ -79,14 +74,11 @@ export default function SocialPaymentForm({
 				return;
 			}
 
-			setIsSearching(true);
 			try {
 				const results = await UserService.searchUsers(searchQuery);
 				setSearchResults(results);
 			} catch (error) {
 				console.error("Search error:", error);
-			} finally {
-				setIsSearching(false);
 			}
 		};
 
@@ -296,48 +288,23 @@ export default function SocialPaymentForm({
 							<Pressable
 								key={option.id}
 								style={[
-									styles.proofTypeOption,
+									styles.proofTypeButton,
 									formData.proofType === option.id &&
-										styles.proofTypeOptionActive,
+										styles.proofTypeButtonActive,
 								]}
 								onPress={() =>
 									setFormData((prev) => ({ ...prev, proofType: option.id }))
 								}
 							>
-								<View style={styles.proofTypeOptionContent}>
-									<View style={styles.proofTypeHeader}>
-										<Ionicons
-											name={option.icon}
-											size={20}
-											color={
-												formData.proofType === option.id
-													? DesignSystem.colors.primary[800]
-													: DesignSystem.colors.text.secondary
-											}
-										/>
-										<View style={styles.proofTypeTextContainer}>
-											<Text
-												style={[
-													styles.proofTypeLabel,
-													formData.proofType === option.id &&
-														styles.proofTypeLabelActive,
-												]}
-											>
-												{option.label}
-											</Text>
-											<Text style={styles.proofTypeSubtitle}>
-												{option.subtitle}
-											</Text>
-										</View>
-									</View>
-									{formData.proofType === option.id && (
-										<Ionicons
-											name="checkmark-circle"
-											size={20}
-											color={DesignSystem.colors.primary[800]}
-										/>
-									)}
-								</View>
+								<Text
+									style={[
+										styles.proofTypeButtonText,
+										formData.proofType === option.id &&
+											styles.proofTypeButtonTextActive,
+									]}
+								>
+									{option.label}
+								</Text>
 							</Pressable>
 						))}
 					</View>
@@ -381,17 +348,17 @@ const styles = StyleSheet.create({
 	},
 
 	formSection: {
-		gap: DesignSystem.spacing["3xl"],
-		marginBottom: DesignSystem.spacing["4xl"],
+		gap: DesignSystem.spacing.lg,
+		marginBottom: DesignSystem.spacing.xl,
 	},
 
 	inputContainer: {
-		gap: DesignSystem.spacing.md,
+		gap: DesignSystem.spacing.sm,
 	},
 
 	inputLabel: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
+		...DesignSystem.typography.label.medium,
+		color: DesignSystem.colors.text.secondary,
 	},
 
 	required: {
@@ -401,16 +368,16 @@ const styles = StyleSheet.create({
 	textInput: {
 		backgroundColor: DesignSystem.colors.surface.elevated,
 		borderRadius: DesignSystem.radius.lg,
-		padding: DesignSystem.spacing["2xl"],
+		padding: DesignSystem.spacing.lg,
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
-		...DesignSystem.typography.body.large,
+		...DesignSystem.typography.body.medium,
 		color: DesignSystem.colors.text.primary,
-		minHeight: 56,
+		minHeight: 44,
 	},
 
 	textArea: {
-		minHeight: 100,
+		minHeight: 80,
 		textAlignVertical: "top",
 	},
 
@@ -518,68 +485,52 @@ const styles = StyleSheet.create({
 
 	// Proof Type Selector Styles
 	proofTypeContainer: {
-		gap: DesignSystem.spacing.md,
+		flexDirection: "row",
+		gap: DesignSystem.spacing.sm,
+		flexWrap: "wrap",
 	},
 
-	proofTypeOption: {
+	proofTypeButton: {
 		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.lg,
+		borderRadius: DesignSystem.radius.md,
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
-		padding: DesignSystem.spacing.lg,
+		paddingVertical: DesignSystem.spacing.sm,
+		paddingHorizontal: DesignSystem.spacing.md,
+		flex: 1,
+		minWidth: 70,
+		alignItems: "center",
 	},
 
-	proofTypeOptionActive: {
+	proofTypeButtonActive: {
 		borderColor: DesignSystem.colors.primary[800],
-		backgroundColor:
-			DesignSystem.colors.primary[50] || DesignSystem.colors.surface.elevated,
+		backgroundColor: DesignSystem.colors.primary[800],
 	},
 
-	proofTypeOptionContent: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-	},
-
-	proofTypeHeader: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: DesignSystem.spacing.md,
-		flex: 1,
-	},
-
-	proofTypeTextContainer: {
-		flex: 1,
-	},
-
-	proofTypeLabel: {
-		...DesignSystem.typography.label.medium,
+	proofTypeButtonText: {
+		...DesignSystem.typography.label.small,
 		color: DesignSystem.colors.text.primary,
+		fontWeight: "500",
+		textAlign: "center",
 	},
 
-	proofTypeLabelActive: {
-		color: DesignSystem.colors.primary[800],
+	proofTypeButtonTextActive: {
+		color: DesignSystem.colors.text.inverse,
 		fontWeight: "600",
-	},
-
-	proofTypeSubtitle: {
-		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
-		marginTop: 2,
 	},
 
 	// Submit Button Styles
 	submitButton: {
 		backgroundColor: DesignSystem.colors.primary[800],
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["2xl"],
+		borderRadius: DesignSystem.radius.lg,
+		padding: DesignSystem.spacing.lg,
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: DesignSystem.spacing.md,
+		gap: DesignSystem.spacing.sm,
 		...DesignSystem.shadows.lg,
-		minHeight: 56,
-		marginBottom: DesignSystem.spacing["4xl"],
+		minHeight: 48,
+		marginBottom: DesignSystem.spacing.xl,
 	},
 
 	submitButtonText: {

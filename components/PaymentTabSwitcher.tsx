@@ -12,21 +12,24 @@ interface PaymentTabSwitcherProps {
 const PAYMENT_TABS = [
 	{
 		id: "request_help" as PaymentType,
-		label: "Request Help",
+		label: "TASK",
 		icon: "heart-outline" as const,
 		activeIcon: "heart" as const,
+		isPrimary: true,
 	},
 	{
 		id: "request_money" as PaymentType,
-		label: "Request $",
+		label: "$ Request",
 		icon: "card-outline" as const,
 		activeIcon: "card" as const,
+		isPrimary: false,
 	},
 	{
 		id: "send_money" as PaymentType,
-		label: "Pay",
+		label: "$ Pay",
 		icon: "send-outline" as const,
 		activeIcon: "send" as const,
+		isPrimary: false,
 	},
 ];
 
@@ -36,29 +39,55 @@ export default function PaymentTabSwitcher({
 }: PaymentTabSwitcherProps) {
 	return (
 		<View style={styles.container}>
-			{PAYMENT_TABS.map((tab) => {
-				const isActive = activeTab === tab.id;
-				return (
-					<Pressable
-						key={tab.id}
-						style={[styles.tab, isActive && styles.tabActive]}
-						onPress={() => onTabChange(tab.id)}
-					>
-						<Ionicons
-							name={isActive ? tab.activeIcon : tab.icon}
-							size={20}
-							color={
-								isActive
-									? DesignSystem.colors.primary[800]
-									: DesignSystem.colors.text.secondary
-							}
-						/>
-						<Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
-							{tab.label}
-						</Text>
-					</Pressable>
-				);
-			})}
+			{/* Primary TASK tab */}
+			<Pressable
+				style={[
+					styles.taskTab,
+					activeTab === "request_help" && styles.taskTabActive,
+				]}
+				onPress={() => onTabChange("request_help")}
+			>
+				<Ionicons
+					name={activeTab === "request_help" ? "heart" : "heart-outline"}
+					size={22}
+					color={
+						activeTab === "request_help"
+							? DesignSystem.colors.primary[800]
+							: DesignSystem.colors.text.secondary
+					}
+				/>
+				<Text
+					style={[
+						styles.taskTabLabel,
+						activeTab === "request_help" && styles.taskTabLabelActive,
+					]}
+				>
+					TASK
+				</Text>
+			</Pressable>
+
+			{/* Money tabs group */}
+			<View style={styles.moneyTabsGroup}>
+				{PAYMENT_TABS.slice(1).map((tab) => {
+					const isActive = activeTab === tab.id;
+					return (
+						<Pressable
+							key={tab.id}
+							style={[styles.moneyTab, isActive && styles.moneyTabActive]}
+							onPress={() => onTabChange(tab.id)}
+						>
+							<Text
+								style={[
+									styles.moneyTabLabel,
+									isActive && styles.moneyTabLabelActive,
+								]}
+							>
+								{tab.label}
+							</Text>
+						</Pressable>
+					);
+				})}
+			</View>
 		</View>
 	);
 }
@@ -66,36 +95,70 @@ export default function PaymentTabSwitcher({
 const styles = StyleSheet.create({
 	container: {
 		flexDirection: "row",
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.xl,
-		padding: 4,
-		gap: 4,
+		alignItems: "center",
+		gap: DesignSystem.spacing["3xl"], // Larger gap between TASK and money group
 	},
 
-	tab: {
-		flex: 1,
+	// TASK tab (primary)
+	taskTab: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: DesignSystem.spacing.xs,
-		paddingVertical: DesignSystem.spacing.md,
-		paddingHorizontal: DesignSystem.spacing.sm,
-		borderRadius: DesignSystem.radius.lg,
+		gap: DesignSystem.spacing.sm,
+		paddingVertical: DesignSystem.spacing.lg,
+		paddingHorizontal: DesignSystem.spacing["2xl"],
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderRadius: DesignSystem.radius.xl,
+		borderWidth: 2,
+		borderColor: DesignSystem.colors.border.secondary,
 	},
 
-	tabActive: {
+	taskTabActive: {
+		backgroundColor: DesignSystem.colors.primary[800],
+		borderColor: DesignSystem.colors.primary[800],
+		...DesignSystem.shadows.md,
+	},
+
+	taskTabLabel: {
+		...DesignSystem.typography.h4,
+		color: DesignSystem.colors.text.primary,
+		fontWeight: "700",
+		fontSize: 18,
+	},
+
+	taskTabLabelActive: {
+		color: DesignSystem.colors.text.inverse,
+	},
+
+	// Money tabs group
+	moneyTabsGroup: {
+		flexDirection: "row",
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderRadius: DesignSystem.radius.lg,
+		padding: 2,
+		gap: 2,
+	},
+
+	moneyTab: {
+		paddingVertical: DesignSystem.spacing.md,
+		paddingHorizontal: DesignSystem.spacing.lg,
+		borderRadius: DesignSystem.radius.md,
+	},
+
+	moneyTabActive: {
 		backgroundColor: DesignSystem.colors.surface.primary,
 		...DesignSystem.shadows.sm,
 	},
 
-	tabLabel: {
-		...DesignSystem.typography.label.small,
+	moneyTabLabel: {
+		...DesignSystem.typography.label.medium,
 		color: DesignSystem.colors.text.secondary,
-		fontWeight: "500",
+		fontWeight: "600",
+		fontSize: 14,
 	},
 
-	tabLabelActive: {
+	moneyTabLabelActive: {
 		color: DesignSystem.colors.primary[800],
-		fontWeight: "600",
+		fontWeight: "700",
 	},
 });
