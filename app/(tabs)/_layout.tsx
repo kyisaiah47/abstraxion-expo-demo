@@ -43,21 +43,34 @@ export default function TabLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="jobs"
+				name="marketplace"
 				options={{
-					title: "Jobs",
-				}}
-			/>
-			<Tabs.Screen
-				name="recent-activity"
-				options={{
-					title: "Activity",
+					title: "Marketplace",
 				}}
 			/>
 			<Tabs.Screen
 				name="profile"
 				options={{
 					title: "Profile",
+				}}
+			/>
+			{/* Hide these from tab bar - they should be stack pages */}
+			<Tabs.Screen
+				name="jobs/[id]"
+				options={{
+					href: null, // This hides it from the tab bar
+				}}
+			/>
+			<Tabs.Screen
+				name="jobs/[id]/payment-received"
+				options={{
+					href: null, // This hides it from the tab bar
+				}}
+			/>
+			<Tabs.Screen
+				name="jobs/[id]/proof-submission"
+				options={{
+					href: null, // This hides it from the tab bar
 				}}
 			/>
 		</Tabs>

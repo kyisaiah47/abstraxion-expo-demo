@@ -335,14 +335,14 @@ export default function DashboardScreen() {
 					<View style={styles.actionGrid}>
 						<TouchableOpacity
 							style={styles.actionButton}
-							onPress={() => router.push("/(tabs)/jobs")}
+							onPress={() => router.push("/(tabs)/marketplace")}
 						>
 							<Ionicons
 								name="search-outline"
 								size={24}
 								color="#191919"
 							/>
-							<Text style={styles.actionButtonText}>Find Jobs</Text>
+							<Text style={styles.actionButtonText}>Marketplace</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={styles.actionButton}

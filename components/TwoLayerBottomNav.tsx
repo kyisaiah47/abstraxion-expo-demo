@@ -52,56 +52,36 @@ export default function MonochromeTabBar({
 				</TouchableOpacity>
 			</View>
 
-			{/* Bottom Row - 4 Navigation Icons */}
+			{/* Bottom Row - 3 Navigation Icons */}
 			<View style={styles.bottomRow}>
-				{state.routes.map((route, index) => {
-					const { options } = descriptors[route.key];
-					const isFocused = state.index === index;
-
+				{["dashboard", "marketplace", "profile"].map((name, idx) => {
+					// Find the route by name
+					const route = state.routes.find((r) => r.name === name);
+					if (!route) return null;
+					const isFocused =
+						state.index === state.routes.findIndex((r) => r.name === name);
 					const onPress = () => {
 						const event = navigation.emit({
 							type: "tabPress",
 							target: route.key,
 							canPreventDefault: true,
 						});
-
 						if (!isFocused && !event.defaultPrevented) {
 							navigation.navigate(route.name);
 						}
 					};
-
-					// Get the appropriate icon for each tab
-					const getTabIcon = () => {
-						switch (route.name) {
-							case "dashboard":
-								return isFocused ? "grid" : "grid-outline";
-							case "jobs":
-								return isFocused ? "briefcase" : "briefcase-outline";
-							case "recent-activity":
-								return isFocused ? "time" : "time-outline";
-							case "profile":
-								return isFocused ? "person" : "person-outline";
-							default:
-								return "ellipsis-horizontal";
-						}
-					};
-
-					// Get the tab label
-					const getTabLabel = () => {
-						switch (route.name) {
-							case "dashboard":
-								return "Dashboard";
-							case "jobs":
-								return "Jobs";
-							case "recent-activity":
-								return "Activity";
-							case "profile":
-								return "Profile";
-							default:
-								return "More";
-						}
-					};
-
+					let iconName = "ellipse-outline";
+					switch (name) {
+						case "dashboard":
+							iconName = isFocused ? "grid" : "grid-outline";
+							break;
+						case "marketplace":
+							iconName = isFocused ? "briefcase" : "briefcase-outline";
+							break;
+						case "profile":
+							iconName = isFocused ? "person" : "person-outline";
+							break;
+					}
 					return (
 						<TouchableOpacity
 							key={route.key}
@@ -109,18 +89,10 @@ export default function MonochromeTabBar({
 							onPress={onPress}
 						>
 							<Ionicons
-								name={getTabIcon()}
-								size={20}
+								name={iconName as any}
+								size={24}
 								color={isFocused ? "#000" : "#999"}
 							/>
-							<Text
-								style={[
-									styles.navLabel,
-									{ color: isFocused ? "#000" : "#999" }
-								]}
-							>
-								{getTabLabel()}
-							</Text>
 						</TouchableOpacity>
 					);
 				})}
@@ -191,7 +163,7 @@ const styles = StyleSheet.create({
 		letterSpacing: 0.3,
 	},
 
-	// Bottom Row - 4 Navigation Icons with Labels
+	// Bottom Row - 3 Navigation Icons with Labels
 	bottomRow: {
 		flexDirection: "row",
 		alignItems: "center",

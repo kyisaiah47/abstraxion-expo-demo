@@ -8,9 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import {
-	useAbstraxionAccount,
-} from "@burnt-labs/abstraxion-react-native";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 
 export default function ProfileScreen() {
 	const router = useRouter();
@@ -37,7 +35,11 @@ export default function ProfileScreen() {
 				<View style={styles.card}>
 					<View style={styles.profileSection}>
 						<View style={styles.avatar}>
-							<Ionicons name="person" size={40} color="#666" />
+							<Ionicons
+								name="person"
+								size={40}
+								color="#666"
+							/>
 						</View>
 						<View style={styles.profileInfo}>
 							<Text style={styles.addressText}>
@@ -51,34 +53,73 @@ export default function ProfileScreen() {
 				{/* Menu Items */}
 				<View style={styles.card}>
 					<TouchableOpacity style={styles.menuItem}>
-						<Ionicons name="person-outline" size={20} color="#666" />
+						<Ionicons
+							name="person-outline"
+							size={20}
+							color="#666"
+						/>
 						<Text style={styles.menuText}>Account Settings</Text>
-						<Ionicons name="chevron-forward" size={16} color="#999" />
+						<Ionicons
+							name="chevron-forward"
+							size={16}
+							color="#999"
+						/>
 					</TouchableOpacity>
 
 					<TouchableOpacity style={styles.menuItem}>
-						<Ionicons name="notifications-outline" size={20} color="#666" />
+						<Ionicons
+							name="notifications-outline"
+							size={20}
+							color="#666"
+						/>
 						<Text style={styles.menuText}>Notifications</Text>
-						<Ionicons name="chevron-forward" size={16} color="#999" />
+						<Ionicons
+							name="chevron-forward"
+							size={16}
+							color="#999"
+						/>
 					</TouchableOpacity>
 
 					<TouchableOpacity style={styles.menuItem}>
-						<Ionicons name="help-circle-outline" size={20} color="#666" />
+						<Ionicons
+							name="help-circle-outline"
+							size={20}
+							color="#666"
+						/>
 						<Text style={styles.menuText}>Help & Support</Text>
-						<Ionicons name="chevron-forward" size={16} color="#999" />
+						<Ionicons
+							name="chevron-forward"
+							size={16}
+							color="#999"
+						/>
 					</TouchableOpacity>
 
 					<TouchableOpacity style={styles.menuItem}>
-						<Ionicons name="information-circle-outline" size={20} color="#666" />
+						<Ionicons
+							name="information-circle-outline"
+							size={20}
+							color="#666"
+						/>
 						<Text style={styles.menuText}>About</Text>
-						<Ionicons name="chevron-forward" size={16} color="#999" />
+						<Ionicons
+							name="chevron-forward"
+							size={16}
+							color="#999"
+						/>
 					</TouchableOpacity>
 				</View>
 
 				{/* Logout */}
 				<View style={styles.card}>
-					<TouchableOpacity style={styles.logoutItem} onPress={handleLogout}>
-						<Ionicons name="log-out-outline" size={20} color="#DC2626" />
+					<TouchableOpacity
+						style={styles.logoutItem}
+						onPress={handleLogout}
+					>
+						<Ionicons
+							name="log-out-outline"
+							size={20}
+							color="#DC2626"
+						/>
 						<Text style={styles.logoutText}>Logout</Text>
 					</TouchableOpacity>
 				</View>
