@@ -13,112 +13,90 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
 import { DesignSystem } from "@/constants/DesignSystem";
-import { UserService } from "@/lib/userService";
+import {
+	useIsUsernameAvailable,
+	useSocialOperations,
+} from "@/hooks/useSocialContract";
 
-interface UsernameValidation {
-	isValid: boolean;
-	isAvailable: boolean;
-	isChecking: boolean;
-	message: string;
+function validateFormat(username: string): { valid: boolean; message: string } {
+	if (!username) return { valid: false, message: "" };
+	if (username.length < 3 || username.length > 50)
+		return { valid: false, message: "3-50 characters required" };
+	if (!/^[a-zA-Z0-9_]+$/.test(username))
+		return { valid: false, message: "Alphanumeric and underscores only" };
+	return { valid: true, message: "" };
 }
 
 export default function UsernameSetupScreen() {
 	const [username, setUsername] = useState("");
-	const [validation, setValidation] = useState<UsernameValidation>({
-		isValid: false,
-		isAvailable: false,
-		isChecking: false,
-		message: "",
-	});
-	const [isRegistering, setIsRegistering] = useState(false);
+	const [formatError, setFormatError] = useState("");
+	const [registered, setRegistered] = useState(false);
 	const router = useRouter();
-	const { data: account } = useAbstraxionAccount();
+	const { data: account, isConnected } = useAbstraxionAccount();
+	const { client: signingClient } = useAbstraxionSigningClient();
+	const {
+		available,
+		loading: checking,
+		error: checkError,
+		refetch,
+	} = useIsUsernameAvailable(username);
+	const {
+		registerUser,
+		loading: registering,
+		error: registerError,
+	} = useSocialOperations(signingClient);
 
-	// Real-time username validation
 	useEffect(() => {
-		const validateUsername = async () => {
-			if (!username) {
-				setValidation({
-					isValid: false,
-					isAvailable: false,
-					isChecking: false,
-					message: "",
-				});
-				return;
-			}
+		const { valid, message } = validateFormat(username);
+		setFormatError(valid ? "" : message);
+		if (valid && username) refetch();
+	}, [username, refetch]);
 
-			// Check format first
-			const formatValid = /^[a-zA-Z0-9_]{3,20}$/.test(username);
-			if (!formatValid) {
-				setValidation({
-					isValid: false,
-					isAvailable: false,
-					isChecking: false,
-					message: "3-20 characters, letters, numbers, and underscores only",
-				});
-				return;
-			}
-
-			// Check availability
-			setValidation((prev) => ({ ...prev, isChecking: true }));
-
-			try {
-				const isAvailable = await UserService.checkUsernameAvailability(
-					username
-				);
-				setValidation({
-					isValid: formatValid && isAvailable,
-					isAvailable,
-					isChecking: false,
-					message: isAvailable
-						? "Username is available!"
-						: "Username is already taken",
-				});
-			} catch (error) {
-				console.error("Username validation error:", error);
-				setValidation({
-					isValid: false,
-					isAvailable: false,
-					isChecking: false,
-					message: "Error checking availability",
-				});
-			}
-		};
-
-		const debounceTimer = setTimeout(validateUsername, 300);
-		return () => clearTimeout(debounceTimer);
-	}, [username]);
+	const isValid =
+		!formatError &&
+		available &&
+		isConnected &&
+		!!signingClient &&
+		!!account?.bech32Address;
 
 	const handleRegisterUsername = async () => {
-		if (!validation.isValid || !account?.bech32Address) {
+		if (!isValid) {
+			Alert.alert(
+				"Wallet Not Connected",
+				"Please connect your wallet before registering."
+			);
 			return;
 		}
-
-		setIsRegistering(true);
 		try {
-			// Register username with wallet address
-			await UserService.registerUsername(username, account.bech32Address);
-
-			// Navigate to main app
+			await registerUser(
+				{
+					username,
+					wallet_address: account.bech32Address,
+					display_name: undefined,
+					profile_picture: undefined,
+				},
+				account.bech32Address
+			);
+			setRegistered(true);
+			// Save to app state here if needed
 			router.replace("/(tabs)/activity");
 		} catch (error) {
-			console.error("Username registration error:", error);
 			Alert.alert(
 				"Registration Failed",
-				"Failed to register username. Please try again.",
+				registerError || "Failed to register username. Please try again.",
 				[{ text: "OK" }]
 			);
-		} finally {
-			setIsRegistering(false);
 		}
 	};
 
 	const renderValidationIcon = () => {
 		if (!username) return null;
-
-		if (validation.isChecking) {
+		if (checking) {
 			return (
 				<ActivityIndicator
 					size="small"
@@ -126,8 +104,7 @@ export default function UsernameSetupScreen() {
 				/>
 			);
 		}
-
-		if (validation.isValid && validation.isAvailable) {
+		if (isValid) {
 			return (
 				<Ionicons
 					name="checkmark-circle"
@@ -136,8 +113,7 @@ export default function UsernameSetupScreen() {
 				/>
 			);
 		}
-
-		if (username && !validation.isValid) {
+		if (username && (formatError || !available)) {
 			return (
 				<Ionicons
 					name="close-circle"
@@ -146,7 +122,6 @@ export default function UsernameSetupScreen() {
 				/>
 			);
 		}
-
 		return null;
 	};
 
@@ -185,8 +160,8 @@ export default function UsernameSetupScreen() {
 								autoCapitalize="none"
 								autoCorrect={false}
 								autoComplete="username"
-								maxLength={20}
-								editable={!isRegistering}
+								maxLength={50}
+								editable={!registering && isConnected}
 							/>
 							<View style={styles.validationIcon}>
 								{renderValidationIcon()}
@@ -194,22 +169,37 @@ export default function UsernameSetupScreen() {
 						</View>
 
 						{/* Validation Message */}
-						{validation.message ? (
-							<Text
-								style={[
-									styles.validationMessage,
-									validation.isValid
-										? styles.validationSuccess
-										: styles.validationError,
-								]}
-							>
-								{validation.message}
+						{formatError ? (
+							<Text style={[styles.validationMessage, styles.validationError]}>
+								{formatError}
 							</Text>
 						) : null}
+						{!formatError && username && checking && (
+							<Text style={styles.validationMessage}>
+								Checking availability...
+							</Text>
+						)}
+						{!formatError && username && !checking && available && (
+							<Text
+								style={[styles.validationMessage, styles.validationSuccess]}
+							>
+								Username is available!
+							</Text>
+						)}
+						{!formatError && username && !checking && !available && (
+							<Text style={[styles.validationMessage, styles.validationError]}>
+								Username is already taken
+							</Text>
+						)}
+						{checkError && (
+							<Text style={[styles.validationMessage, styles.validationError]}>
+								{checkError}
+							</Text>
+						)}
 
 						{/* Character Counter */}
 						<Text style={styles.characterCounter}>
-							{username.length}/20 characters
+							{username.length}/50 characters
 						</Text>
 					</View>
 
@@ -222,25 +212,25 @@ export default function UsernameSetupScreen() {
 									name="checkmark"
 									size={16}
 									color={
-										username.length >= 3 && username.length <= 20
+										username.length >= 3 && username.length <= 50
 											? DesignSystem.colors.status.success
 											: DesignSystem.colors.text.tertiary
 									}
 								/>
-								<Text style={styles.requirementText}>3-20 characters</Text>
+								<Text style={styles.requirementText}>3-50 characters</Text>
 							</View>
 							<View style={styles.requirement}>
 								<Ionicons
 									name="checkmark"
 									size={16}
 									color={
-										/^[a-zA-Z0-9_]*$/.test(username) && username.length > 0
+										/^[a-zA-Z0-9_]+$/.test(username) && username.length > 0
 											? DesignSystem.colors.status.success
 											: DesignSystem.colors.text.tertiary
 									}
 								/>
 								<Text style={styles.requirementText}>
-									Letters, numbers, and underscores only
+									Alphanumeric and underscores only
 								</Text>
 							</View>
 							<View style={styles.requirement}>
@@ -248,7 +238,7 @@ export default function UsernameSetupScreen() {
 									name="checkmark"
 									size={16}
 									color={
-										validation.isAvailable && validation.isValid
+										isValid
 											? DesignSystem.colors.status.success
 											: DesignSystem.colors.text.tertiary
 									}
@@ -262,14 +252,13 @@ export default function UsernameSetupScreen() {
 					<TouchableOpacity
 						style={[
 							styles.continueButton,
-							(!validation.isValid || isRegistering) &&
-								styles.continueButtonDisabled,
+							(!isValid || registering) && styles.continueButtonDisabled,
 						]}
 						onPress={handleRegisterUsername}
-						disabled={!validation.isValid || isRegistering}
+						disabled={!isValid || registering}
 						activeOpacity={0.8}
 					>
-						{isRegistering ? (
+						{registering ? (
 							<ActivityIndicator color={DesignSystem.colors.text.inverse} />
 						) : (
 							<>
@@ -282,6 +271,11 @@ export default function UsernameSetupScreen() {
 							</>
 						)}
 					</TouchableOpacity>
+					{registerError && (
+						<Text style={[styles.validationMessage, styles.validationError]}>
+							{registerError}
+						</Text>
+					)}
 
 					{/* Wallet Info */}
 					<View style={styles.walletInfo}>
@@ -291,8 +285,12 @@ export default function UsernameSetupScreen() {
 							color={DesignSystem.colors.text.secondary}
 						/>
 						<Text style={styles.walletText}>
-							Connected: {account?.bech32Address?.slice(0, 8)}...
-							{account?.bech32Address?.slice(-6)}
+							{isConnected && account?.bech32Address
+								? `Connected: ${account.bech32Address.slice(
+										0,
+										8
+								  )}...${account.bech32Address.slice(-6)}`
+								: "Wallet not connected"}
 						</Text>
 					</View>
 				</View>
@@ -301,29 +299,25 @@ export default function UsernameSetupScreen() {
 	);
 }
 
+// ...existing code...
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: DesignSystem.colors.surface.primary,
 	},
-
 	keyboardView: {
 		flex: 1,
 	},
-
 	content: {
 		flex: 1,
 		paddingHorizontal: DesignSystem.layout.containerPadding,
 		paddingTop: DesignSystem.spacing["4xl"],
 		justifyContent: "center",
 	},
-
-	// Header
 	header: {
 		alignItems: "center",
 		marginBottom: DesignSystem.spacing["4xl"],
 	},
-
 	iconContainer: {
 		width: 96,
 		height: 96,
@@ -334,26 +328,21 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		marginBottom: DesignSystem.spacing["2xl"],
 	},
-
 	title: {
 		...DesignSystem.typography.h1,
 		color: DesignSystem.colors.text.primary,
 		textAlign: "center",
 		marginBottom: DesignSystem.spacing.md,
 	},
-
 	subtitle: {
 		...DesignSystem.typography.body.large,
 		color: DesignSystem.colors.text.secondary,
 		textAlign: "center",
 		maxWidth: 280,
 	},
-
-	// Input Section
 	inputSection: {
 		marginBottom: DesignSystem.spacing["3xl"],
 	},
-
 	inputContainer: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -365,75 +354,60 @@ const styles = StyleSheet.create({
 		paddingVertical: DesignSystem.spacing.lg,
 		marginBottom: DesignSystem.spacing.sm,
 	},
-
 	atSymbol: {
 		...DesignSystem.typography.h3,
 		color: DesignSystem.colors.text.secondary,
 		marginRight: DesignSystem.spacing.xs,
 	},
-
 	usernameInput: {
 		flex: 1,
 		...DesignSystem.typography.h3,
 		color: DesignSystem.colors.text.primary,
 		padding: 0,
 	},
-
 	validationIcon: {
 		width: 24,
 		height: 24,
 		alignItems: "center",
 		justifyContent: "center",
 	},
-
 	validationMessage: {
 		...DesignSystem.typography.body.small,
 		marginBottom: DesignSystem.spacing.xs,
 		paddingHorizontal: DesignSystem.spacing.sm,
 	},
-
 	validationSuccess: {
 		color: DesignSystem.colors.status.success,
 	},
-
 	validationError: {
 		color: DesignSystem.colors.status.error,
 	},
-
 	characterCounter: {
 		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.text.tertiary,
 		textAlign: "right",
 		paddingHorizontal: DesignSystem.spacing.sm,
 	},
-
-	// Requirements
 	requirementsSection: {
 		marginBottom: DesignSystem.spacing["4xl"],
 	},
-
 	requirementsTitle: {
 		...DesignSystem.typography.label.medium,
 		color: DesignSystem.colors.text.secondary,
 		marginBottom: DesignSystem.spacing.md,
 	},
-
 	requirementsList: {
 		gap: DesignSystem.spacing.sm,
 	},
-
 	requirement: {
 		flexDirection: "row",
 		alignItems: "center",
 		gap: DesignSystem.spacing.sm,
 	},
-
 	requirementText: {
 		...DesignSystem.typography.body.medium,
 		color: DesignSystem.colors.text.secondary,
 	},
-
-	// Continue Button
 	continueButton: {
 		backgroundColor: DesignSystem.colors.primary[800],
 		borderRadius: DesignSystem.radius.xl,
@@ -446,20 +420,16 @@ const styles = StyleSheet.create({
 		marginBottom: DesignSystem.spacing["2xl"],
 		...DesignSystem.shadows.lg,
 	},
-
 	continueButtonDisabled: {
 		backgroundColor: DesignSystem.colors.surface.elevated,
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
 	},
-
 	continueButtonText: {
 		...DesignSystem.typography.label.large,
 		color: DesignSystem.colors.text.inverse,
 		fontWeight: "600",
 	},
-
-	// Wallet Info
 	walletInfo: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -467,7 +437,6 @@ const styles = StyleSheet.create({
 		gap: DesignSystem.spacing.sm,
 		paddingBottom: DesignSystem.spacing["4xl"],
 	},
-
 	walletText: {
 		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.text.secondary,
