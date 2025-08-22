@@ -95,7 +95,7 @@ export class ZKTLSService {
 
 			// Create website verification configuration
 			const config: WebsiteVerificationConfig = {
-				providerId: "http",
+				providerId: RECLAIM_CONFIG.providerId || "http",
 				params: {
 					url: deliveryUrl,
 					...(expectedContent && { expectedContent }),

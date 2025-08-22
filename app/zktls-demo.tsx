@@ -106,18 +106,17 @@ export default function ZKTLSDemoScreen() {
 					<View style={styles.content}>
 						<View style={styles.header}>
 							<Ionicons
-								name="shield-checkmark"
+								name="logo-github"
 								size={64}
-								color="#4CAF50"
+								color="#333"
 							/>
 							<ThemedText style={styles.title}>
-								zkTLS Verification Demo
+								GitHub Repository Verification
 							</ThemedText>
 							<ThemedText style={styles.subtitle}>
-								Automated work verification without manual client approval
+								Prove you own the GitHub account that delivered the code
 							</ThemedText>
-						</View>
-
+						</View>{" "}
 						<View style={styles.infoCard}>
 							<ThemedText style={styles.cardTitle}>How it works:</ThemedText>
 							<View style={styles.stepList}>
@@ -130,7 +129,7 @@ export default function ZKTLSDemoScreen() {
 											Complete Work
 										</ThemedText>
 										<ThemedText style={styles.stepDescription}>
-											Finish building the website or deliverable
+											Finish building the code in your GitHub repository
 										</ThemedText>
 									</View>
 								</View>
@@ -141,10 +140,11 @@ export default function ZKTLSDemoScreen() {
 									</View>
 									<View style={styles.stepContent}>
 										<ThemedText style={styles.stepTitle}>
-											Generate Proof
+											Prove GitHub Ownership
 										</ThemedText>
 										<ThemedText style={styles.stepDescription}>
-											Create cryptographic proof that website exists
+											Log in with GitHub to prove you own the account that
+											delivered the code
 										</ThemedText>
 									</View>
 								</View>
@@ -154,15 +154,16 @@ export default function ZKTLSDemoScreen() {
 										<Text style={styles.stepNumberText}>3</Text>
 									</View>
 									<View style={styles.stepContent}>
-										<ThemedText style={styles.stepTitle}>Get Paid</ThemedText>
+										<ThemedText style={styles.stepTitle}>
+											Receive Payment
+										</ThemedText>
 										<ThemedText style={styles.stepDescription}>
-											Payment released automatically upon verification
+											Get paid for your verified GitHub contributions
 										</ThemedText>
 									</View>
 								</View>
 							</View>
 						</View>
-
 						<View style={styles.benefitsCard}>
 							<ThemedText style={styles.cardTitle}>Benefits:</ThemedText>
 							<View style={styles.benefitsList}>
@@ -208,7 +209,6 @@ export default function ZKTLSDemoScreen() {
 								</View>
 							</View>
 						</View>
-
 						<View style={styles.configStatus}>
 							<View
 								style={[
@@ -234,7 +234,6 @@ export default function ZKTLSDemoScreen() {
 								</ThemedText>
 							</View>
 						</View>
-
 						<TouchableOpacity
 							style={[styles.demoButton, { opacity: isConfigured ? 1 : 0.6 }]}
 							onPress={handleStartDemo}

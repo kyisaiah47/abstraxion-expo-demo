@@ -16,9 +16,11 @@ export const TREASURY_CONFIG = {
 export const RECLAIM_CONFIG = {
 	appId: process.env.EXPO_PUBLIC_RECLAIM_APP_ID || "",
 	appSecret: process.env.EXPO_PUBLIC_RECLAIM_APP_SECRET || "",
+	providerId: process.env.EXPO_PUBLIC_RECLAIM_PROVIDER_ID || "",
 	enabled: !!(
 		process.env.EXPO_PUBLIC_RECLAIM_APP_ID &&
-		process.env.EXPO_PUBLIC_RECLAIM_APP_SECRET
+		process.env.EXPO_PUBLIC_RECLAIM_APP_SECRET &&
+		process.env.EXPO_PUBLIC_RECLAIM_PROVIDER_ID
 	),
 	verificationContractAddress:
 		"xion1qf8jtznwf0tykpg7e65gwafwp47rwxl4x2g2kldvv357s6frcjlsh2m24e", // From Burnt documentation
