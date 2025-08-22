@@ -52,13 +52,16 @@ export default function ProfileScreen() {
 
 				{/* Menu Items */}
 				<View style={styles.card}>
-					<TouchableOpacity style={styles.menuItem}>
+					<TouchableOpacity
+						style={styles.menuItem}
+						onPress={() => router.push("/zktls-demo")}
+					>
 						<Ionicons
-							name="person-outline"
+							name="shield-checkmark-outline"
 							size={20}
 							color="#666"
 						/>
-						<Text style={styles.menuText}>Account Settings</Text>
+						<Text style={styles.menuText}>zkTLS Demo</Text>
 						<Ionicons
 							name="chevron-forward"
 							size={16}
@@ -66,41 +69,16 @@ export default function ProfileScreen() {
 						/>
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.menuItem}>
+					<TouchableOpacity
+						style={styles.menuItem}
+						onPress={() => router.push("/treasury-management")}
+					>
 						<Ionicons
-							name="notifications-outline"
+							name="wallet-outline"
 							size={20}
 							color="#666"
 						/>
-						<Text style={styles.menuText}>Notifications</Text>
-						<Ionicons
-							name="chevron-forward"
-							size={16}
-							color="#999"
-						/>
-					</TouchableOpacity>
-
-					<TouchableOpacity style={styles.menuItem}>
-						<Ionicons
-							name="help-circle-outline"
-							size={20}
-							color="#666"
-						/>
-						<Text style={styles.menuText}>Help & Support</Text>
-						<Ionicons
-							name="chevron-forward"
-							size={16}
-							color="#999"
-						/>
-					</TouchableOpacity>
-
-					<TouchableOpacity style={styles.menuItem}>
-						<Ionicons
-							name="information-circle-outline"
-							size={20}
-							color="#666"
-						/>
-						<Text style={styles.menuText}>About</Text>
+						<Text style={styles.menuText}>Treasury Management</Text>
 						<Ionicons
 							name="chevron-forward"
 							size={16}

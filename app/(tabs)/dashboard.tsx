@@ -329,46 +329,6 @@ export default function DashboardScreen() {
 				style={styles.scrollContainer}
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Quick Actions Card */}
-				<View style={styles.card}>
-					<Text style={styles.cardTitle}>Quick Actions</Text>
-					<View style={styles.actionGrid}>
-						<TouchableOpacity
-							style={styles.actionButton}
-							onPress={() => router.push("/(tabs)/marketplace")}
-						>
-							<Ionicons
-								name="search-outline"
-								size={24}
-								color="#191919"
-							/>
-							<Text style={styles.actionButtonText}>Marketplace</Text>
-						</TouchableOpacity>
-						<TouchableOpacity
-							style={styles.actionButton}
-							onPress={() => router.push("/create")}
-						>
-							<Ionicons
-								name="add-circle-outline"
-								size={24}
-								color="#191919"
-							/>
-							<Text style={styles.actionButtonText}>Post Job</Text>
-						</TouchableOpacity>
-						<TouchableOpacity
-							style={styles.actionButton}
-							onPress={handleScanQR}
-						>
-							<Ionicons
-								name="qr-code-outline"
-								size={24}
-								color="#191919"
-							/>
-							<Text style={styles.actionButtonText}>Scan QR</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-
 				{/* Earnings Summary Card */}
 				<View style={styles.card}>
 					<Text style={styles.cardTitle}>Earnings Summary</Text>
@@ -461,33 +421,6 @@ export default function DashboardScreen() {
 						</View>
 					)}
 				</View>
-
-				{/* zkTLS Demo Card */}
-				<View style={styles.card}>
-					<Text style={styles.cardTitle}>Verification Demo</Text>
-					<Text style={styles.cardDescription}>
-						Try our cryptographic proof system with real GitHub data
-					</Text>
-					<TouchableOpacity
-						style={styles.demoButton}
-						onPress={() => router.push("/zktls-demo")}
-					>
-						<Ionicons
-							name="shield-checkmark-outline"
-							size={20}
-							color="#191919"
-						/>
-						<Text style={styles.demoButtonText}>Try zkTLS Demo</Text>
-						<Ionicons
-							name="chevron-forward"
-							size={16}
-							color="#666"
-						/>
-					</TouchableOpacity>
-				</View>
-
-				{/* Bottom Spacing */}
-				<View style={styles.bottomSpacing} />
 			</ScrollView>
 
 			{/* Modals */}
