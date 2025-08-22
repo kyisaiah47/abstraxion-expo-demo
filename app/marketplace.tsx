@@ -11,6 +11,7 @@ import {
 	Alert,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import {
 	useAbstraxionAccount,
 	useAbstraxionSigningClient,
@@ -269,49 +270,57 @@ export default function MarketplaceScreen() {
 					headerTitleAlign: "center",
 					headerShadowVisible: false,
 					headerStyle: {
-						backgroundColor: "#F4F4F5",
+						backgroundColor: "#FFFFFF",
 					},
 					headerTitleStyle: {
-						fontSize: 18,
-						fontWeight: "600",
+						fontSize: 20,
+						fontWeight: "700",
 						color: "#111827",
 					},
 				}}
 			/>
 
 			<View style={styles.content}>
-				<TouchableOpacity
-					style={styles.backButton}
-					onPress={() => router.back()}
-				>
-					<Text style={styles.backButtonText}>← Back to Dashboard</Text>
-				</TouchableOpacity>
-
-				<Text style={styles.subheading}>
-					{loading ? "Loading..." : `${jobs.length} available jobs`}
-				</Text>
-
-				{TREASURY_CONFIG.enabled && (
-					<View style={styles.treasuryStatus}>
-						<View
-							style={[
-								styles.treasuryIndicator,
-								{
-									backgroundColor: treasuryStatus.canSponsorGas
-										? "#22c55e"
-										: "#ef4444",
-								},
-							]}
+				<View style={styles.header}>
+					<TouchableOpacity
+						style={styles.backButton}
+						onPress={() => router.back()}
+					>
+						<Ionicons
+							name="arrow-back"
+							size={24}
+							color="#111827"
 						/>
-						<Text style={styles.treasuryText}>
-							{treasuryStatus.canSponsorGas
-								? `Treasury Active (${treasuryStatus.estimatedTransactionsLeft} txns remaining)`
-								: treasuryStatus.isAvailable
-								? "Treasury Low on Funds"
-								: "Treasury Unavailable"}
+						<Text style={styles.backButtonText}>Back</Text>
+					</TouchableOpacity>
+
+					<View style={styles.headerInfo}>
+						<Text style={styles.subheading}>
+							{loading ? "Loading..." : `${jobs.length} available jobs`}
 						</Text>
+						{TREASURY_CONFIG.enabled && (
+							<View style={styles.treasuryStatus}>
+								<View
+									style={[
+										styles.treasuryIndicator,
+										{
+											backgroundColor: treasuryStatus.canSponsorGas
+												? "#10B981"
+												: "#EF4444",
+										},
+									]}
+								/>
+								<Text style={styles.treasuryText}>
+									{treasuryStatus.canSponsorGas
+										? `Treasury Active (${treasuryStatus.estimatedTransactionsLeft} txns)`
+										: treasuryStatus.isAvailable
+										? "Treasury Low"
+										: "Treasury Unavailable"}
+								</Text>
+							</View>
+						)}
 					</View>
-				)}
+				</View>
 
 				{loading ? (
 					<View style={styles.centered}>
@@ -332,7 +341,12 @@ export default function MarketplaceScreen() {
 							/>
 						}
 						ListEmptyComponent={
-							<View style={styles.centered}>
+							<View style={styles.emptyState}>
+								<Ionicons
+									name="briefcase-outline"
+									size={64}
+									color="#D1D5DB"
+								/>
 								<Text style={styles.emptyTitle}>No jobs available</Text>
 								<Text style={styles.emptySubtitle}>
 									Check back later for new opportunities!
@@ -341,23 +355,8 @@ export default function MarketplaceScreen() {
 						}
 						renderItem={({ item }) => (
 							<View style={styles.jobCard}>
-								<Text style={styles.jobTitle}>{item.description}</Text>
-
-								<View style={styles.tagRow}>
-									{getJobTags(item).map((tag) => (
-										<View
-											style={styles.tag}
-											key={tag}
-										>
-											<Text style={styles.tagText}>{tag}</Text>
-										</View>
-									))}
-								</View>
-
-								<View style={styles.jobMeta}>
-									<Text style={styles.clientText}>
-										Client: {truncateAddress(item.client)}
-									</Text>
+								<View style={styles.jobHeader}>
+									<Text style={styles.jobTitle}>{item.description}</Text>
 									<Text style={styles.paymentText}>
 										{ContractService.formatXionAmount(
 											parseInt(item.escrow_amount.amount)
@@ -365,15 +364,65 @@ export default function MarketplaceScreen() {
 									</Text>
 								</View>
 
-								<Text style={styles.dateText}>
-									Posted {formatTimeAgo(item.created_at)}
-								</Text>
+								<View style={styles.jobContent}>
+									<View style={styles.jobInfo}>
+										<View style={styles.infoRow}>
+											<Ionicons
+												name="person-outline"
+												size={16}
+												color="#6B7280"
+											/>
+											<Text style={styles.clientText}>
+												{truncateAddress(item.client)}
+											</Text>
+										</View>
+										<View style={styles.infoRow}>
+											<Ionicons
+												name="time-outline"
+												size={16}
+												color="#6B7280"
+											/>
+											<Text style={styles.dateText}>
+												{formatTimeAgo(item.created_at)}
+											</Text>
+										</View>
+										{item.deadline && (
+											<View style={styles.infoRow}>
+												<Ionicons
+													name="calendar-outline"
+													size={16}
+													color="#EF4444"
+												/>
+												<Text style={styles.deadlineText}>
+													Due {new Date(item.deadline).toLocaleDateString()}
+												</Text>
+											</View>
+										)}
+									</View>
 
-								{item.deadline && (
-									<Text style={styles.deadlineText}>
-										Deadline: {new Date(item.deadline).toLocaleDateString()}
-									</Text>
-								)}
+									<View style={styles.tagRow}>
+										{getJobTags(item).map((tag) => (
+											<View
+												style={[
+													styles.tag,
+													tag === "Urgent" && styles.urgentTag,
+													tag === "High Pay" && styles.highPayTag,
+												]}
+												key={tag}
+											>
+												<Text
+													style={[
+														styles.tagText,
+														tag === "Urgent" && styles.urgentTagText,
+														tag === "High Pay" && styles.highPayTagText,
+													]}
+												>
+													{tag}
+												</Text>
+											</View>
+										))}
+									</View>
+								</View>
 
 								<TouchableOpacity
 									style={[
@@ -382,6 +431,7 @@ export default function MarketplaceScreen() {
 									]}
 									onPress={() => handleAcceptJob(item.id)}
 									disabled={acceptingJobId === item.id}
+									activeOpacity={0.8}
 								>
 									{acceptingJobId === item.id ? (
 										<ActivityIndicator
@@ -389,7 +439,14 @@ export default function MarketplaceScreen() {
 											color="#fff"
 										/>
 									) : (
-										<Text style={styles.acceptButtonText}>Accept Job</Text>
+										<>
+											<Ionicons
+												name="checkmark"
+												size={20}
+												color="#fff"
+											/>
+											<Text style={styles.acceptButtonText}>Accept Job</Text>
+										</>
 									)}
 								</TouchableOpacity>
 							</View>
@@ -404,12 +461,24 @@ export default function MarketplaceScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#F4F4F5",
+		backgroundColor: "#F9FAFB",
 	},
 	content: {
 		flex: 1,
 		paddingHorizontal: 20,
-		paddingTop: 8,
+		paddingTop: 0,
+	},
+	header: {
+		paddingVertical: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: "#F3F4F6",
+		backgroundColor: "#FFFFFF",
+		marginHorizontal: -20,
+		paddingHorizontal: 20,
+		marginBottom: 16,
+	},
+	headerInfo: {
+		marginTop: 12,
 	},
 	centered: {
 		flex: 1,
@@ -417,30 +486,30 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	backButton: {
-		paddingHorizontal: 0,
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
 		paddingVertical: 8,
-		marginBottom: 8,
-		alignSelf: "flex-start",
 	},
 	backButtonText: {
 		fontSize: 16,
 		color: "#111827",
-		fontWeight: "500",
+		fontWeight: "600",
 	},
 	subheading: {
-		fontSize: 14,
-		color: "#6B7280",
-		marginBottom: 16,
-		marginTop: 4,
+		fontSize: 16,
+		color: "#374151",
+		fontWeight: "600",
+		marginBottom: 8,
 	},
 	treasuryStatus: {
 		flexDirection: "row",
 		alignItems: "center",
-		marginBottom: 16,
 		paddingHorizontal: 12,
-		paddingVertical: 8,
+		paddingVertical: 6,
 		backgroundColor: "#F9FAFB",
-		borderRadius: 8,
+		borderRadius: 16,
+		alignSelf: "flex-start",
 	},
 	treasuryIndicator: {
 		width: 8,
@@ -455,92 +524,141 @@ const styles = StyleSheet.create({
 	},
 	loadingText: {
 		marginTop: 16,
-		color: "#666",
+		color: "#6B7280",
+		fontSize: 16,
 	},
 	listContainer: {
 		paddingBottom: 24,
 	},
+	emptyState: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingVertical: 60,
+	},
 	emptyTitle: {
-		color: "#666",
-		fontSize: 16,
+		color: "#374151",
+		fontSize: 18,
 		fontWeight: "600",
-		marginBottom: 4,
+		marginBottom: 8,
+		marginTop: 16,
+		textAlign: "center",
 	},
 	emptySubtitle: {
-		color: "#999",
+		color: "#6B7280",
 		fontSize: 14,
+		textAlign: "center",
 	},
 	jobCard: {
-		backgroundColor: "#fff",
+		backgroundColor: "#FFFFFF",
 		borderRadius: 12,
-		padding: 16,
+		padding: 14,
 		marginBottom: 12,
 		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.05,
 		shadowRadius: 4,
-		elevation: 3,
+		elevation: 2,
+		borderWidth: 1,
+		borderColor: "#F3F4F6",
 	},
-	jobTitle: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#111827",
+	jobHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
 		marginBottom: 8,
 	},
-	tagRow: {
+	jobContent: {
 		flexDirection: "row",
-		flexWrap: "wrap",
-		gap: 8,
-		marginBottom: 12,
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+	},
+	jobTitle: {
+		fontSize: 15,
+		fontWeight: "600",
+		color: "#111827",
+		flex: 1,
+		marginRight: 10,
+		lineHeight: 20,
+	},
+	tagRow: {
+		flexDirection: "column",
+		alignItems: "flex-end",
+		gap: 6,
+		flex: 0,
 	},
 	tag: {
-		backgroundColor: "#E5E7EB",
+		backgroundColor: "#F3F4F6",
 		paddingHorizontal: 8,
 		paddingVertical: 4,
 		borderRadius: 12,
 	},
+	urgentTag: {
+		backgroundColor: "#FEE2E2",
+	},
+	highPayTag: {
+		backgroundColor: "#D1FAE5",
+	},
 	tagText: {
 		fontSize: 12,
-		color: "#374151",
-		fontWeight: "500",
+		color: "#6B7280",
+		fontWeight: "600",
 	},
-	jobMeta: {
+	urgentTagText: {
+		color: "#DC2626",
+	},
+	highPayTagText: {
+		color: "#059669",
+	},
+	jobInfo: {
+		gap: 6,
+		marginBottom: 12,
+	},
+	infoRow: {
 		flexDirection: "row",
-		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: 8,
+		gap: 6,
 	},
 	clientText: {
-		fontSize: 14,
+		fontSize: 13,
 		color: "#6B7280",
+		fontWeight: "500",
 	},
 	paymentText: {
-		fontSize: 14,
-		fontWeight: "600",
-		color: "#111827",
+		fontSize: 16,
+		fontWeight: "700",
+		color: "#059669",
 	},
 	dateText: {
-		fontSize: 12,
-		color: "#9CA3AF",
-		marginBottom: 4,
+		fontSize: 13,
+		color: "#6B7280",
+		fontWeight: "500",
 	},
 	deadlineText: {
-		fontSize: 12,
-		color: "#6B7280",
-		marginBottom: 12,
+		fontSize: 13,
+		color: "#DC2626",
+		fontWeight: "600",
 	},
 	acceptButton: {
 		backgroundColor: "#111827",
-		paddingVertical: 12,
+		paddingVertical: 10,
 		paddingHorizontal: 16,
-		borderRadius: 8,
+		borderRadius: 10,
 		alignItems: "center",
+		flexDirection: "row",
+		justifyContent: "center",
+		gap: 6,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.08,
+		shadowRadius: 3,
+		elevation: 1,
 	},
 	acceptButtonDisabled: {
 		backgroundColor: "#9CA3AF",
 	},
 	acceptButtonText: {
-		color: "#fff",
+		color: "#FFFFFF",
 		fontWeight: "600",
 		fontSize: 14,
 	},
