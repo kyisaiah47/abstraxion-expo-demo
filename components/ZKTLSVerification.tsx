@@ -146,12 +146,15 @@ export function ZKTLSVerification({
 		return (
 			<ThemedView
 				style={{
-					padding: 16,
-					margin: 8,
-					borderRadius: 8,
-					backgroundColor: "#FFF3CD",
-					borderWidth: 1,
-					borderColor: "#FFEAA7",
+					backgroundColor: "white",
+					borderRadius: 16,
+					padding: 20,
+					marginBottom: 20,
+					shadowColor: "#000",
+					shadowOffset: { width: 0, height: 2 },
+					shadowOpacity: 0.06,
+					shadowRadius: 8,
+					elevation: 2,
 				}}
 			>
 				<ThemedText
@@ -170,14 +173,19 @@ export function ZKTLSVerification({
 	return (
 		<ThemedView
 			style={{
-				padding: 16,
-				margin: 8,
-				borderRadius: 8,
-				backgroundColor: "#F8F9FA",
+				backgroundColor: "white",
+				borderRadius: 16,
+				padding: 20,
+				marginBottom: 20,
+				shadowColor: "#000",
+				shadowOffset: { width: 0, height: 2 },
+				shadowOpacity: 0.06,
+				shadowRadius: 8,
+				elevation: 2,
 			}}
 		>
 			<ThemedText style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
-				🔗 Website Delivery Verification
+				Website Delivery Verification
 			</ThemedText>
 
 			<ThemedText style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>
@@ -281,8 +289,8 @@ export function ZKTLSVerification({
 							style={{ color: "white", fontWeight: "600", fontSize: 16 }}
 						>
 							{isGeneratingProof
-								? "🔄 Generating Proof..."
-								: "🔗 Generate Website Proof"}
+								? "Generating Proof..."
+								: "Generate Website Proof"}
 						</ThemedText>
 					</TouchableOpacity>
 				</>
