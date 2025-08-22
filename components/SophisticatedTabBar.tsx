@@ -15,25 +15,18 @@ interface TabBarItem {
 
 const tabItems: TabBarItem[] = [
 	{
-		name: "dashboard",
-		href: "/(tabs)/dashboard",
-		icon: "grid-outline",
-		activeIcon: "grid",
-		label: "Dashboard",
-	},
-	{
-		name: "marketplace",
-		href: "/(tabs)/marketplace",
-		icon: "briefcase-outline",
-		activeIcon: "briefcase",
-		label: "Jobs",
-	},
-	{
 		name: "create",
-		href: "/create",
+		href: "/(tabs)/create",
 		icon: "add-circle-outline",
 		activeIcon: "add-circle",
 		label: "Create",
+	},
+	{
+		name: "activity",
+		href: "/(tabs)/activity",
+		icon: "time-outline",
+		activeIcon: "time",
+		label: "Activity",
 	},
 	{
 		name: "profile",
@@ -48,7 +41,7 @@ export default function SophisticatedTabBar() {
 	const pathname = usePathname();
 
 	const isActive = (href: string) => {
-		if (href === "/(tabs)/dashboard" && pathname === "/") return true;
+		if (href === "/(tabs)/activity" && pathname === "/") return true;
 		return pathname === href || pathname.startsWith(href);
 	};
 

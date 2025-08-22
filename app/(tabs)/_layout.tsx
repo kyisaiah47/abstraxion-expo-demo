@@ -25,15 +25,15 @@ export default function TabLayout() {
 				}}
 			>
 				<Tabs.Screen
-					name="dashboard"
+					name="create"
 					options={{
-						title: "Dashboard",
+						title: "Create",
 					}}
 				/>
 				<Tabs.Screen
-					name="marketplace"
+					name="activity"
 					options={{
-						title: "Marketplace",
+						title: "Activity",
 					}}
 				/>
 				<Tabs.Screen
@@ -43,6 +43,18 @@ export default function TabLayout() {
 					}}
 				/>
 				{/* Hide these from tab bar - they should be stack pages */}
+				<Tabs.Screen
+					name="profile-new"
+					options={{
+						href: null, // This hides it from the tab bar
+					}}
+				/>
+				<Tabs.Screen
+					name="recent-activity"
+					options={{
+						href: null, // This hides it from the tab bar
+					}}
+				/>
 				<Tabs.Screen
 					name="jobs/[id]"
 					options={{

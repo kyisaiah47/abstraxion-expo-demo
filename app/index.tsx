@@ -19,10 +19,10 @@ const { width, height } = Dimensions.get("window");
 const onboardingScreens = [
 	{
 		id: 1,
-		title: "Get paid in seconds,\nnot weeks",
+		title: "Pay with proof\nbuilt in",
 		subtitle: null,
 		description:
-			"Complete work. Generate cryptographic proof. Receive instant payment.",
+			"Send payments that require cryptographic verification. No disputes, ever.",
 		background: "#ffffff",
 		backgroundColor: "#ffffff",
 		showLogo: false,
@@ -31,10 +31,10 @@ const onboardingScreens = [
 	},
 	{
 		id: 2,
-		title: "No disputes.\nEver.",
+		title: "Venmo meets\nmathematics",
 		subtitle: null,
 		description:
-			"Mathematical verification eliminates payment delays and disagreements.",
+			"Simple P2P payments with zero-knowledge proof verification for tasks.",
 		background: "#f8f9fa",
 		backgroundColor: "#f8f9fa",
 		showLogo: false,
@@ -43,10 +43,10 @@ const onboardingScreens = [
 	},
 	{
 		id: 3,
-		title: "Login with Google.\nZero crypto complexity.",
+		title: "Create, share, verify.\nGet paid.",
 		subtitle: null,
 		description:
-			"Simple authentication with enterprise-grade blockchain security.",
+			"Create tasks, share QR codes, verify completion, receive instant payment.",
 		background: "#ffffff",
 		backgroundColor: "#ffffff",
 		showLogo: false,
@@ -62,7 +62,7 @@ export default function OnboardingScreen() {
 
 	useEffect(() => {
 		if (isConnected) {
-			router.replace("/(tabs)/dashboard");
+			router.replace("/(tabs)/activity");
 		}
 	}, [isConnected, router]);
 

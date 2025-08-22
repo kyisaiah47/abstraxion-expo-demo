@@ -10,6 +10,7 @@ interface SophisticatedHeaderProps {
 	title: string;
 	subtitle?: string;
 	showBackButton?: boolean;
+	onBackPress?: () => void;
 	rightAction?: React.ReactNode;
 	variant?: "default" | "transparent" | "minimal";
 }
@@ -18,6 +19,7 @@ export default function SophisticatedHeader({
 	title,
 	subtitle,
 	showBackButton = false,
+	onBackPress,
 	rightAction,
 	variant = "default",
 }: SophisticatedHeaderProps) {
@@ -29,7 +31,11 @@ export default function SophisticatedHeader({
 	};
 
 	const handleBack = () => {
-		router.back();
+		if (onBackPress) {
+			onBackPress();
+		} else {
+			router.back();
+		}
 	};
 
 	const renderBackground = () => {

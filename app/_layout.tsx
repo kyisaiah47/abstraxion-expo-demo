@@ -75,10 +75,6 @@ export default function RootLayout() {
 								name="create"
 								options={{ headerShown: false }}
 							/>
-							<Stack.Screen
-								name="marketplace"
-								options={{ headerShown: false }}
-							/>
 						</Stack>
 						<StatusBar style="auto" />
 					</ThemeProvider>
