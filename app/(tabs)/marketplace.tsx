@@ -1,673 +1,604 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from 'react';
 import {
-	View,
-	Text,
-	FlatList,
-	StyleSheet,
-	TouchableOpacity,
-	ActivityIndicator,
-	RefreshControl,
-	SafeAreaView,
-	Alert,
-} from "react-native";
-import PersistentHeader from "../../components/PersistentHeader";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import {
-	useAbstraxionAccount,
-	useAbstraxionSigningClient,
-} from "@burnt-labs/abstraxion-react-native";
-import { ContractService, type Job } from "../../lib/contractService";
-import { TREASURY_CONFIG } from "../../constants/contracts";
-import Toast from "react-native-toast-message";
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  TextInput,
+  FlatList,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import SophisticatedHeader from '@/components/SophisticatedHeader';
+import { DesignSystem } from '@/constants/DesignSystem';
 
-export default function MarketplaceScreen() {
-	const router = useRouter();
-	const { data: account, logout } = useAbstraxionAccount();
-	const { client } = useAbstraxionSigningClient();
+interface Job {
+  id: string;
+  title: string;
+  description: string;
+  company: string;
+  location: string;
+  type: 'full-time' | 'part-time' | 'contract' | 'freelance';
+  salary: {
+    min: number;
+    max: number;
+    currency: string;
+    period: 'hour' | 'day' | 'month' | 'year' | 'project';
+  };
+  tags: string[];
+  postedAt: string;
+  deadline?: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  featured?: boolean;
+}
 
-	const [jobs, setJobs] = useState<Job[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [refreshing, setRefreshing] = useState(false);
-	const [acceptingJobId, setAcceptingJobId] = useState<number | null>(null);
-	const [contractService, setContractService] =
-		useState<ContractService | null>(null);
-	const [treasuryStatus, setTreasuryStatus] = useState({
-		isAvailable: false,
-		balance: 0,
-		canSponsorGas: false,
-		estimatedTransactionsLeft: 0,
-	});
+const SAMPLE_JOBS: Job[] = [
+  {
+    id: '1',
+    title: 'Data Entry Specialist',
+    description: 'Looking for detail-oriented individuals to help with data entry tasks. Clean and organize customer information databases.',
+    company: 'TechCorp Solutions',
+    location: 'Remote',
+    type: 'freelance',
+    salary: { min: 15, max: 25, currency: 'USD', period: 'hour' },
+    tags: ['Data Entry', 'Excel', 'Attention to Detail'],
+    postedAt: '2 hours ago',
+    deadline: '3 days',
+    difficulty: 'beginner',
+    featured: true,
+  },
+  {
+    id: '2',
+    title: 'Content Moderation',
+    description: 'Review and moderate user-generated content according to community guidelines. Ensure platform safety and quality.',
+    company: 'Social Media Inc',
+    location: 'Remote',
+    type: 'contract',
+    salary: { min: 18, max: 22, currency: 'USD', period: 'hour' },
+    tags: ['Content Review', 'Moderation', 'Policy'],
+    postedAt: '4 hours ago',
+    difficulty: 'intermediate',
+  },
+  {
+    id: '3',
+    title: 'Image Verification Task',
+    description: 'Verify and categorize images for machine learning training datasets. Help improve AI accuracy.',
+    company: 'AI Research Lab',
+    location: 'Remote',
+    type: 'freelance',
+    salary: { min: 20, max: 30, currency: 'USD', period: 'hour' },
+    tags: ['AI', 'Image Processing', 'Quality Assurance'],
+    postedAt: '1 day ago',
+    deadline: '5 days',
+    difficulty: 'intermediate',
+  },
+  {
+    id: '4',
+    title: 'Survey Data Collection',
+    description: 'Collect and validate survey responses. Ensure data quality and completeness for market research.',
+    company: 'Market Insights',
+    location: 'Remote',
+    type: 'part-time',
+    salary: { min: 12, max: 18, currency: 'USD', period: 'hour' },
+    tags: ['Surveys', 'Data Collection', 'Research'],
+    postedAt: '2 days ago',
+    difficulty: 'beginner',
+  },
+];
 
-	// Helper function to map Treasury status
-	const mapTreasuryStatus = (status: any) => ({
-		isAvailable: status.isConnected || status.isAvailable || false,
-		balance: status.balance || 0,
-		canSponsorGas: status.canSponsorGas || false,
-		estimatedTransactionsLeft: Math.floor((status.balance || 0) * 5), // Estimate 5 txs per XION
-	});
+const JOB_FILTERS = [
+  { id: 'all', label: 'All Jobs', icon: 'grid' as const },
+  { id: 'featured', label: 'Featured', icon: 'star' as const },
+  { id: 'recent', label: 'Recent', icon: 'time' as const },
+  { id: 'high-pay', label: 'High Pay', icon: 'trending-up' as const },
+];
 
-	// Initialize contract service and load jobs
-	useEffect(() => {
-		if (account && client) {
-			// Initialize with Treasury if available
-			const treasuryAddress = TREASURY_CONFIG.enabled
-				? TREASURY_CONFIG.address
-				: undefined;
-			const service = new ContractService(account, client, treasuryAddress);
-			setContractService(service);
+export default function SophisticatedMarketplace() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [jobs, setJobs] = useState<Job[]>(SAMPLE_JOBS);
 
-			// Load jobs and Treasury status
-			const loadInitialData = async () => {
-				try {
-					setLoading(true);
-					const allJobs = await service.queryJobs();
-					// Filter for open jobs only (worker === null and status === 'Open')
-					const openJobs = allJobs.filter(
-						(job) => job.worker === null && job.status === "Open"
-					);
-					setJobs(openJobs);
+  const handleJobPress = (jobId: string) => {
+    router.push(`/jobs/${jobId}`);
+  };
 
-					// Check Treasury status if available
-					if (treasuryAddress) {
-						const status = await service.getTreasuryStatus();
-						setTreasuryStatus(mapTreasuryStatus(status));
-					}
-				} catch (error) {
-					console.error("Failed to load jobs:", error);
-					Toast.show({
-						type: "error",
-						text1: "Error",
-						text2: "Failed to load jobs from blockchain",
-						position: "bottom",
-					});
-				} finally {
-					setLoading(false);
-				}
-			};
+  const getJobTypeColor = (type: Job['type']) => {
+    switch (type) {
+      case 'full-time':
+        return DesignSystem.colors.status.success;
+      case 'part-time':
+        return DesignSystem.colors.status.info;
+      case 'contract':
+        return DesignSystem.colors.status.warning;
+      case 'freelance':
+        return DesignSystem.colors.primary[700];
+      default:
+        return DesignSystem.colors.text.secondary;
+    }
+  };
 
-			loadInitialData();
-		}
-	}, [account?.bech32Address, client]); // Use specific properties instead of objects
+  const getDifficultyColor = (difficulty: Job['difficulty']) => {
+    switch (difficulty) {
+      case 'beginner':
+        return DesignSystem.colors.status.success;
+      case 'intermediate':
+        return DesignSystem.colors.status.warning;
+      case 'advanced':
+        return DesignSystem.colors.status.error;
+      default:
+        return DesignSystem.colors.text.secondary;
+    }
+  };
 
-	const handleRefresh = async () => {
-		if (contractService) {
-			setRefreshing(true);
-			try {
-				const allJobs = await contractService.queryJobs();
-				// Filter for open jobs only (worker === null and status === 'Open')
-				const openJobs = allJobs.filter(
-					(job) => job.worker === null && job.status === "Open"
-				);
-				setJobs(openJobs);
-			} catch (error) {
-				console.error("Failed to refresh jobs:", error);
-				Toast.show({
-					type: "error",
-					text1: "Error",
-					text2: "Failed to refresh jobs from blockchain",
-					position: "bottom",
-				});
-			} finally {
-				setRefreshing(false);
-			}
-		}
-	};
+  const formatSalary = (salary: Job['salary']) => {
+    const range = salary.min === salary.max 
+      ? `$${salary.min}` 
+      : `$${salary.min}-${salary.max}`;
+    return `${range}/${salary.period}`;
+  };
 
-	const handleAcceptJob = async (jobId: number) => {
-		if (!contractService || !account) {
-			Toast.show({
-				type: "error",
-				text1: "Error",
-				text2: "Wallet not connected",
-				position: "bottom",
-			});
-			return;
-		}
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         job.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (activeFilter === 'all') return matchesSearch;
+    if (activeFilter === 'featured') return matchesSearch && job.featured;
+    if (activeFilter === 'recent') return matchesSearch; // Could add time-based filtering
+    if (activeFilter === 'high-pay') return matchesSearch && job.salary.min >= 20;
+    
+    return matchesSearch;
+  });
 
-		const treasuryInfo = treasuryStatus.canSponsorGas
-			? "This transaction will be gasless via Treasury."
-			: treasuryStatus.isAvailable
-			? "Treasury is low on funds. You may need to pay gas fees."
-			: "You will pay gas fees for this transaction.";
+  const renderJobCard = ({ item: job, index }: { item: Job; index: number }) => (
+    <Pressable
+      style={[
+        styles.jobCard,
+        job.featured && styles.featuredJobCard,
+      ]}
+      onPress={() => handleJobPress(job.id)}
+    >
+      {job.featured && (
+        <View style={styles.featuredBadge}>
+          <Ionicons name="star" size={12} color={DesignSystem.colors.text.inverse} />
+          <Text style={styles.featuredText}>Featured</Text>
+        </View>
+      )}
+      
+      <View style={styles.jobCardHeader}>
+        <View style={styles.jobTitleContainer}>
+          <Text style={styles.jobTitle}>{job.title}</Text>
+          <Text style={styles.jobCompany}>{job.company}</Text>
+        </View>
+        
+        <View style={styles.jobMeta}>
+          <Text style={styles.jobSalary}>{formatSalary(job.salary)}</Text>
+          <View style={[
+            styles.difficultyBadge,
+            { backgroundColor: getDifficultyColor(job.difficulty) + '20' }
+          ]}>
+            <Text style={[
+              styles.difficultyText,
+              { color: getDifficultyColor(job.difficulty) }
+            ]}>
+              {job.difficulty}
+            </Text>
+          </View>
+        </View>
+      </View>
+      
+      <Text style={styles.jobDescription} numberOfLines={2}>
+        {job.description}
+      </Text>
+      
+      <View style={styles.jobTags}>
+        {job.tags.slice(0, 3).map((tag, index) => (
+          <View key={index} style={styles.tag}>
+            <Text style={styles.tagText}>{tag}</Text>
+          </View>
+        ))}
+        {job.tags.length > 3 && (
+          <Text style={styles.moreTags}>+{job.tags.length - 3} more</Text>
+        )}
+      </View>
+      
+      <View style={styles.jobFooter}>
+        <View style={styles.jobInfo}>
+          <View style={styles.jobInfoItem}>
+            <Ionicons name="location-outline" size={14} color={DesignSystem.colors.text.tertiary} />
+            <Text style={styles.jobInfoText}>{job.location}</Text>
+          </View>
+          <View style={styles.jobInfoItem}>
+            <Ionicons name="time-outline" size={14} color={DesignSystem.colors.text.tertiary} />
+            <Text style={styles.jobInfoText}>{job.postedAt}</Text>
+          </View>
+          {job.deadline && (
+            <View style={styles.jobInfoItem}>
+              <Ionicons name="calendar-outline" size={14} color={DesignSystem.colors.text.tertiary} />
+              <Text style={styles.jobInfoText}>{job.deadline} left</Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={[
+          styles.jobTypeBadge,
+          { backgroundColor: getJobTypeColor(job.type) + '20' }
+        ]}>
+          <Text style={[
+            styles.jobTypeText,
+            { color: getJobTypeColor(job.type) }
+          ]}>
+            {job.type.replace('-', ' ')}
+          </Text>
+        </View>
+      </View>
+    </Pressable>
+  );
 
-		Alert.alert(
-			"Accept Job",
-			`Are you sure you want to accept this job? You'll be responsible for completing the work.\n\n${treasuryInfo}`,
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Accept",
-					onPress: async () => {
-						try {
-							setAcceptingJobId(jobId);
-
-							// Use Treasury-enabled contract service
-							const result = await contractService.acceptJob(jobId);
-
-							if (result.success) {
-								const gasMessage = result.usedTreasury
-									? "Job accepted gaslessly via Treasury!"
-									: "Job accepted! Gas fees were paid directly.";
-
-								Toast.show({
-									type: "success",
-									text1: "Job Accepted!",
-									text2: gasMessage,
-									position: "bottom",
-								});
-
-								// Refresh jobs list and Treasury status
-								try {
-									const allJobs = await contractService.queryJobs();
-									const openJobs = allJobs.filter(
-										(job) => job.worker === null && job.status === "Open"
-									);
-									setJobs(openJobs);
-
-									// Update Treasury status
-									if (TREASURY_CONFIG.enabled) {
-										const status = await contractService.getTreasuryStatus();
-										setTreasuryStatus(mapTreasuryStatus(status));
-									}
-								} catch (refreshError) {
-									console.error(
-										"Failed to refresh after job acceptance:",
-										refreshError
-									);
-								}
-							} else {
-								// Handle Treasury-specific errors
-								const errorMessage = result.error || "Unknown error occurred";
-								const displayMessage = result.usedTreasury
-									? `Treasury transaction failed: ${errorMessage}`
-									: `Transaction failed: ${errorMessage}`;
-
-								Toast.show({
-									type: "error",
-									text1: "Failed to Accept Job",
-									text2: displayMessage,
-									position: "bottom",
-								});
-							}
-						} catch (error: any) {
-							console.error("Failed to accept job:", error);
-							Toast.show({
-								type: "error",
-								text1: "Failed to Accept Job",
-								text2: error?.message || "Unknown error",
-								position: "bottom",
-							});
-						} finally {
-							setAcceptingJobId(null);
-						}
-					},
-				},
-			]
-		);
-	};
-
-	const truncateAddress = (address: string) => {
-		return `${address.slice(0, 6)}...${address.slice(-4)}`;
-	};
-
-	const formatTimeAgo = (timestamp: string | number) => {
-		try {
-			// Handle both string and number timestamps
-			const date =
-				typeof timestamp === "string"
-					? new Date(timestamp)
-					: new Date(timestamp * 1000);
-			const now = new Date();
-			const diffMs = now.getTime() - date.getTime();
-			const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-			if (diffDays === 0) return "Today";
-			if (diffDays === 1) return "1 day ago";
-			return `${diffDays} days ago`;
-		} catch {
-			return "Recently";
-		}
-	};
-
-	const getJobTags = (job: Job) => {
-		const tags = ["Remote"];
-
-		// Add payment tier tag
-		const paymentAmount = ContractService.convertUxionToXion(
-			parseInt(job.escrow_amount.amount)
-		);
-		if (paymentAmount >= 10) tags.push("High Pay");
-		else if (paymentAmount >= 5) tags.push("Good Pay");
-
-		// Add urgency if deadline is soon
-		if (job.deadline) {
-			const deadline = new Date(job.deadline);
-			const now = new Date();
-			const daysUntil = Math.ceil(
-				(deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-			);
-			if (daysUntil <= 3) tags.push("Urgent");
-		}
-
-		return tags;
-	};
-
-	if (!account || !client) {
-		return (
-			<SafeAreaView style={styles.container}>
-				<View style={styles.centered}>
-					<Text>Connect your wallet to view jobs</Text>
-				</View>
-			</SafeAreaView>
-		);
-	}
-
-	return (
-		<SafeAreaView style={styles.container}>
-			{/* Persistent Header */}
-			<PersistentHeader
-				address={account?.bech32Address}
-				onLogout={async () => {
-					await logout();
-					router.replace("/");
-				}}
-			/>
-			<View style={styles.content}>
-				{/* Marketplace header row below persistent header */}
-				<View style={styles.header}>
-					<View style={styles.headerInfoRow}>
-						<Text style={styles.subheading}>
-							{loading ? "Loading..." : `${jobs.length} available jobs`}
-						</Text>
-						{TREASURY_CONFIG.enabled && (
-							<View style={styles.treasuryStatus}>
-								<View
-									style={[
-										styles.treasuryIndicator,
-										{
-											backgroundColor: treasuryStatus.canSponsorGas
-												? "#10B981"
-												: "#EF4444",
-										},
-									]}
-								/>
-								<Text style={styles.treasuryText}>
-									{treasuryStatus.canSponsorGas
-										? `Treasury Active (${treasuryStatus.estimatedTransactionsLeft} txns)`
-										: treasuryStatus.isAvailable
-										? "Treasury Low"
-										: "Treasury Unavailable"}
-								</Text>
-							</View>
-						)}
-					</View>
-				</View>
-
-				{loading ? (
-					<View style={styles.centered}>
-						<ActivityIndicator size="large" />
-						<Text style={styles.loadingText}>
-							Loading jobs from blockchain...
-						</Text>
-					</View>
-				) : (
-					<FlatList
-						data={jobs}
-						keyExtractor={(item) => item.id.toString()}
-						contentContainerStyle={styles.listContainer}
-						refreshControl={
-							<RefreshControl
-								refreshing={refreshing}
-								onRefresh={handleRefresh}
-							/>
-						}
-						ListEmptyComponent={
-							<View style={styles.emptyState}>
-								<Ionicons
-									name="briefcase-outline"
-									size={64}
-									color="#D1D5DB"
-								/>
-								<Text style={styles.emptyTitle}>No jobs available</Text>
-								<Text style={styles.emptySubtitle}>
-									Check back later for new opportunities!
-								</Text>
-							</View>
-						}
-						renderItem={({ item }) => (
-							<View style={styles.jobCard}>
-								<View style={styles.jobHeader}>
-									<Text style={styles.jobTitle}>{item.description}</Text>
-									<Text style={styles.paymentText}>
-										{ContractService.formatXionAmount(
-											parseInt(item.escrow_amount.amount)
-										)}
-									</Text>
-								</View>
-
-								<View style={styles.jobContent}>
-									<View style={styles.jobInfo}>
-										<View style={styles.infoRow}>
-											<Ionicons
-												name="person-outline"
-												size={16}
-												color="#6B7280"
-											/>
-											<Text style={styles.clientText}>
-												{truncateAddress(item.client)}
-											</Text>
-										</View>
-										<View style={styles.infoRow}>
-											<Ionicons
-												name="time-outline"
-												size={16}
-												color="#6B7280"
-											/>
-											<Text style={styles.dateText}>
-												{formatTimeAgo(item.created_at)}
-											</Text>
-										</View>
-										{item.deadline && (
-											<View style={styles.infoRow}>
-												<Ionicons
-													name="calendar-outline"
-													size={16}
-													color="#EF4444"
-												/>
-												<Text style={styles.deadlineText}>
-													Due {new Date(item.deadline).toLocaleDateString()}
-												</Text>
-											</View>
-										)}
-									</View>
-
-									<View style={styles.tagRow}>
-										{getJobTags(item).map((tag) => (
-											<View
-												style={[
-													styles.tag,
-													tag === "Urgent" && styles.urgentTag,
-													tag === "High Pay" && styles.highPayTag,
-												]}
-												key={tag}
-											>
-												<Text
-													style={[
-														styles.tagText,
-														tag === "Urgent" && styles.urgentTagText,
-														tag === "High Pay" && styles.highPayTagText,
-													]}
-												>
-													{tag}
-												</Text>
-											</View>
-										))}
-									</View>
-								</View>
-
-								<TouchableOpacity
-									style={[
-										styles.acceptButton,
-										acceptingJobId === item.id && styles.acceptButtonDisabled,
-									]}
-									onPress={() => handleAcceptJob(item.id)}
-									disabled={acceptingJobId === item.id}
-									activeOpacity={0.8}
-								>
-									{acceptingJobId === item.id ? (
-										<ActivityIndicator
-											size="small"
-											color="#fff"
-										/>
-									) : (
-										<>
-											<Ionicons
-												name="checkmark"
-												size={20}
-												color="#fff"
-											/>
-											<Text style={styles.acceptButtonText}>Accept Job</Text>
-										</>
-									)}
-								</TouchableOpacity>
-							</View>
-						)}
-					/>
-				)}
-			</View>
-		</SafeAreaView>
-	);
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <SophisticatedHeader
+        title="Job Marketplace"
+        subtitle={`${filteredJobs.length} opportunities available`}
+      />
+      
+      {/* Search and Filters */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchContainer}>
+          <Ionicons
+            name="search"
+            size={20}
+            color={DesignSystem.colors.text.tertiary}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search jobs, skills, companies..."
+            placeholderTextColor={DesignSystem.colors.text.tertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Ionicons
+                name="close-circle"
+                size={20}
+                color={DesignSystem.colors.text.tertiary}
+              />
+            </Pressable>
+          )}
+        </View>
+        
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filtersScroll}
+          contentContainerStyle={styles.filtersContainer}
+        >
+          {JOB_FILTERS.map((filter) => (
+            <Pressable
+              key={filter.id}
+              style={[
+                styles.filterChip,
+                activeFilter === filter.id && styles.filterChipActive,
+              ]}
+              onPress={() => setActiveFilter(filter.id)}
+            >
+              <Ionicons
+                name={filter.icon}
+                size={16}
+                color={
+                  activeFilter === filter.id
+                    ? DesignSystem.colors.text.inverse
+                    : DesignSystem.colors.text.secondary
+                }
+              />
+              <Text style={[
+                styles.filterText,
+                activeFilter === filter.id && styles.filterTextActive,
+              ]}>
+                {filter.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+      
+      {/* Job List */}
+      <FlatList
+        data={filteredJobs}
+        renderItem={renderJobCard}
+        keyExtractor={(item) => item.id}
+        style={styles.jobsList}
+        contentContainerStyle={styles.jobsListContent}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={() => <View style={styles.jobSeparator} />}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyState}>
+            <Ionicons name="briefcase-outline" size={48} color={DesignSystem.colors.text.tertiary} />
+            <Text style={styles.emptyStateTitle}>No jobs found</Text>
+            <Text style={styles.emptyStateSubtitle}>
+              Try adjusting your search criteria or check back later for new opportunities
+            </Text>
+          </View>
+        )}
+      />
+      
+      {/* Floating Action Button */}
+      <Pressable
+        style={styles.fab}
+        onPress={() => router.push('/create')}
+      >
+        <Ionicons name="add" size={24} color={DesignSystem.colors.text.inverse} />
+      </Pressable>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-	// Container - clean white background like onboarding
-	container: {
-		flex: 1,
-		backgroundColor: "#ffffff",
-	},
-	content: {
-		flex: 1,
-		paddingHorizontal: 32,
-		paddingTop: 8,
-	},
-
-	// Header - spacious and clean
-	header: {
-		paddingVertical: 20,
-		borderBottomWidth: 1,
-		borderBottomColor: "#f0f0f0",
-		backgroundColor: "#ffffff",
-		marginHorizontal: -32,
-		paddingHorizontal: 32,
-		marginBottom: 8,
-	},
-	headerInfoRow: {
-		flexDirection: "row",
-		justifyContent: "center",
-		alignItems: "center",
-		gap: 16,
-	},
-	subheading: {
-		fontSize: 14,
-		color: "#666",
-		fontWeight: "500",
-		letterSpacing: 0.1,
-	},
-	treasuryStatus: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: 16,
-		paddingVertical: 8,
-		backgroundColor: "#f8f9fa",
-		borderRadius: 20,
-		shadowColor: "#000",
-		shadowOpacity: 0.04,
-		shadowRadius: 8,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 2,
-	},
-	treasuryIndicator: {
-		width: 8,
-		height: 8,
-		borderRadius: 4,
-		marginRight: 8,
-	},
-	treasuryText: {
-		fontSize: 12,
-		color: "#191919",
-		fontWeight: "500",
-	},
-
-	// Loading and Empty States - sophisticated design
-	centered: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		paddingHorizontal: 32,
-	},
-	loadingText: {
-		marginTop: 20,
-		color: "#666",
-		fontSize: 16,
-		fontWeight: "400",
-	},
-	emptyState: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		paddingVertical: 80,
-		paddingHorizontal: 32,
-	},
-	emptyTitle: {
-		color: "#191919",
-		fontSize: 24,
-		fontWeight: "700",
-		marginBottom: 12,
-		marginTop: 24,
-		textAlign: "center",
-		letterSpacing: -0.3,
-	},
-	emptySubtitle: {
-		color: "#666",
-		fontSize: 16,
-		textAlign: "center",
-		lineHeight: 22,
-		fontWeight: "400",
-	},
-
-	// List Container - generous spacing
-	listContainer: {
-		paddingBottom: 48,
-	},
-	// Job Cards - sophisticated design matching onboarding
-	jobCard: {
-		backgroundColor: "#ffffff",
-		borderRadius: 16,
-		padding: 24,
-		marginBottom: 20,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.06,
-		shadowRadius: 16,
-		elevation: 4,
-		borderWidth: 1,
-		borderColor: "#f0f0f0",
-	},
-	jobHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-start",
-		marginBottom: 16,
-	},
-	jobContent: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-start",
-		marginBottom: 20,
-	},
-	jobTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#191919",
-		flex: 1,
-		marginRight: 16,
-		lineHeight: 24,
-		letterSpacing: 0.1,
-	},
-	paymentText: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#059669",
-		letterSpacing: -0.2,
-	},
-
-	// Job Info - clean layout
-	jobInfo: {
-		gap: 12,
-		flex: 1,
-	},
-	infoRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-	},
-	clientText: {
-		fontSize: 14,
-		color: "#666",
-		fontWeight: "500",
-	},
-	dateText: {
-		fontSize: 14,
-		color: "#666",
-		fontWeight: "500",
-	},
-	deadlineText: {
-		fontSize: 14,
-		color: "#DC2626",
-		fontWeight: "600",
-	},
-
-	// Tags - refined design
-	tagRow: {
-		flexDirection: "column",
-		alignItems: "flex-end",
-		gap: 8,
-		flex: 0,
-	},
-	tag: {
-		backgroundColor: "#f8f9fa",
-		paddingHorizontal: 12,
-		paddingVertical: 6,
-		borderRadius: 16,
-		borderWidth: 1,
-		borderColor: "#f0f0f0",
-	},
-	urgentTag: {
-		backgroundColor: "#FEF2F2",
-		borderColor: "#FECACA",
-	},
-	highPayTag: {
-		backgroundColor: "#ECFDF5",
-		borderColor: "#D1FAE5",
-	},
-	tagText: {
-		fontSize: 12,
-		color: "#666",
-		fontWeight: "600",
-		letterSpacing: 0.2,
-	},
-	urgentTagText: {
-		color: "#DC2626",
-	},
-	highPayTagText: {
-		color: "#059669",
-	},
-
-	// Accept Button - sophisticated design like onboarding
-	acceptButton: {
-		backgroundColor: "#191919",
-		paddingVertical: 16,
-		paddingHorizontal: 24,
-		borderRadius: 12,
-		alignItems: "center",
-		flexDirection: "row",
-		justifyContent: "center",
-		gap: 8,
-		shadowColor: "#191919",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.15,
-		shadowRadius: 12,
-		elevation: 6,
-	},
-	acceptButtonDisabled: {
-		backgroundColor: "#9CA3AF",
-		shadowOpacity: 0.05,
-	},
-	acceptButtonText: {
-		color: "#ffffff",
-		fontWeight: "600",
-		fontSize: 16,
-		letterSpacing: 0.2,
-	},
+  container: {
+    flex: 1,
+    backgroundColor: DesignSystem.colors.surface.primary,
+  },
+  
+  // Search Section
+  searchSection: {
+    paddingHorizontal: DesignSystem.layout.containerPadding,
+    paddingVertical: DesignSystem.spacing.xl,
+    gap: DesignSystem.spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: DesignSystem.colors.border.secondary,
+  },
+  
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: DesignSystem.colors.surface.secondary,
+    borderRadius: DesignSystem.radius.xl,
+    paddingHorizontal: DesignSystem.spacing.xl,
+    paddingVertical: DesignSystem.spacing.lg,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.primary,
+    gap: DesignSystem.spacing.md,
+  },
+  
+  searchIcon: {
+    marginLeft: DesignSystem.spacing.sm,
+  },
+  
+  searchInput: {
+    flex: 1,
+    ...DesignSystem.typography.body.medium,
+    color: DesignSystem.colors.text.primary,
+  },
+  
+  filtersScroll: {
+    flexGrow: 0,
+  },
+  
+  filtersContainer: {
+    gap: DesignSystem.spacing.md,
+    paddingRight: DesignSystem.spacing.xl,
+  },
+  
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: DesignSystem.spacing.xl,
+    paddingVertical: DesignSystem.spacing.md,
+    borderRadius: DesignSystem.radius.xl,
+    backgroundColor: DesignSystem.colors.surface.secondary,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.primary,
+    gap: DesignSystem.spacing.sm,
+  },
+  
+  filterChipActive: {
+    backgroundColor: DesignSystem.colors.primary[800],
+    borderColor: DesignSystem.colors.primary[800],
+  },
+  
+  filterText: {
+    ...DesignSystem.typography.label.medium,
+    color: DesignSystem.colors.text.secondary,
+  },
+  
+  filterTextActive: {
+    color: DesignSystem.colors.text.inverse,
+  },
+  
+  // Jobs List
+  jobsList: {
+    flex: 1,
+  },
+  
+  jobsListContent: {
+    paddingHorizontal: DesignSystem.layout.containerPadding,
+    paddingTop: DesignSystem.spacing['2xl'],
+    paddingBottom: 160, // Space for tab bar and FAB
+  },
+  
+  jobSeparator: {
+    height: DesignSystem.spacing.xl,
+  },
+  
+  // Job Card
+  jobCard: {
+    backgroundColor: DesignSystem.colors.surface.elevated,
+    borderRadius: DesignSystem.radius.xl,
+    padding: DesignSystem.spacing['2xl'],
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.secondary,
+    ...DesignSystem.shadows.sm,
+    gap: DesignSystem.spacing.lg,
+    position: 'relative',
+  },
+  
+  featuredJobCard: {
+    borderColor: DesignSystem.colors.primary[800],
+    ...DesignSystem.shadows.md,
+  },
+  
+  featuredBadge: {
+    position: 'absolute',
+    top: DesignSystem.spacing.xl,
+    right: DesignSystem.spacing.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: DesignSystem.colors.primary[800],
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingVertical: DesignSystem.spacing.sm,
+    borderRadius: DesignSystem.radius.lg,
+    gap: DesignSystem.spacing.xs,
+  },
+  
+  featuredText: {
+    ...DesignSystem.typography.label.small,
+    color: DesignSystem.colors.text.inverse,
+  },
+  
+  jobCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: DesignSystem.spacing.lg,
+  },
+  
+  jobTitleContainer: {
+    flex: 1,
+    gap: DesignSystem.spacing.xs,
+  },
+  
+  jobTitle: {
+    ...DesignSystem.typography.h4,
+    color: DesignSystem.colors.text.primary,
+  },
+  
+  jobCompany: {
+    ...DesignSystem.typography.body.small,
+    color: DesignSystem.colors.text.secondary,
+  },
+  
+  jobMeta: {
+    alignItems: 'flex-end',
+    gap: DesignSystem.spacing.sm,
+  },
+  
+  jobSalary: {
+    ...DesignSystem.typography.label.large,
+    color: DesignSystem.colors.status.success,
+  },
+  
+  difficultyBadge: {
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingVertical: DesignSystem.spacing.xs,
+    borderRadius: DesignSystem.radius.md,
+  },
+  
+  difficultyText: {
+    ...DesignSystem.typography.label.small,
+    textTransform: 'capitalize',
+  },
+  
+  jobDescription: {
+    ...DesignSystem.typography.body.medium,
+    color: DesignSystem.colors.text.secondary,
+    lineHeight: 22,
+  },
+  
+  jobTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: DesignSystem.spacing.sm,
+    alignItems: 'center',
+  },
+  
+  tag: {
+    backgroundColor: DesignSystem.colors.surface.tertiary,
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingVertical: DesignSystem.spacing.xs,
+    borderRadius: DesignSystem.radius.md,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.tertiary,
+  },
+  
+  tagText: {
+    ...DesignSystem.typography.label.small,
+    color: DesignSystem.colors.text.secondary,
+  },
+  
+  moreTags: {
+    ...DesignSystem.typography.label.small,
+    color: DesignSystem.colors.text.tertiary,
+  },
+  
+  jobFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    gap: DesignSystem.spacing.lg,
+  },
+  
+  jobInfo: {
+    flex: 1,
+    gap: DesignSystem.spacing.sm,
+  },
+  
+  jobInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DesignSystem.spacing.sm,
+  },
+  
+  jobInfoText: {
+    ...DesignSystem.typography.caption,
+    color: DesignSystem.colors.text.tertiary,
+  },
+  
+  jobTypeBadge: {
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingVertical: DesignSystem.spacing.xs,
+    borderRadius: DesignSystem.radius.md,
+  },
+  
+  jobTypeText: {
+    ...DesignSystem.typography.label.small,
+    textTransform: 'capitalize',
+  },
+  
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: DesignSystem.spacing['6xl'],
+    gap: DesignSystem.spacing.xl,
+  },
+  
+  emptyStateTitle: {
+    ...DesignSystem.typography.h3,
+    color: DesignSystem.colors.text.primary,
+  },
+  
+  emptyStateSubtitle: {
+    ...DesignSystem.typography.body.medium,
+    color: DesignSystem.colors.text.secondary,
+    textAlign: 'center',
+    maxWidth: 280,
+  },
+  
+  // FAB
+  fab: {
+    position: 'absolute',
+    bottom: 160, // Above tab bar
+    right: DesignSystem.layout.containerPadding,
+    width: 56,
+    height: 56,
+    borderRadius: DesignSystem.radius.xl,
+    backgroundColor: DesignSystem.colors.primary[800],
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...DesignSystem.shadows.lg,
+    zIndex: 10,
+  },
 });

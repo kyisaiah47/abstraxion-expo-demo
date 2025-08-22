@@ -1,927 +1,692 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
-	View,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	StyleSheet,
-	ScrollView,
-	SafeAreaView,
-	Alert,
-	Switch,
-	ActivityIndicator,
-} from "react-native";
-import { Stack, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import {
-	useAbstraxionAccount,
-	useAbstraxionSigningClient,
-} from "@burnt-labs/abstraxion-react-native";
-import { ContractService } from "../lib/contractService";
-import Toast from "react-native-toast-message";
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import SophisticatedHeader from '@/components/SophisticatedHeader';
+import { DesignSystem } from '@/constants/DesignSystem';
 
 interface JobFormData {
-	title: string;
-	description: string;
-	skills: string[];
-	deadline: Date;
-	budget: string;
-	proofType: "github" | "website" | "document" | "custom";
-	customVerification: string;
-	distribution: {
-		marketplace: boolean;
-		qrCode: boolean;
-		jobCode: boolean;
-	};
+  title: string;
+  description: string;
+  category: string;
+  budget: string;
+  deadline: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | '';
+  type: 'hourly' | 'fixed' | '';
+  skills: string[];
+  location: 'remote' | 'onsite' | 'hybrid' | '';
 }
 
-const PROOF_TYPES = [
-	{ id: "github", label: "GitHub Repository", icon: "logo-github" },
-	{ id: "website", label: "Website/Portfolio Link", icon: "globe-outline" },
-	{ id: "document", label: "Document Upload", icon: "document-outline" },
-	{ id: "custom", label: "Custom Verification", icon: "settings-outline" },
+const JOB_CATEGORIES = [
+  'Data Entry',
+  'Content Creation',
+  'Image Processing',
+  'Content Moderation',
+  'Research',
+  'Virtual Assistant',
+  'Quality Assurance',
+  'Translation',
+  'Other',
 ];
 
-export default function CreateJobScreen() {
-	const router = useRouter();
-	const { data: account } = useAbstraxionAccount();
-	const { client } = useAbstraxionSigningClient();
+const DIFFICULTY_LEVELS = [
+  { value: 'beginner', label: 'Beginner', description: 'Entry level, no experience required' },
+  { value: 'intermediate', label: 'Intermediate', description: 'Some experience preferred' },
+  { value: 'advanced', label: 'Advanced', description: 'Expert level, specialized skills' },
+];
 
-	const [creating, setCreating] = useState(false);
-	const [formData, setFormData] = useState<JobFormData>({
-		title: "",
-		description: "",
-		skills: [],
-		deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-		budget: "",
-		proofType: "github",
-		customVerification: "",
-		distribution: {
-			marketplace: true,
-			qrCode: false,
-			jobCode: true,
-		},
-	});
+const JOB_TYPES = [
+  { value: 'hourly', label: 'Hourly Rate', description: 'Pay per hour worked' },
+  { value: 'fixed', label: 'Fixed Price', description: 'One-time payment for project' },
+];
 
-	const [skillInput, setSkillInput] = useState("");
-	const [isDraft, setIsDraft] = useState(false);
+const LOCATION_OPTIONS = [
+  { value: 'remote', label: 'Remote', description: 'Work from anywhere' },
+  { value: 'onsite', label: 'On-site', description: 'Work at specific location' },
+  { value: 'hybrid', label: 'Hybrid', description: 'Mix of remote and on-site' },
+];
 
-	// Generate job code based on title
-	const generateJobCode = (title: string) => {
-		const words = title
-			.toUpperCase()
-			.replace(/[^A-Z0-9 ]/g, "")
-			.split(" ");
-		const code = words.slice(0, 2).join("") + "2024";
-		return code.substring(0, 8);
-	};
+export default function SophisticatedCreateJob() {
+  const [formData, setFormData] = useState<JobFormData>({
+    title: '',
+    description: '',
+    category: '',
+    budget: '',
+    deadline: '',
+    difficulty: '',
+    type: '',
+    skills: [],
+    location: '',
+  });
 
-	const addSkill = () => {
-		if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
-			setFormData((prev) => ({
-				...prev,
-				skills: [...prev.skills, skillInput.trim()],
-			}));
-			setSkillInput("");
-		}
-	};
+  const [currentSkill, setCurrentSkill] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const removeSkill = (skill: string) => {
-		setFormData((prev) => ({
-			...prev,
-			skills: prev.skills.filter((s) => s !== skill),
-		}));
-	};
+  const updateFormData = (field: keyof JobFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-	const handleCreate = async () => {
-		// Validation
-		if (!formData.title.trim()) {
-			Alert.alert("Error", "Please enter a job title");
-			return;
-		}
-		if (!formData.description.trim()) {
-			Alert.alert("Error", "Please enter a job description");
-			return;
-		}
-		if (!formData.budget.trim() || parseFloat(formData.budget) <= 0) {
-			Alert.alert("Error", "Please enter a valid budget amount");
-			return;
-		}
+  const addSkill = () => {
+    if (currentSkill.trim() && !formData.skills.includes(currentSkill.trim())) {
+      updateFormData('skills', [...formData.skills, currentSkill.trim()]);
+      setCurrentSkill('');
+    }
+  };
 
-		if (!account || !client) {
-			Alert.alert("Error", "Please connect your wallet first");
-			return;
-		}
+  const removeSkill = (skill: string) => {
+    updateFormData('skills', formData.skills.filter(s => s !== skill));
+  };
 
-		setCreating(true);
+  const validateForm = (): boolean => {
+    if (!formData.title.trim()) {
+      Alert.alert('Validation Error', 'Please enter a job title');
+      return false;
+    }
+    if (!formData.description.trim()) {
+      Alert.alert('Validation Error', 'Please enter a job description');
+      return false;
+    }
+    if (!formData.category) {
+      Alert.alert('Validation Error', 'Please select a category');
+      return false;
+    }
+    if (!formData.budget.trim()) {
+      Alert.alert('Validation Error', 'Please enter a budget');
+      return false;
+    }
+    if (!formData.type) {
+      Alert.alert('Validation Error', 'Please select a job type');
+      return false;
+    }
+    if (!formData.difficulty) {
+      Alert.alert('Validation Error', 'Please select a difficulty level');
+      return false;
+    }
+    if (!formData.location) {
+      Alert.alert('Validation Error', 'Please select a location type');
+      return false;
+    }
+    return true;
+  };
 
-		try {
-			// Create contract service instance
-			const contractService = new ContractService(account, client);
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
 
-			// Convert budget to proper format (convert XION to uxion)
-			const budgetAmount = parseFloat(formData.budget);
-			const amountInUxion = Math.floor(budgetAmount * Math.pow(10, 6)); // Convert to uxion (6 decimals)
+    setIsSubmitting(true);
+    try {
+      // TODO: Implement job creation logic
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      
+      Alert.alert(
+        'Success',
+        'Your job has been posted successfully!',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create job. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-			// Create the job with optional deadline
-			const deadline = formData.deadline
-				? formData.deadline.toISOString()
-				: undefined;
+  const renderFormSection = (title: string, children: React.ReactNode) => (
+    <View style={styles.formSection}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {children}
+    </View>
+  );
 
-			const result = await contractService.postJob(
-				`${formData.title}\n\n${formData.description}`, // Combine title and description
-				amountInUxion,
-				deadline
-			);
+  const renderTextInput = (
+    placeholder: string,
+    value: string,
+    onChangeText: (text: string) => void,
+    multiline = false,
+    required = true
+  ) => (
+    <View style={styles.inputContainer}>
+      <TextInput
+        style={[styles.textInput, multiline && styles.textAreaInput]}
+        placeholder={placeholder}
+        placeholderTextColor={DesignSystem.colors.text.tertiary}
+        value={value}
+        onChangeText={onChangeText}
+        multiline={multiline}
+        numberOfLines={multiline ? 4 : 1}
+        textAlignVertical={multiline ? 'top' : 'center'}
+      />
+      {required && (
+        <View style={styles.requiredIndicator}>
+          <Text style={styles.requiredText}>*</Text>
+        </View>
+      )}
+    </View>
+  );
 
-			Toast.show({
-				type: "success",
-				text1: "Job Created!",
-				text2: `Job posted successfully with ${formData.budget} XION in escrow`,
-				position: "bottom",
-			});
+  const renderSelector = <T extends string>(
+    options: { value: T; label: string; description?: string }[],
+    selectedValue: T,
+    onSelect: (value: T) => void
+  ) => (
+    <View style={styles.selectorContainer}>
+      {options.map((option) => (
+        <Pressable
+          key={option.value}
+          style={[
+            styles.selectorOption,
+            selectedValue === option.value && styles.selectorOptionSelected,
+          ]}
+          onPress={() => onSelect(option.value)}
+        >
+          <View style={styles.selectorContent}>
+            <Text style={[
+              styles.selectorLabel,
+              selectedValue === option.value && styles.selectorLabelSelected,
+            ]}>
+              {option.label}
+            </Text>
+            {option.description && (
+              <Text style={[
+                styles.selectorDescription,
+                selectedValue === option.value && styles.selectorDescriptionSelected,
+              ]}>
+                {option.description}
+              </Text>
+            )}
+          </View>
+          
+          <View style={[
+            styles.selectorRadio,
+            selectedValue === option.value && styles.selectorRadioSelected,
+          ]}>
+            {selectedValue === option.value && (
+              <Ionicons
+                name="checkmark"
+                size={16}
+                color={DesignSystem.colors.text.inverse}
+              />
+            )}
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  );
 
-			// Navigate back to dashboard
-			router.replace("/dashboard");
-		} catch (error: any) {
-			console.error("Failed to create job:", error);
-			Toast.show({
-				type: "error",
-				text1: "Failed to Create Job",
-				text2: error?.message || "Unknown error occurred",
-				position: "bottom",
-			});
-		} finally {
-			setCreating(false);
-		}
-	};
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <SophisticatedHeader
+        title="Create Job"
+        subtitle="Post a new task or project"
+        showBackButton
+      />
+      
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Basic Information */}
+          {renderFormSection('Basic Information', (
+            <>
+              {renderTextInput(
+                'Enter job title (e.g. "Data Entry for E-commerce")',
+                formData.title,
+                (text) => updateFormData('title', text)
+              )}
+              
+              {renderTextInput(
+                'Describe the job requirements, expectations, and deliverables...',
+                formData.description,
+                (text) => updateFormData('description', text),
+                true
+              )}
+              
+              <View style={styles.dropdownContainer}>
+                <Text style={styles.dropdownLabel}>Category *</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.categoryScroll}
+                  contentContainerStyle={styles.categoryContainer}
+                >
+                  {JOB_CATEGORIES.map((category) => (
+                    <Pressable
+                      key={category}
+                      style={[
+                        styles.categoryChip,
+                        formData.category === category && styles.categoryChipSelected,
+                      ]}
+                      onPress={() => updateFormData('category', category)}
+                    >
+                      <Text style={[
+                        styles.categoryText,
+                        formData.category === category && styles.categoryTextSelected,
+                      ]}>
+                        {category}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            </>
+          ))}
 
-	const handleSaveDraft = () => {
-		setIsDraft(true);
-		// Save to local storage or send to backend
-		Alert.alert("Success", "Job saved as draft");
-	};
+          {/* Job Details */}
+          {renderFormSection('Job Details', (
+            <>
+              <View style={styles.budgetContainer}>
+                <Text style={styles.inputLabel}>Budget *</Text>
+                <View style={styles.budgetInputContainer}>
+                  <Text style={styles.currencySymbol}>$</Text>
+                  <TextInput
+                    style={styles.budgetInput}
+                    placeholder="0.00"
+                    placeholderTextColor={DesignSystem.colors.text.tertiary}
+                    value={formData.budget}
+                    onChangeText={(text) => updateFormData('budget', text)}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              </View>
 
-	const isFormValid =
-		formData.title.trim() &&
-		formData.description.trim() &&
-		formData.budget.trim() &&
-		parseFloat(formData.budget) > 0 &&
-		account &&
-		client;
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Payment Type *</Text>
+                {renderSelector(JOB_TYPES, formData.type, (value) => updateFormData('type', value))}
+              </View>
 
-	// Show wallet connection message if not connected
-	if (!account || !client) {
-		return (
-			<SafeAreaView style={styles.container}>
-				<Stack.Screen
-					options={{
-						title: "Post New Job",
-						headerTitleAlign: "center",
-						headerShadowVisible: false,
-						headerStyle: {
-							backgroundColor: "#FFFFFF",
-						},
-						headerTitleStyle: {
-							fontSize: 20,
-							fontWeight: "700",
-							color: "#111827",
-						},
-						headerLeft: () => (
-							<TouchableOpacity onPress={() => router.back()}>
-								<Ionicons
-									name="arrow-back"
-									size={24}
-									color="#111827"
-								/>
-							</TouchableOpacity>
-						),
-					}}
-				/>
-				<View style={styles.centered}>
-					<Ionicons
-						name="wallet-outline"
-						size={64}
-						color="#D1D5DB"
-					/>
-					<Text style={styles.emptyTitle}>Connect Your Wallet</Text>
-					<Text style={styles.emptySubtitle}>
-						Please connect your wallet to create a job
-					</Text>
-					<TouchableOpacity
-						style={styles.connectButton}
-						onPress={() => router.replace("/dashboard")}
-					>
-						<Text style={styles.connectButtonText}>Go to Dashboard</Text>
-					</TouchableOpacity>
-				</View>
-			</SafeAreaView>
-		);
-	}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Difficulty Level *</Text>
+                {renderSelector(DIFFICULTY_LEVELS, formData.difficulty, (value) => updateFormData('difficulty', value))}
+              </View>
 
-	return (
-		<SafeAreaView style={styles.container}>
-			<Stack.Screen
-				options={{
-					title: "Post New Job",
-					headerShown: true,
-					headerTitleAlign: "center",
-					headerShadowVisible: false,
-					headerStyle: {
-						backgroundColor: "#FFFFFF",
-					},
-					headerTitleStyle: {
-						fontSize: 20,
-						fontWeight: "700",
-						color: "#111827",
-					},
-					headerLeft: () => (
-						<TouchableOpacity
-							onPress={() => router.replace("/(tabs)/dashboard")}
-						>
-							<Ionicons
-								name="arrow-back"
-								size={24}
-								color="#111827"
-							/>
-						</TouchableOpacity>
-					),
-				}}
-			/>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Location Type *</Text>
+                {renderSelector(LOCATION_OPTIONS, formData.location, (value) => updateFormData('location', value))}
+              </View>
+            </>
+          ))}
 
-			<ScrollView
-				style={styles.content}
-				showsVerticalScrollIndicator={false}
-			>
-				{/* Job Details Card */}
-				<View style={styles.card}>
-					<View style={styles.cardHeader}>
-						<Ionicons
-							name="briefcase-outline"
-							size={20}
-							color="#111827"
-						/>
-						<Text style={styles.cardTitle}>Job Details</Text>
-					</View>
+          {/* Skills & Timeline */}
+          {renderFormSection('Skills & Timeline', (
+            <>
+              <View style={styles.skillsContainer}>
+                <Text style={styles.inputLabel}>Required Skills</Text>
+                <View style={styles.skillsInputContainer}>
+                  <TextInput
+                    style={styles.skillInput}
+                    placeholder="Add a skill and press +"
+                    placeholderTextColor={DesignSystem.colors.text.tertiary}
+                    value={currentSkill}
+                    onChangeText={setCurrentSkill}
+                    onSubmitEditing={addSkill}
+                    returnKeyType="done"
+                  />
+                  <Pressable style={styles.addSkillButton} onPress={addSkill}>
+                    <Ionicons name="add" size={20} color={DesignSystem.colors.text.inverse} />
+                  </Pressable>
+                </View>
+                
+                {formData.skills.length > 0 && (
+                  <View style={styles.skillsList}>
+                    {formData.skills.map((skill, index) => (
+                      <View key={index} style={styles.skillTag}>
+                        <Text style={styles.skillTagText}>{skill}</Text>
+                        <Pressable onPress={() => removeSkill(skill)}>
+                          <Ionicons
+                            name="close-circle"
+                            size={16}
+                            color={DesignSystem.colors.text.secondary}
+                          />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
 
-					<View style={styles.inputGroup}>
-						<Text style={styles.label}>Job Title *</Text>
-						<TextInput
-							style={styles.input}
-							placeholder="e.g., Design a modern logo for tech startup"
-							value={formData.title}
-							onChangeText={(text) =>
-								setFormData((prev) => ({ ...prev, title: text }))
-							}
-						/>
-					</View>
+              {renderTextInput(
+                'Deadline (e.g. "3 days", "1 week", "2024-12-31")',
+                formData.deadline,
+                (text) => updateFormData('deadline', text),
+                false,
+                false
+              )}
+            </>
+          ))}
 
-					<View style={styles.inputGroup}>
-						<Text style={styles.label}>Job Description *</Text>
-						<TextInput
-							style={[styles.input, styles.textArea]}
-							placeholder="Describe the work in detail, including requirements, deliverables, and any specific guidelines..."
-							value={formData.description}
-							onChangeText={(text) =>
-								setFormData((prev) => ({ ...prev, description: text }))
-							}
-							multiline
-							numberOfLines={4}
-						/>
-					</View>
+          {/* Submit Button */}
+          <View style={styles.submitSection}>
+            <Pressable
+              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Text style={styles.submitButtonText}>Creating Job...</Text>
+              ) : (
+                <>
+                  <Ionicons name="add-circle" size={20} color={DesignSystem.colors.text.inverse} />
+                  <Text style={styles.submitButtonText}>Create Job</Text>
+                </>
+              )}
+            </Pressable>
+            
+            <Text style={styles.submitNote}>
+              By creating this job, you agree to our Terms of Service and Community Guidelines.
+            </Text>
+          </View>
 
-					<View style={styles.inputGroup}>
-						<Text style={styles.label}>Required Skills</Text>
-						<View style={styles.skillsContainer}>
-							<View style={styles.skillInputRow}>
-								<TextInput
-									style={[styles.input, styles.skillInput]}
-									placeholder="Add a skill"
-									value={skillInput}
-									onChangeText={setSkillInput}
-									onSubmitEditing={addSkill}
-								/>
-								<TouchableOpacity
-									style={styles.addButton}
-									onPress={addSkill}
-								>
-									<Ionicons
-										name="add"
-										size={20}
-										color="#FFFFFF"
-									/>
-								</TouchableOpacity>
-							</View>
-							<View style={styles.skillTags}>
-								{formData.skills.map((skill, index) => (
-									<View
-										key={index}
-										style={styles.skillTag}
-									>
-										<Text style={styles.skillTagText}>{skill}</Text>
-										<TouchableOpacity onPress={() => removeSkill(skill)}>
-											<Ionicons
-												name="close"
-												size={16}
-												color="#6B7280"
-											/>
-										</TouchableOpacity>
-									</View>
-								))}
-							</View>
-						</View>
-					</View>
-
-					<View style={styles.inputGroup}>
-						<Text style={styles.label}>Deadline</Text>
-						<TouchableOpacity
-							style={styles.dateButton}
-							onPress={() => {
-								// For now, just add 7 days to current date
-								const newDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-								setFormData((prev) => ({ ...prev, deadline: newDate }));
-							}}
-						>
-							<Ionicons
-								name="calendar-outline"
-								size={20}
-								color="#6B7280"
-							/>
-							<Text style={styles.dateButtonText}>
-								{formData.deadline.toLocaleDateString()}
-							</Text>
-							<Text style={styles.dateHint}>(Tap to add 7 days)</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-
-				{/* Payment Details Card */}
-				<View style={styles.card}>
-					<View style={styles.cardHeader}>
-						<Ionicons
-							name="card-outline"
-							size={20}
-							color="#111827"
-						/>
-						<Text style={styles.cardTitle}>Payment Details</Text>
-					</View>
-
-					<View style={styles.inputGroup}>
-						<Text style={styles.label}>Job Budget (XION) *</Text>
-						<TextInput
-							style={styles.input}
-							placeholder="e.g., 25.0"
-							value={formData.budget}
-							onChangeText={(text) =>
-								setFormData((prev) => ({ ...prev, budget: text }))
-							}
-							keyboardType="decimal-pad"
-						/>
-						<View style={styles.infoBox}>
-							<Ionicons
-								name="shield-checkmark-outline"
-								size={16}
-								color="#059669"
-							/>
-							<Text style={styles.infoText}>
-								Funds will be held securely in escrow until work is verified
-							</Text>
-						</View>
-					</View>
-				</View>
-
-				{/* Verification Requirements Card */}
-				<View style={styles.card}>
-					<View style={styles.cardHeader}>
-						<Ionicons
-							name="checkmark-circle-outline"
-							size={20}
-							color="#111827"
-						/>
-						<Text style={styles.cardTitle}>Verification Requirements</Text>
-					</View>
-
-					<View style={styles.inputGroup}>
-						<Text style={styles.label}>Proof Type</Text>
-						<View style={styles.proofTypeContainer}>
-							{PROOF_TYPES.map((type) => (
-								<TouchableOpacity
-									key={type.id}
-									style={[
-										styles.proofTypeOption,
-										formData.proofType === type.id && styles.proofTypeSelected,
-									]}
-									onPress={() =>
-										setFormData((prev) => ({
-											...prev,
-											proofType: type.id as any,
-										}))
-									}
-								>
-									<Ionicons
-										name={type.icon as any}
-										size={20}
-										color={
-											formData.proofType === type.id ? "#FFFFFF" : "#6B7280"
-										}
-									/>
-									<Text
-										style={[
-											styles.proofTypeText,
-											formData.proofType === type.id &&
-												styles.proofTypeTextSelected,
-										]}
-									>
-										{type.label}
-									</Text>
-								</TouchableOpacity>
-							))}
-						</View>
-					</View>
-
-					{formData.proofType === "custom" && (
-						<View style={styles.inputGroup}>
-							<Text style={styles.label}>Custom Verification Instructions</Text>
-							<TextInput
-								style={[styles.input, styles.textArea]}
-								placeholder="Describe how the freelancer should prove completion..."
-								value={formData.customVerification}
-								onChangeText={(text) =>
-									setFormData((prev) => ({ ...prev, customVerification: text }))
-								}
-								multiline
-								numberOfLines={3}
-							/>
-						</View>
-					)}
-
-					<View style={styles.infoBox}>
-						<Ionicons
-							name="information-circle-outline"
-							size={16}
-							color="#3B82F6"
-						/>
-						<Text style={styles.infoText}>
-							zkTLS verification ensures proof authenticity without revealing
-							sensitive data
-						</Text>
-					</View>
-				</View>
-
-				{/* Job Distribution Card */}
-				<View style={styles.card}>
-					<View style={styles.cardHeader}>
-						<Ionicons
-							name="share-outline"
-							size={20}
-							color="#111827"
-						/>
-						<Text style={styles.cardTitle}>Job Distribution</Text>
-					</View>
-
-					<View style={styles.distributionOptions}>
-						<View style={styles.distributionOption}>
-							<View style={styles.distributionInfo}>
-								<Ionicons
-									name="storefront-outline"
-									size={20}
-									color="#6B7280"
-								/>
-								<Text style={styles.distributionLabel}>Public Marketplace</Text>
-							</View>
-							<Switch
-								value={formData.distribution.marketplace}
-								onValueChange={(value) =>
-									setFormData((prev) => ({
-										...prev,
-										distribution: { ...prev.distribution, marketplace: value },
-									}))
-								}
-							/>
-						</View>
-
-						<View style={styles.distributionOption}>
-							<View style={styles.distributionInfo}>
-								<Ionicons
-									name="qr-code-outline"
-									size={20}
-									color="#6B7280"
-								/>
-								<Text style={styles.distributionLabel}>Generate QR Code</Text>
-							</View>
-							<Switch
-								value={formData.distribution.qrCode}
-								onValueChange={(value) =>
-									setFormData((prev) => ({
-										...prev,
-										distribution: { ...prev.distribution, qrCode: value },
-									}))
-								}
-							/>
-						</View>
-
-						<View style={styles.distributionOption}>
-							<View style={styles.distributionInfo}>
-								<Ionicons
-									name="code-outline"
-									size={20}
-									color="#6B7280"
-								/>
-								<Text style={styles.distributionLabel}>Generate Job Code</Text>
-							</View>
-							<Switch
-								value={formData.distribution.jobCode}
-								onValueChange={(value) =>
-									setFormData((prev) => ({
-										...prev,
-										distribution: { ...prev.distribution, jobCode: value },
-									}))
-								}
-							/>
-						</View>
-					</View>
-
-					{formData.distribution.jobCode && formData.title.trim() && (
-						<View style={styles.jobCodePreview}>
-							<Text style={styles.jobCodeLabel}>Job Code Preview:</Text>
-							<View style={styles.jobCodeContainer}>
-								<Text style={styles.jobCode}>
-									{generateJobCode(formData.title)}
-								</Text>
-								<Ionicons
-									name="copy-outline"
-									size={16}
-									color="#6B7280"
-								/>
-							</View>
-						</View>
-					)}
-				</View>
-
-				{/* Action Buttons */}
-				<View style={styles.actionButtons}>
-					<TouchableOpacity
-						style={[
-							styles.primaryButton,
-							{ opacity: isFormValid && !creating ? 1 : 0.6 },
-						]}
-						onPress={handleCreate}
-						disabled={!isFormValid || creating}
-					>
-						{creating ? (
-							<Text style={styles.primaryButtonText}>Creating Job...</Text>
-						) : (
-							<>
-								<Ionicons
-									name="shield-checkmark"
-									size={20}
-									color="#FFFFFF"
-								/>
-								<Text style={styles.primaryButtonText}>
-									Create Job & Escrow Funds ({formData.budget || "0"} XION)
-								</Text>
-							</>
-						)}
-					</TouchableOpacity>
-
-					<TouchableOpacity
-						style={styles.secondaryButton}
-						onPress={handleSaveDraft}
-					>
-						<Ionicons
-							name="bookmark-outline"
-							size={20}
-							color="#6B7280"
-						/>
-						<Text style={styles.secondaryButtonText}>Save as Draft</Text>
-					</TouchableOpacity>
-				</View>
-			</ScrollView>
-		</SafeAreaView>
-	);
+          <View style={styles.bottomSpacer} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-	// Container - clean white background like onboarding
-	container: {
-		flex: 1,
-		backgroundColor: "#ffffff",
-	},
-	content: {
-		flex: 1,
-		paddingHorizontal: 32,
-		paddingTop: 8,
-	},
-
-	// Cards - sophisticated design matching onboarding
-	card: {
-		backgroundColor: "#ffffff",
-		borderRadius: 16,
-		padding: 32,
-		marginBottom: 24,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.06,
-		shadowRadius: 16,
-		elevation: 4,
-		borderWidth: 1,
-		borderColor: "#f0f0f0",
-	},
-	cardHeader: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginBottom: 24,
-		gap: 12,
-	},
-	cardTitle: {
-		fontSize: 24,
-		fontWeight: "700",
-		color: "#191919",
-		letterSpacing: -0.3,
-	},
-
-	// Form Elements - spacious and clean
-	inputGroup: {
-		marginBottom: 24,
-	},
-	label: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#191919",
-		marginBottom: 12,
-		letterSpacing: 0.1,
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: "#e1e5e9",
-		borderRadius: 12,
-		padding: 20,
-		fontSize: 16,
-		backgroundColor: "#fafafa",
-		color: "#191919",
-		fontWeight: "400",
-	},
-	textArea: {
-		height: 120,
-		textAlignVertical: "top",
-		lineHeight: 22,
-	},
-
-	// Skills Section - refined design
-	skillsContainer: {
-		gap: 16,
-	},
-	skillInputRow: {
-		flexDirection: "row",
-		gap: 12,
-	},
-	skillInput: {
-		flex: 1,
-	},
-	addButton: {
-		backgroundColor: "#191919",
-		padding: 20,
-		borderRadius: 12,
-		justifyContent: "center",
-		alignItems: "center",
-		shadowColor: "#191919",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 8,
-		elevation: 2,
-	},
-	skillTags: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		gap: 12,
-	},
-	skillTag: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#f8f9fa",
-		paddingHorizontal: 16,
-		paddingVertical: 8,
-		borderRadius: 20,
-		gap: 8,
-		borderWidth: 1,
-		borderColor: "#f0f0f0",
-	},
-	skillTagText: {
-		fontSize: 14,
-		color: "#191919",
-		fontWeight: "500",
-	},
-
-	// Date Button - clean design
-	dateButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		borderWidth: 1,
-		borderColor: "#e1e5e9",
-		borderRadius: 12,
-		padding: 20,
-		backgroundColor: "#fafafa",
-		gap: 12,
-	},
-	dateButtonText: {
-		fontSize: 16,
-		color: "#191919",
-		fontWeight: "400",
-	},
-	dateHint: {
-		fontSize: 14,
-		color: "#666",
-		marginLeft: "auto",
-	},
-
-	// Info Boxes - sophisticated messaging
-	infoBox: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#f0fdf4",
-		padding: 16,
-		borderRadius: 12,
-		marginTop: 12,
-		gap: 12,
-		borderWidth: 1,
-		borderColor: "#dcfce7",
-	},
-	infoText: {
-		fontSize: 14,
-		color: "#166534",
-		flex: 1,
-		lineHeight: 20,
-		fontWeight: "400",
-	},
-	// Proof Type Selection - sophisticated options
-	proofTypeContainer: {
-		gap: 12,
-	},
-	proofTypeOption: {
-		flexDirection: "row",
-		alignItems: "center",
-		padding: 20,
-		borderWidth: 1,
-		borderColor: "#e1e5e9",
-		borderRadius: 12,
-		backgroundColor: "#fafafa",
-		gap: 16,
-		minHeight: 64,
-	},
-	proofTypeSelected: {
-		backgroundColor: "#191919",
-		borderColor: "#191919",
-		shadowColor: "#191919",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 8,
-		elevation: 2,
-	},
-	proofTypeText: {
-		fontSize: 16,
-		color: "#191919",
-		fontWeight: "500",
-		letterSpacing: 0.1,
-	},
-	proofTypeTextSelected: {
-		color: "#ffffff",
-	},
-
-	// Distribution Options - clean switches
-	distributionOptions: {
-		gap: 16,
-	},
-	distributionOption: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		paddingVertical: 12,
-	},
-	distributionInfo: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 16,
-	},
-	distributionLabel: {
-		fontSize: 16,
-		color: "#191919",
-		fontWeight: "500",
-		letterSpacing: 0.1,
-	},
-
-	// Job Code Preview - professional display
-	jobCodePreview: {
-		marginTop: 20,
-		padding: 20,
-		backgroundColor: "#f8f9fa",
-		borderRadius: 12,
-		borderWidth: 1,
-		borderColor: "#f0f0f0",
-	},
-	jobCodeLabel: {
-		fontSize: 14,
-		color: "#666",
-		marginBottom: 12,
-		fontWeight: "500",
-	},
-	jobCodeContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-	},
-	jobCode: {
-		fontSize: 20,
-		fontWeight: "700",
-		color: "#191919",
-		fontFamily: "monospace",
-		letterSpacing: 1,
-	},
-
-	// Action Buttons - sophisticated design like onboarding
-	actionButtons: {
-		gap: 16,
-		marginBottom: 48,
-	},
-	primaryButton: {
-		backgroundColor: "#191919",
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		paddingVertical: 20,
-		paddingHorizontal: 32,
-		borderRadius: 12,
-		gap: 12,
-		shadowColor: "#191919",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.15,
-		shadowRadius: 12,
-		elevation: 6,
-	},
-	primaryButtonText: {
-		color: "#ffffff",
-		fontSize: 18,
-		fontWeight: "600",
-		letterSpacing: 0.2,
-	},
-	secondaryButton: {
-		backgroundColor: "#ffffff",
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		paddingVertical: 20,
-		paddingHorizontal: 32,
-		borderRadius: 12,
-		borderWidth: 1,
-		borderColor: "#e1e5e9",
-		gap: 12,
-	},
-	secondaryButtonText: {
-		color: "#666",
-		fontSize: 18,
-		fontWeight: "600",
-		letterSpacing: 0.2,
-	},
-
-	// Empty States - matching onboarding sophistication
-	centered: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		paddingHorizontal: 32,
-	},
-	emptyTitle: {
-		fontSize: 24,
-		fontWeight: "700",
-		color: "#191919",
-		marginTop: 24,
-		marginBottom: 12,
-		textAlign: "center",
-		letterSpacing: -0.3,
-	},
-	emptySubtitle: {
-		fontSize: 16,
-		color: "#666",
-		textAlign: "center",
-		marginBottom: 32,
-		lineHeight: 22,
-		fontWeight: "400",
-	},
-	connectButton: {
-		backgroundColor: "#191919",
-		borderRadius: 12,
-		paddingVertical: 20,
-		paddingHorizontal: 32,
-		alignItems: "center",
-		shadowColor: "#191919",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.15,
-		shadowRadius: 12,
-		elevation: 6,
-	},
-	connectButtonText: {
-		color: "#ffffff",
-		fontSize: 18,
-		fontWeight: "600",
-		letterSpacing: 0.2,
-	},
+  container: {
+    flex: 1,
+    backgroundColor: DesignSystem.colors.surface.primary,
+  },
+  
+  keyboardAvoid: {
+    flex: 1,
+  },
+  
+  scrollView: {
+    flex: 1,
+  },
+  
+  scrollContent: {
+    paddingHorizontal: DesignSystem.layout.containerPadding,
+    paddingTop: DesignSystem.spacing['2xl'],
+  },
+  
+  // Form Sections
+  formSection: {
+    marginBottom: DesignSystem.spacing['4xl'],
+  },
+  
+  sectionTitle: {
+    ...DesignSystem.typography.h3,
+    color: DesignSystem.colors.text.primary,
+    marginBottom: DesignSystem.spacing['2xl'],
+  },
+  
+  // Input Components
+  inputContainer: {
+    marginBottom: DesignSystem.spacing['2xl'],
+  },
+  
+  inputLabel: {
+    ...DesignSystem.typography.label.medium,
+    color: DesignSystem.colors.text.primary,
+    marginBottom: DesignSystem.spacing.md,
+  },
+  
+  textInput: {
+    backgroundColor: DesignSystem.colors.surface.secondary,
+    borderRadius: DesignSystem.radius.lg,
+    padding: DesignSystem.spacing.xl,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.primary,
+    ...DesignSystem.typography.body.medium,
+    color: DesignSystem.colors.text.primary,
+    minHeight: 56,
+  },
+  
+  textAreaInput: {
+    minHeight: 120,
+    paddingTop: DesignSystem.spacing.xl,
+  },
+  
+  requiredIndicator: {
+    position: 'absolute',
+    top: DesignSystem.spacing.xl,
+    right: DesignSystem.spacing.xl,
+  },
+  
+  requiredText: {
+    ...DesignSystem.typography.label.medium,
+    color: DesignSystem.colors.status.error,
+  },
+  
+  // Budget Input
+  budgetContainer: {
+    marginBottom: DesignSystem.spacing['2xl'],
+  },
+  
+  budgetInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: DesignSystem.colors.surface.secondary,
+    borderRadius: DesignSystem.radius.lg,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.primary,
+    paddingLeft: DesignSystem.spacing.xl,
+  },
+  
+  currencySymbol: {
+    ...DesignSystem.typography.body.large,
+    color: DesignSystem.colors.text.secondary,
+    marginRight: DesignSystem.spacing.sm,
+  },
+  
+  budgetInput: {
+    flex: 1,
+    padding: DesignSystem.spacing.xl,
+    ...DesignSystem.typography.body.medium,
+    color: DesignSystem.colors.text.primary,
+    minHeight: 56,
+  },
+  
+  // Category Selector
+  dropdownContainer: {
+    marginBottom: DesignSystem.spacing['2xl'],
+  },
+  
+  dropdownLabel: {
+    ...DesignSystem.typography.label.medium,
+    color: DesignSystem.colors.text.primary,
+    marginBottom: DesignSystem.spacing.md,
+  },
+  
+  categoryScroll: {
+    flexGrow: 0,
+  },
+  
+  categoryContainer: {
+    gap: DesignSystem.spacing.md,
+    paddingRight: DesignSystem.spacing.xl,
+  },
+  
+  categoryChip: {
+    paddingHorizontal: DesignSystem.spacing.xl,
+    paddingVertical: DesignSystem.spacing.md,
+    borderRadius: DesignSystem.radius.xl,
+    backgroundColor: DesignSystem.colors.surface.secondary,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.primary,
+  },
+  
+  categoryChipSelected: {
+    backgroundColor: DesignSystem.colors.primary[800],
+    borderColor: DesignSystem.colors.primary[800],
+  },
+  
+  categoryText: {
+    ...DesignSystem.typography.label.medium,
+    color: DesignSystem.colors.text.secondary,
+  },
+  
+  categoryTextSelected: {
+    color: DesignSystem.colors.text.inverse,
+  },
+  
+  // Selector Components
+  selectorContainer: {
+    gap: DesignSystem.spacing.md,
+  },
+  
+  selectorOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: DesignSystem.spacing.xl,
+    backgroundColor: DesignSystem.colors.surface.secondary,
+    borderRadius: DesignSystem.radius.lg,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.primary,
+    gap: DesignSystem.spacing.lg,
+  },
+  
+  selectorOptionSelected: {
+    backgroundColor: DesignSystem.colors.primary[50],
+    borderColor: DesignSystem.colors.primary[800],
+  },
+  
+  selectorContent: {
+    flex: 1,
+    gap: DesignSystem.spacing.xs,
+  },
+  
+  selectorLabel: {
+    ...DesignSystem.typography.label.medium,
+    color: DesignSystem.colors.text.primary,
+  },
+  
+  selectorLabelSelected: {
+    color: DesignSystem.colors.primary[800],
+  },
+  
+  selectorDescription: {
+    ...DesignSystem.typography.body.small,
+    color: DesignSystem.colors.text.secondary,
+  },
+  
+  selectorDescriptionSelected: {
+    color: DesignSystem.colors.primary[700],
+  },
+  
+  selectorRadio: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: DesignSystem.colors.border.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  selectorRadioSelected: {
+    backgroundColor: DesignSystem.colors.primary[800],
+    borderColor: DesignSystem.colors.primary[800],
+  },
+  
+  // Skills Input
+  skillsContainer: {
+    marginBottom: DesignSystem.spacing['2xl'],
+  },
+  
+  skillsInputContainer: {
+    flexDirection: 'row',
+    gap: DesignSystem.spacing.md,
+  },
+  
+  skillInput: {
+    flex: 1,
+    backgroundColor: DesignSystem.colors.surface.secondary,
+    borderRadius: DesignSystem.radius.lg,
+    padding: DesignSystem.spacing.xl,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.primary,
+    ...DesignSystem.typography.body.medium,
+    color: DesignSystem.colors.text.primary,
+    minHeight: 56,
+  },
+  
+  addSkillButton: {
+    width: 56,
+    height: 56,
+    borderRadius: DesignSystem.radius.lg,
+    backgroundColor: DesignSystem.colors.primary[800],
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...DesignSystem.shadows.sm,
+  },
+  
+  skillsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: DesignSystem.spacing.md,
+    marginTop: DesignSystem.spacing.lg,
+  },
+  
+  skillTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: DesignSystem.colors.surface.tertiary,
+    borderRadius: DesignSystem.radius.md,
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingVertical: DesignSystem.spacing.sm,
+    gap: DesignSystem.spacing.sm,
+    borderWidth: 1,
+    borderColor: DesignSystem.colors.border.tertiary,
+  },
+  
+  skillTagText: {
+    ...DesignSystem.typography.label.small,
+    color: DesignSystem.colors.text.secondary,
+  },
+  
+  // Submit Section
+  submitSection: {
+    marginTop: DesignSystem.spacing['2xl'],
+    gap: DesignSystem.spacing.lg,
+  },
+  
+  submitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DesignSystem.colors.primary[800],
+    borderRadius: DesignSystem.radius.lg,
+    padding: DesignSystem.spacing.xl,
+    gap: DesignSystem.spacing.md,
+    ...DesignSystem.shadows.md,
+    minHeight: 56,
+  },
+  
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  
+  submitButtonText: {
+    ...DesignSystem.typography.label.large,
+    color: DesignSystem.colors.text.inverse,
+  },
+  
+  submitNote: {
+    ...DesignSystem.typography.body.small,
+    color: DesignSystem.colors.text.tertiary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  
+  bottomSpacer: {
+    height: 140,
+  },
 });
