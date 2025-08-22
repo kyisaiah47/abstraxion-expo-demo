@@ -1,13 +1,37 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+// Payment detail hook
+export function usePaymentDetail(paymentId: string) {
+	const [payment, setPayment] = useState<Payment | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const fetch = useCallback(async () => {
+		setLoading(true);
+		setError(null);
+		try {
+			const client = await getReadClient();
+			const contract = new SocialPaymentContract(client);
+			const result = await contract.getPayment(paymentId);
+			setPayment(result.payment || null);
+		} catch (e: any) {
+			setError(e.message);
+			setPayment(null);
+		} finally {
+			setLoading(false);
+		}
+	}, [paymentId]);
+
+	useEffect(() => {
+		fetch();
+	}, [fetch]);
+
+	return { payment, loading, error, refetch: fetch };
+}
 import {
 	SocialPaymentContract,
 	User,
 	Payment,
-	PaymentType,
 	ProofType,
-	PaymentStatus,
-	XION_RPC_ENDPOINT,
-	SOCIAL_CONTRACT_ADDRESS,
 } from "../lib/socialContract";
 import {
 	CosmWasmClient,
@@ -225,6 +249,55 @@ export function usePendingPayments(username: string) {
 
 // useSocialOperations: hook for write operations
 export function useSocialOperations(signer: any) {
+	// Approve payment
+	const approvePayment = useCallback(
+		async (paymentId: string) => {
+			setLoading(true);
+			setError(null);
+			try {
+				const contract = await getContract();
+				if (!(contract.client instanceof SigningCosmWasmClient))
+					throw new Error("Client must be SigningCosmWasmClient for writes");
+				return await contract.client.execute(
+					signer,
+					contract.contractAddress,
+					{ approve_payment: { payment_id: paymentId } },
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[getContract, signer]
+	);
+
+	// Reject payment
+	const rejectPayment = useCallback(
+		async (paymentId: string) => {
+			setLoading(true);
+			setError(null);
+			try {
+				const contract = await getContract();
+				if (!(contract.client instanceof SigningCosmWasmClient))
+					throw new Error("Client must be SigningCosmWasmClient for writes");
+				return await contract.client.execute(
+					signer,
+					contract.contractAddress,
+					{ reject_payment: { payment_id: paymentId } },
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[getContract, signer]
+	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -367,5 +440,7 @@ export function useSocialOperations(signer: any) {
 		createPaymentRequest,
 		createHelpRequest,
 		submitProof,
+		approvePayment,
+		rejectPayment,
 	};
 }
