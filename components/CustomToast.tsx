@@ -1,7 +1,15 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-export default function CustomToast({ text1, text2, ...props }) {
+export default function CustomToast({
+	text1,
+	text2,
+	...props
+}: {
+	text1: any;
+	text2: any;
+	[key: string]: any;
+}) {
 	return (
 		<View style={styles.toastContainer}>
 			<Text style={styles.toastTitle}>{text1}</Text>

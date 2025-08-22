@@ -14,16 +14,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
-import CreateTaskForm from "@/components/CreateTaskForm";
+import SocialPaymentForm from "@/components/SocialPaymentForm";
+import PaymentTabSwitcher from "@/components/PaymentTabSwitcher";
 import InfoCard from "@/components/InfoCard";
 import { DesignSystem } from "@/constants/DesignSystem";
-import { TaskFormData } from "@/types/proofpay";
+import { PaymentFormData, PaymentType } from "@/types/proofpay";
 
 export default function CreateScreen() {
+	const [activeTab, setActiveTab] = useState<PaymentType>("request_help");
 	const [showQRModal, setShowQRModal] = useState(false);
-	const [taskCode, setTaskCode] = useState("");
+	const [requestCode, setRequestCode] = useState("");
 
 	const { logout } =
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		require("@burnt-labs/abstraxion-react-native").useAbstraxionAccount();
 
 	const handleLogout = async () => {
@@ -38,7 +41,7 @@ export default function CreateScreen() {
 		}
 	};
 
-	const generateTaskCode = (): string => {
+	const generateRequestCode = (): string => {
 		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		let result = "";
 		for (let i = 0; i < 8; i++) {
@@ -47,26 +50,33 @@ export default function CreateScreen() {
 		return result;
 	};
 
-	const handleSubmit = (payload: TaskFormData) => {
-		console.log("Creating task:", payload);
+	const handleSubmit = (payload: PaymentFormData) => {
+		console.log("Creating payment request:", payload);
 
-		// Generate task code
-		const code = generateTaskCode();
-		setTaskCode(code);
+		// Generate request code
+		const code = generateRequestCode();
+		setRequestCode(code);
 
-		// Show success and navigate back or stay on create
+		// Show success message based on payment type
+		const getSuccessMessage = () => {
+			switch (payload.type) {
+				case "request_help":
+					return "Help Request Sent! 🙏";
+				case "request_money":
+					return "Payment Request Sent! 💳";
+				case "send_money":
+					return "Payment Sent! �";
+			}
+		};
+
 		Alert.alert(
-			"Help Request Sent! 🙏",
+			getSuccessMessage(),
 			`Your request has been shared with code: ${code}`,
 			[
-				{ text: "Share QR", onPress: () => setShowQRModal(true) },
-				{ text: "Great!", onPress: () => router.push("/(tabs)/activity") },
+				{ text: "Share", onPress: () => setShowQRModal(true) },
+				{ text: "Done", onPress: () => router.push("/(tabs)/activity") },
 			]
 		);
-	};
-
-	const handleShareQR = () => {
-		setShowQRModal(true);
 	};
 
 	const renderQRModal = () => (
@@ -98,7 +108,7 @@ export default function CreateScreen() {
 							/>
 						</View>
 						<Text style={styles.qrSubtext}>
-							Share this with friends: {taskCode}
+							Share this with friends: {requestCode}
 						</Text>
 					</View>
 
@@ -119,8 +129,8 @@ export default function CreateScreen() {
 			edges={["top"]}
 		>
 			<SophisticatedHeader
-				title="Ask for Help"
-				subtitle="Get help from friends with fair appreciation"
+				title="Social Payments"
+				subtitle="Send, request, and get help from friends"
 				onLogout={handleLogout}
 			/>
 
@@ -134,28 +144,24 @@ export default function CreateScreen() {
 					keyboardShouldPersistTaps="handled"
 					showsVerticalScrollIndicator={false}
 				>
-					{/* Task Creation Form */}
-					<CreateTaskForm onSubmit={handleSubmit} />
+					{/* Payment Type Tabs */}
+					<PaymentTabSwitcher
+						activeTab={activeTab}
+						onTabChange={setActiveTab}
+					/>
+
+					{/* Social Payment Form */}
+					<SocialPaymentForm
+						paymentType={activeTab}
+						onSubmit={handleSubmit}
+					/>
 
 					{/* Info Block */}
 					<InfoCard
 						title="Secured by Crypto"
-						body="Payments are protected with cryptographic verification"
+						body="All payments are protected with cryptographic verification on XION"
 						icon="shield-checkmark"
 					/>
-
-					{/* Secondary Action */}
-					<Pressable
-						style={styles.shareButton}
-						onPress={handleShareQR}
-					>
-						<Ionicons
-							name="qr-code-outline"
-							size={20}
-							color={DesignSystem.colors.text.primary}
-						/>
-						<Text style={styles.shareButtonText}>Share with Friends</Text>
-					</Pressable>
 
 					{/* Bottom Spacer */}
 					<View style={styles.bottomSpacer} />
@@ -185,24 +191,6 @@ const styles = StyleSheet.create({
 		paddingHorizontal: DesignSystem.layout.containerPadding,
 		paddingTop: DesignSystem.spacing["2xl"],
 		gap: DesignSystem.spacing["4xl"],
-	},
-
-	shareButton: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["2xl"],
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: DesignSystem.spacing.md,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		minHeight: 56,
-	},
-
-	shareButtonText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
 	},
 
 	bottomSpacer: {

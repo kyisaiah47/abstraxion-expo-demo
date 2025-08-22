@@ -29,11 +29,18 @@ const tabItems: TabBarItem[] = [
 		label: "Create",
 	},
 	{
+		name: "friends",
+		href: "/(tabs)/friends",
+		icon: "people-outline",
+		activeIcon: "people",
+		label: "Friends",
+	},
+	{
 		name: "profile",
 		href: "/(tabs)/profile",
 		icon: "person-outline",
 		activeIcon: "person",
-		label: "Proof ID",
+		label: "Profile",
 	},
 ];
 

@@ -26,9 +26,15 @@ export default function TabLayout() {
 					}}
 				/>
 				<Tabs.Screen
+					name="friends"
+					options={{
+						title: "Friends",
+					}}
+				/>
+				<Tabs.Screen
 					name="profile"
 					options={{
-						title: "Proof ID",
+						title: "Profile",
 					}}
 				/>
 				{/* Hide these from tab bar - they should be stack pages */}
