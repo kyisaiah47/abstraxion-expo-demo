@@ -326,7 +326,7 @@ export default function OnboardingScreen() {
 						<View style={styles.logoShadowWrapper}>
 							<Image
 								source={{
-									uri: "https://hvnbpd9agmcawbt2.public.blob.vercel-storage.com/Grow.png",
+									uri: "https://rvpptly5bhkny5oc.public.blob.vercel-storage.com/Proof%20of%20Work",
 								}}
 								style={styles.logo}
 								resizeMode="contain"
