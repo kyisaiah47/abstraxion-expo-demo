@@ -1,7 +1,5 @@
 # Proof of Work - Social Payments Platform
 
-# PET-Toolkit: Proof-of-Work Social Payment App
-
 A modern social payment app inspired by Venmo, with proof-of-work and blockchain security. Request help, send/request payments, and verify actions with text, photo, or zkTLS proofs. All payments are secured by the XION blockchain.
 
 ## ✨ Key Features
