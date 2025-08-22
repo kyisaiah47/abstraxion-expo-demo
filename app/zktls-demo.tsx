@@ -14,14 +14,17 @@ import {
 	TouchableOpacity,
 	Alert,
 	SafeAreaView,
+	Pressable,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
-import { ThemedText } from "../components/ThemedText";
-import { ThemedView } from "../components/ThemedView";
 import ZKTLSVerification from "../components/ZKTLSVerification";
 import { useZKTLSVerification } from "../lib/zkTLS";
-import { RECLAIM_CONFIG } from "../constants/contracts";
 import { Ionicons } from "@expo/vector-icons";
+import { DesignSystem } from "../constants/DesignSystem";
+import StepCard from "../components/StepCard";
+import ProofVerifiedCard from "../components/ProofVerifiedCard";
+import InfoCard from "../components/InfoCard";
+import TrustFooter from "../components/TrustFooter";
 
 // Mock job for demo purposes
 const demoJob = {
@@ -82,281 +85,200 @@ export default function ZKTLSDemoScreen() {
 			<Stack.Screen
 				options={{
 					headerShown: true,
-					title: "zkTLS Demo",
+					title: "zkTLS Proof Demo",
+					headerStyle: {
+						backgroundColor: DesignSystem.colors.surface.primary,
+					},
+					headerTitleStyle: {
+						...DesignSystem.typography.h3,
+						color: DesignSystem.colors.text.primary,
+					},
 					headerLeft: () => (
-						<TouchableOpacity
+						<Pressable
 							onPress={() => router.back()}
-							style={{ padding: 8, marginLeft: -8 }}
+							style={styles.headerButton}
 						>
 							<Ionicons
-								name="arrow-back"
+								name="chevron-back"
 								size={24}
-								color="#007AFF"
+								color={DesignSystem.colors.primary[700]}
 							/>
-						</TouchableOpacity>
+						</Pressable>
 					),
 				}}
 			/>
 
 			<ScrollView
 				style={styles.scrollView}
+				contentContainerStyle={styles.scrollContent}
 				showsVerticalScrollIndicator={false}
 			>
 				{step === "intro" && (
 					<View style={styles.content}>
 						<View style={styles.header}>
-							<Ionicons
-								name="logo-github"
-								size={64}
-								color="#333"
-							/>
-							<ThemedText style={styles.title}>
-								GitHub Repository Verification
-							</ThemedText>
-							<ThemedText style={styles.subtitle}>
-								Prove you own the GitHub account that delivered the code
-							</ThemedText>
-						</View>
-						<View style={styles.infoCard}>
-							<ThemedText style={styles.cardTitle}>How it works:</ThemedText>
-							<View style={styles.stepList}>
-								<View style={styles.stepItem}>
-									<View style={styles.stepNumber}>
-										<Text style={styles.stepNumberText}>1</Text>
-									</View>
-									<View style={styles.stepContent}>
-										<ThemedText style={styles.stepTitle}>
-											Complete Work
-										</ThemedText>
-										<ThemedText style={styles.stepDescription}>
-											Finish building the code in your GitHub repository
-										</ThemedText>
-									</View>
-								</View>
-
-								<View style={styles.stepItem}>
-									<View style={styles.stepNumber}>
-										<Text style={styles.stepNumberText}>2</Text>
-									</View>
-									<View style={styles.stepContent}>
-										<ThemedText style={styles.stepTitle}>
-											Prove GitHub Ownership
-										</ThemedText>
-										<ThemedText style={styles.stepDescription}>
-											Log in with GitHub to prove you own the account that
-											delivered the code
-										</ThemedText>
-									</View>
-								</View>
-
-								<View style={styles.stepItem}>
-									<View style={styles.stepNumber}>
-										<Text style={styles.stepNumberText}>3</Text>
-									</View>
-									<View style={styles.stepContent}>
-										<ThemedText style={styles.stepTitle}>
-											Receive Payment
-										</ThemedText>
-										<ThemedText style={styles.stepDescription}>
-											Get paid for your verified GitHub contributions
-										</ThemedText>
-									</View>
-								</View>
-							</View>
-						</View>
-						<View style={styles.benefitsCard}>
-							<ThemedText style={styles.cardTitle}>Benefits:</ThemedText>
-							<View style={styles.benefitsList}>
-								<View style={styles.benefitItem}>
-									<Ionicons
-										name="flash"
-										size={20}
-										color="#FF9800"
-									/>
-									<ThemedText style={styles.benefitText}>
-										Instant payment
-									</ThemedText>
-								</View>
-								<View style={styles.benefitItem}>
-									<Ionicons
-										name="shield"
-										size={20}
-										color="#2196F3"
-									/>
-									<ThemedText style={styles.benefitText}>
-										Tamper-proof verification
-									</ThemedText>
-								</View>
-								<View style={styles.benefitItem}>
-									<Ionicons
-										name="checkmark-circle"
-										size={20}
-										color="#4CAF50"
-									/>
-									<ThemedText style={styles.benefitText}>
-										No waiting for approval
-									</ThemedText>
-								</View>
-								<View style={styles.benefitItem}>
-									<Ionicons
-										name="trending-up"
-										size={20}
-										color="#9C27B0"
-									/>
-									<ThemedText style={styles.benefitText}>
-										Better cash flow
-									</ThemedText>
-								</View>
-							</View>
-						</View>
-						<View style={styles.configStatus}>
-							<View
-								style={[
-									styles.statusBadge,
-									{ backgroundColor: isConfigured ? "#E8F5E8" : "#FFF3CD" },
-								]}
-							>
+							<View style={styles.heroIcon}>
 								<Ionicons
-									name={isConfigured ? "checkmark-circle" : "warning"}
-									size={20}
-									color={isConfigured ? "#4CAF50" : "#FF9800"}
+									name="shield-checkmark"
+									size={48}
+									color={DesignSystem.colors.primary[700]}
 								/>
-								<ThemedText
-									style={{
-										color: isConfigured ? "#2E7D32" : "#856404",
-										fontWeight: "600",
-										marginLeft: 8,
-									}}
-								>
-									{isConfigured
-										? "Reclaim Protocol Configured"
-										: "Configuration Required"}
-								</ThemedText>
 							</View>
+							<Text style={styles.title}>Automated Proof Verification</Text>
+							<Text style={styles.subtitle}>
+								Prove website delivery instantly without manual review
+							</Text>
 						</View>
-						<TouchableOpacity
-							style={[styles.demoButton, { opacity: isConfigured ? 1 : 0.6 }]}
+
+						<InfoCard
+							icon="information-circle"
+							title="Configuration Status"
+							body={
+								isConfigured
+									? "Reclaim Protocol is configured and ready"
+									: "Setup required to run verification demo"
+							}
+						/>
+
+						<View style={styles.stepsContainer}>
+							<Text style={styles.sectionTitle}>How it works</Text>
+
+							<StepCard
+								stepNumber={1}
+								title="Complete Website"
+								description="Finish building the website and deploy it to a public URL"
+								icon="code-slash"
+							/>
+
+							<StepCard
+								stepNumber={2}
+								title="Generate Cryptographic Proof"
+								description="Our system visits your URL and generates tamper-proof verification"
+								icon="shield-checkmark"
+							/>
+
+							<StepCard
+								stepNumber={3}
+								title="Release Payment Automatically"
+								description="Payment is released instantly once proof is verified on-chain"
+								icon="card"
+							/>
+						</View>
+
+						<View style={styles.benefitsContainer}>
+							<Text style={styles.sectionTitle}>Why use proofs?</Text>
+
+							<InfoCard
+								icon="flash"
+								title="Instant Settlement"
+								body="No waiting for manual approval or client review"
+							/>
+
+							<InfoCard
+								icon="shield-checkmark"
+								title="Tamper-Proof Verification"
+								body="Mathematical certainty that work was completed"
+							/>
+
+							<InfoCard
+								icon="trending-up"
+								title="Better Cash Flow"
+								body="Get paid immediately when work is delivered"
+							/>
+						</View>
+
+						<Pressable
+							style={[
+								styles.primaryButton,
+								{ opacity: isConfigured ? 1 : 0.6 },
+							]}
 							onPress={handleStartDemo}
 						>
-							<ThemedText style={styles.demoButtonText}>
-								🚀 Start Demo
-							</ThemedText>
-						</TouchableOpacity>
+							<Text style={styles.primaryButtonText}>Start Proof Demo</Text>
+						</Pressable>
+
+						<TrustFooter />
 					</View>
 				)}
 
 				{step === "demo" && (
 					<View style={styles.content}>
 						<View style={styles.demoHeader}>
-							<ThemedText style={styles.demoTitle}>
-								Demo Job: Landing Page
-							</ThemedText>
-							<ThemedText style={styles.demoDescription}>
-								Complete this sample job using zkTLS verification
-							</ThemedText>
+							<Text style={styles.demoTitle}>Demo: Landing Page Delivery</Text>
+							<Text style={styles.demoDescription}>
+								Simulating proof generation for website completion
+							</Text>
 						</View>
 
 						<ZKTLSVerification
 							job={demoJob}
 							userAddress={demoJob.worker!}
-							contractClient={null} // In demo mode, no real contract calls
+							contractClient={null}
 							onVerificationComplete={handleDemoComplete}
 						/>
 
-						<TouchableOpacity
-							style={styles.backButton}
+						<Pressable
+							style={styles.secondaryButton}
 							onPress={() => setStep("intro")}
 						>
 							<Ionicons
-								name="arrow-back"
+								name="chevron-back"
 								size={20}
-								color="#666"
+								color={DesignSystem.colors.text.secondary}
 							/>
-							<ThemedText style={styles.backButtonText}>
-								Back to Overview
-							</ThemedText>
-						</TouchableOpacity>
+							<Text style={styles.secondaryButtonText}>Back to Overview</Text>
+						</Pressable>
 					</View>
 				)}
 
 				{step === "results" && (
 					<View style={styles.content}>
-						<View style={styles.resultsHeader}>
-							<Ionicons
-								name={
-									demoResults?.success ? "checkmark-circle" : "close-circle"
-								}
-								size={64}
-								color={demoResults?.success ? "#4CAF50" : "#F44336"}
-							/>
-							<ThemedText style={styles.resultsTitle}>
-								{demoResults?.success ? "Demo Completed!" : "Demo Failed"}
-							</ThemedText>
-							<ThemedText style={styles.resultsDescription}>
-								{demoResults?.success
-									? "zkTLS verification would automatically release payment"
-									: "Something went wrong with the verification process"}
-							</ThemedText>
-						</View>
+						{demoResults?.success ? (
+							<>
+								<ProofVerifiedCard
+									title="Proof Generated Successfully"
+									subtitle="Website delivery verified with cryptographic proof"
+									details={[
+										{
+											icon: "globe",
+											text: "Website Status: Live and accessible",
+										},
+										{
+											icon: "shield-checkmark",
+											text: "Verification Method: zkTLS Protocol",
+										},
+										{ icon: "lock-closed", text: "Proof Type: Cryptographic" },
+										{
+											icon: "card",
+											text: "Payment Status: Released automatically",
+										},
+									]}
+								/>
 
-						{demoResults?.success && (
-							<View style={styles.successDetails}>
-								<ThemedText style={styles.successTitle}>
-									What happened:
-								</ThemedText>
-								<View style={styles.successStep}>
+								<TrustFooter />
+							</>
+						) : (
+							<View style={styles.errorContainer}>
+								<View style={styles.errorIcon}>
 									<Ionicons
-										name="globe"
-										size={20}
-										color="#4CAF50"
+										name="warning"
+										size={48}
+										color={DesignSystem.colors.status.error}
 									/>
-									<ThemedText style={styles.successText}>
-										Website accessibility verified
-									</ThemedText>
 								</View>
-								<View style={styles.successStep}>
-									<Ionicons
-										name="shield-checkmark"
-										size={20}
-										color="#4CAF50"
-									/>
-									<ThemedText style={styles.successText}>
-										Cryptographic proof generated
-									</ThemedText>
-								</View>
-								<View style={styles.successStep}>
-									<Ionicons
-										name="card"
-										size={20}
-										color="#4CAF50"
-									/>
-									<ThemedText style={styles.successText}>
-										Payment would be released automatically
-									</ThemedText>
-								</View>
-								{demoResults.transactionHash && (
-									<View style={styles.successStep}>
-										<Ionicons
-											name="receipt"
-											size={20}
-											color="#4CAF50"
-										/>
-										<ThemedText style={styles.successText}>
-											Transaction: {demoResults.transactionHash.slice(0, 8)}...
-										</ThemedText>
-									</View>
-								)}
+								<Text style={styles.errorTitle}>Proof Generation Failed</Text>
+								<Text style={styles.errorDescription}>
+									Unable to verify website delivery. Please check your
+									implementation and try again.
+								</Text>
 							</View>
 						)}
 
-						<TouchableOpacity
-							style={styles.resetButton}
+						<Pressable
+							style={styles.primaryButton}
 							onPress={resetDemo}
 						>
-							<ThemedText style={styles.resetButtonText}>
-								🔄 Try Again
-							</ThemedText>
-						</TouchableOpacity>
+							<Text style={styles.primaryButtonText}>Try Demo Again</Text>
+						</Pressable>
 					</View>
 				)}
 			</ScrollView>
@@ -367,196 +289,146 @@ export default function ZKTLSDemoScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#F8F9FA",
+		backgroundColor: DesignSystem.colors.surface.primary,
 	},
+
 	scrollView: {
 		flex: 1,
 	},
-	content: {
-		padding: 20,
+
+	scrollContent: {
+		flexGrow: 1,
 	},
+
+	content: {
+		padding: DesignSystem.spacing["3xl"],
+		gap: DesignSystem.spacing["3xl"],
+	},
+
+	headerButton: {
+		padding: DesignSystem.spacing.sm,
+		marginLeft: -DesignSystem.spacing.sm,
+	},
+
 	header: {
 		alignItems: "center",
-		marginBottom: 32,
+		gap: DesignSystem.spacing.lg,
 	},
+
+	heroIcon: {
+		width: 80,
+		height: 80,
+		borderRadius: DesignSystem.radius["2xl"],
+		backgroundColor: DesignSystem.colors.primary[800] + "20",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+
 	title: {
-		fontSize: 24,
-		fontWeight: "700",
+		...DesignSystem.typography.h1,
+		color: DesignSystem.colors.text.primary,
 		textAlign: "center",
-		marginTop: 16,
-		marginBottom: 8,
 	},
+
 	subtitle: {
-		fontSize: 16,
-		color: "#666",
+		...DesignSystem.typography.body.large,
+		color: DesignSystem.colors.text.secondary,
 		textAlign: "center",
-		lineHeight: 22,
+		lineHeight: 26,
 	},
-	infoCard: {
-		backgroundColor: "white",
-		borderRadius: 16,
-		padding: 20,
-		marginBottom: 20,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.06,
-		shadowRadius: 8,
-		elevation: 2,
+
+	stepsContainer: {
+		gap: DesignSystem.spacing.lg,
 	},
-	cardTitle: {
-		fontSize: 18,
+
+	benefitsContainer: {
+		gap: DesignSystem.spacing.lg,
+	},
+
+	sectionTitle: {
+		...DesignSystem.typography.h3,
+		color: DesignSystem.colors.text.primary,
+		marginBottom: DesignSystem.spacing.md,
+	},
+
+	primaryButton: {
+		backgroundColor: DesignSystem.colors.primary[900],
+		paddingVertical: DesignSystem.spacing.xl,
+		paddingHorizontal: DesignSystem.spacing["2xl"],
+		borderRadius: DesignSystem.radius.xl,
+		alignItems: "center",
+		...DesignSystem.shadows.sm,
+	},
+
+	primaryButtonText: {
+		...DesignSystem.typography.label.large,
+		color: DesignSystem.colors.text.inverse,
 		fontWeight: "600",
-		marginBottom: 16,
 	},
-	stepList: {
-		gap: 16,
-	},
-	stepItem: {
+
+	secondaryButton: {
 		flexDirection: "row",
-		alignItems: "flex-start",
-	},
-	stepNumber: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
-		backgroundColor: "#6366F1",
 		alignItems: "center",
 		justifyContent: "center",
-		marginRight: 12,
+		paddingVertical: DesignSystem.spacing.lg,
+		gap: DesignSystem.spacing.sm,
 	},
-	stepNumberText: {
-		color: "white",
-		fontWeight: "600",
-		fontSize: 16,
+
+	secondaryButtonText: {
+		...DesignSystem.typography.body.medium,
+		color: DesignSystem.colors.text.secondary,
 	},
-	stepContent: {
-		flex: 1,
-	},
-	stepTitle: {
-		fontSize: 16,
-		fontWeight: "600",
-		marginBottom: 4,
-	},
-	stepDescription: {
-		fontSize: 14,
-		color: "#666",
-		lineHeight: 20,
-	},
-	benefitsCard: {
-		backgroundColor: "white",
-		borderRadius: 16,
-		padding: 20,
-		marginBottom: 20,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.06,
-		shadowRadius: 8,
-		elevation: 2,
-	},
-	benefitsList: {
-		gap: 12,
-	},
-	benefitItem: {
-		flexDirection: "row",
-		alignItems: "center",
-	},
-	benefitText: {
-		fontSize: 16,
-		marginLeft: 12,
-	},
-	configStatus: {
-		marginBottom: 24,
-	},
-	statusBadge: {
-		flexDirection: "row",
-		alignItems: "center",
-		padding: 12,
-		borderRadius: 8,
-	},
-	demoButton: {
-		backgroundColor: "#6366F1",
-		padding: 18,
-		borderRadius: 12,
-		alignItems: "center",
-	},
-	demoButtonText: {
-		color: "white",
-		fontSize: 18,
-		fontWeight: "600",
-	},
+
 	demoHeader: {
-		backgroundColor: "white",
-		borderRadius: 12,
-		padding: 16,
-		marginBottom: 20,
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderRadius: DesignSystem.radius.xl,
+		padding: DesignSystem.spacing["2xl"],
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.secondary,
+		...DesignSystem.shadows.sm,
 	},
+
 	demoTitle: {
-		fontSize: 20,
-		fontWeight: "600",
-		marginBottom: 8,
+		...DesignSystem.typography.h3,
+		color: DesignSystem.colors.text.primary,
+		marginBottom: DesignSystem.spacing.sm,
 	},
+
 	demoDescription: {
-		fontSize: 14,
-		color: "#666",
-	},
-	backButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		padding: 16,
-		marginTop: 20,
-	},
-	backButtonText: {
-		color: "#666",
-		marginLeft: 8,
-		fontSize: 16,
-	},
-	resultsHeader: {
-		alignItems: "center",
-		marginBottom: 32,
-	},
-	resultsTitle: {
-		fontSize: 22,
-		fontWeight: "700",
-		textAlign: "center",
-		marginTop: 16,
-		marginBottom: 8,
-	},
-	resultsDescription: {
-		fontSize: 16,
-		color: "#666",
-		textAlign: "center",
+		...DesignSystem.typography.body.medium,
+		color: DesignSystem.colors.text.secondary,
 		lineHeight: 22,
 	},
-	successDetails: {
-		backgroundColor: "white",
-		borderRadius: 16,
-		padding: 20,
-		marginBottom: 24,
-	},
-	successTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 16,
-	},
-	successStep: {
-		flexDirection: "row",
+
+	errorContainer: {
 		alignItems: "center",
-		marginBottom: 12,
+		gap: DesignSystem.spacing.lg,
+		backgroundColor: DesignSystem.colors.status.error + "10",
+		borderRadius: DesignSystem.radius.xl,
+		padding: DesignSystem.spacing["3xl"],
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.status.error + "30",
 	},
-	successText: {
-		fontSize: 16,
-		marginLeft: 12,
-	},
-	resetButton: {
-		backgroundColor: "#6366F1",
-		padding: 18,
-		borderRadius: 12,
+
+	errorIcon: {
+		width: 80,
+		height: 80,
+		borderRadius: DesignSystem.radius["2xl"],
+		backgroundColor: DesignSystem.colors.status.error + "20",
 		alignItems: "center",
+		justifyContent: "center",
 	},
-	resetButtonText: {
-		color: "white",
-		fontSize: 18,
-		fontWeight: "600",
+
+	errorTitle: {
+		...DesignSystem.typography.h3,
+		color: DesignSystem.colors.text.primary,
+		textAlign: "center",
+	},
+
+	errorDescription: {
+		...DesignSystem.typography.body.medium,
+		color: DesignSystem.colors.text.secondary,
+		textAlign: "center",
+		lineHeight: 22,
 	},
 });

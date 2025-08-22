@@ -10,15 +10,18 @@ import {
 	View,
 	Text,
 	TextInput,
-	TouchableOpacity,
+	Pressable,
 	Alert,
 	Linking,
+	StyleSheet,
 } from "react-native";
-import { ThemedText } from "./ThemedText";
-import { ThemedView } from "./ThemedView";
 import { useZKTLSVerification } from "../lib/zkTLS";
 import type { Job } from "../lib/contractService";
 import { Ionicons } from "@expo/vector-icons";
+import { DesignSystem } from "../constants/DesignSystem";
+import SelectableCard from "./SelectableCard";
+import InfoCard from "./InfoCard";
+import ProofVerifiedCard from "./ProofVerifiedCard";
 
 interface ZKTLSVerificationProps {
 	job: Job;
@@ -51,6 +54,30 @@ export function ZKTLSVerification({
 		{ key: "documentation", label: "Documentation" },
 		{ key: "custom", label: "Custom Website" },
 	];
+
+	const getTemplateDescription = (key: string): string => {
+		const descriptions: Record<string, string> = {
+			landing_page: "Business or product landing page",
+			blog_post: "Article or blog content",
+			portfolio: "Personal or professional portfolio",
+			ecommerce: "Online store or marketplace",
+			documentation: "Technical documentation site",
+			custom: "Custom website implementation",
+		};
+		return descriptions[key] || "Website type";
+	};
+
+	const getTemplateIcon = (key: string): keyof typeof Ionicons.glyphMap => {
+		const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
+			landing_page: "rocket",
+			blog_post: "document-text",
+			portfolio: "person",
+			ecommerce: "storefront",
+			documentation: "library",
+			custom: "code-slash",
+		};
+		return icons[key] || "globe";
+	};
 
 	const handleTemplateSelect = useCallback(
 		(templateKey: string) => {
@@ -144,267 +171,277 @@ export function ZKTLSVerification({
 
 	if (!isConfigured) {
 		return (
-			<ThemedView
-				style={{
-					backgroundColor: "white",
-					borderRadius: 16,
-					padding: 20,
-					marginBottom: 20,
-					shadowColor: "#000",
-					shadowOffset: { width: 0, height: 2 },
-					shadowOpacity: 0.06,
-					shadowRadius: 8,
-					elevation: 2,
-				}}
-			>
-				<ThemedText
-					style={{ fontWeight: "600", color: "#856404", marginBottom: 8 }}
-				>
-					⚠️ zkTLS Configuration Required
-				</ThemedText>
-				<ThemedText style={{ color: "#856404", fontSize: 14 }}>
-					Website verification requires Reclaim Protocol setup. Contact your
-					administrator to configure zkTLS verification.
-				</ThemedText>
-			</ThemedView>
+			<InfoCard
+				icon="warning"
+				title="zkTLS Configuration Required"
+				body="Website verification requires Reclaim Protocol setup. Contact your administrator to configure zkTLS verification."
+			/>
 		);
 	}
 
 	return (
-		<ThemedView
-			style={{
-				backgroundColor: "white",
-				borderRadius: 16,
-				padding: 20,
-				marginBottom: 20,
-				shadowColor: "#000",
-				shadowOffset: { width: 0, height: 2 },
-				shadowOpacity: 0.06,
-				shadowRadius: 8,
-				elevation: 2,
-			}}
-		>
-			<ThemedText style={{ fontSize: 18, fontWeight: "600", marginBottom: 16 }}>
-				Website Delivery Verification
-			</ThemedText>
-
-			<ThemedText style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>
-				Submit cryptographic proof that your website has been delivered instead
-				of waiting for manual client approval.
-			</ThemedText>
+		<View style={styles.container}>
+			<View style={styles.header}>
+				<View style={styles.headerIcon}>
+					<Ionicons
+						name="shield-checkmark"
+						size={24}
+						color={DesignSystem.colors.primary[700]}
+					/>
+				</View>
+				<View style={styles.headerText}>
+					<Text style={styles.title}>Proof Generation</Text>
+					<Text style={styles.subtitle}>
+						Generate cryptographic proof of website delivery
+					</Text>
+				</View>
+			</View>
 
 			{step === "input" && (
-				<>
-					<ThemedText style={{ fontWeight: "600", marginBottom: 8 }}>
-						Select Website Type:
-					</ThemedText>
-					<View style={{ marginBottom: 16 }}>
+				<View style={styles.content}>
+					<Text style={styles.sectionTitle}>Select Website Type</Text>
+
+					<View style={styles.templateGrid}>
 						{templateOptions.map((option) => (
-							<TouchableOpacity
+							<SelectableCard
 								key={option.key}
-								style={{
-									flexDirection: "row",
-									alignItems: "center",
-									paddingVertical: 8,
-									paddingHorizontal: 12,
-									marginVertical: 2,
-									borderRadius: 6,
-									backgroundColor:
-										selectedTemplate === option.key ? "#E3F2FD" : "transparent",
-									borderWidth: 1,
-									borderColor:
-										selectedTemplate === option.key ? "#2196F3" : "#E0E0E0",
-								}}
+								title={option.label}
+								description={getTemplateDescription(option.key)}
+								icon={getTemplateIcon(option.key)}
+								isSelected={selectedTemplate === option.key}
 								onPress={() => handleTemplateSelect(option.key)}
-							>
-								<Ionicons
-									name={
-										selectedTemplate === option.key
-											? "radio-button-on"
-											: "radio-button-off"
-									}
-									size={20}
-									color={selectedTemplate === option.key ? "#2196F3" : "#999"}
-									style={{ marginRight: 8 }}
-								/>
-								<ThemedText>{option.label}</ThemedText>
-							</TouchableOpacity>
+							/>
 						))}
 					</View>
 
-					<ThemedText style={{ fontWeight: "600", marginBottom: 8 }}>
-						Website URL:
-					</ThemedText>
-					<TextInput
-						style={{
-							borderWidth: 1,
-							borderColor: "#DDD",
-							borderRadius: 6,
-							padding: 12,
-							marginBottom: 16,
-							backgroundColor: "white",
-							fontSize: 16,
-						}}
-						placeholder="https://your-delivered-website.com"
-						value={deliveryUrl}
-						onChangeText={setDeliveryUrl}
-						autoCapitalize="none"
-						autoCorrect={false}
-						keyboardType="url"
-					/>
+					<View style={styles.inputSection}>
+						<Text style={styles.inputLabel}>Website URL</Text>
+						<TextInput
+							style={styles.textInput}
+							placeholder="https://your-delivered-website.com"
+							value={deliveryUrl}
+							onChangeText={setDeliveryUrl}
+							autoCapitalize="none"
+							autoCorrect={false}
+							keyboardType="url"
+							placeholderTextColor={DesignSystem.colors.text.tertiary}
+						/>
+					</View>
 
-					<ThemedText style={{ fontWeight: "600", marginBottom: 8 }}>
-						Expected Content (Optional):
-					</ThemedText>
-					<TextInput
-						style={{
-							borderWidth: 1,
-							borderColor: "#DDD",
-							borderRadius: 6,
-							padding: 12,
-							marginBottom: 16,
-							backgroundColor: "white",
-							fontSize: 16,
-							height: 80,
-						}}
-						placeholder="Describe key elements that should be present on the website..."
-						value={expectedContent}
-						onChangeText={setExpectedContent}
-						multiline
-						textAlignVertical="top"
-					/>
+					<View style={styles.inputSection}>
+						<Text style={styles.inputLabel}>Expected Content (Optional)</Text>
+						<TextInput
+							style={[styles.textInput, styles.textArea]}
+							placeholder="Describe key elements that should be present on the website..."
+							value={expectedContent}
+							onChangeText={setExpectedContent}
+							multiline
+							textAlignVertical="top"
+							placeholderTextColor={DesignSystem.colors.text.tertiary}
+						/>
+					</View>
 
-					<TouchableOpacity
-						style={{
-							backgroundColor: "#4CAF50",
-							padding: 16,
-							borderRadius: 8,
-							alignItems: "center",
-							opacity: isGeneratingProof ? 0.7 : 1,
-						}}
+					<Pressable
+						style={[
+							styles.primaryButton,
+							{ opacity: isGeneratingProof ? 0.6 : 1 },
+						]}
 						onPress={generateWebsiteProof}
 						disabled={isGeneratingProof}
 					>
-						<ThemedText
-							style={{ color: "white", fontWeight: "600", fontSize: 16 }}
-						>
-							{isGeneratingProof
-								? "Generating Proof..."
-								: "Generate Website Proof"}
-						</ThemedText>
-					</TouchableOpacity>
-				</>
+						<Text style={styles.primaryButtonText}>
+							{isGeneratingProof ? "Generating Proof..." : "Generate Proof"}
+						</Text>
+					</Pressable>
+				</View>
 			)}
 
 			{step === "verification" && (
-				<>
-					<View
-						style={{
-							backgroundColor: "#E8F5E8",
-							padding: 16,
-							borderRadius: 8,
-							marginBottom: 16,
-							borderLeftWidth: 4,
-							borderLeftColor: "#4CAF50",
-						}}
-					>
-						<ThemedText
-							style={{ fontWeight: "600", color: "#2E7D32", marginBottom: 8 }}
-						>
-							✅ Verification URL Generated!
-						</ThemedText>
-						<ThemedText style={{ color: "#2E7D32", fontSize: 14 }}>
-							Complete the verification process to prove your website delivery.
-						</ThemedText>
-					</View>
+				<View style={styles.content}>
+					<InfoCard
+						icon="checkmark-circle"
+						title="Verification URL Generated"
+						body="Complete the verification process to prove your website delivery."
+					/>
 
-					<TouchableOpacity
-						style={{
-							backgroundColor: "#2196F3",
-							padding: 16,
-							borderRadius: 8,
-							alignItems: "center",
-							marginBottom: 12,
-						}}
+					<Pressable
+						style={styles.primaryButton}
 						onPress={openVerificationUrl}
 					>
-						<ThemedText
-							style={{ color: "white", fontWeight: "600", fontSize: 16 }}
-						>
-							🌐 Open Verification Page
-						</ThemedText>
-					</TouchableOpacity>
+						<Ionicons
+							name="globe"
+							size={20}
+							color={DesignSystem.colors.text.inverse}
+							style={{ marginRight: DesignSystem.spacing.sm }}
+						/>
+						<Text style={styles.primaryButtonText}>Open Verification Page</Text>
+					</Pressable>
 
-					<TouchableOpacity
-						style={{
-							backgroundColor: "#4CAF50",
-							padding: 16,
-							borderRadius: 8,
-							alignItems: "center",
-						}}
+					<Pressable
+						style={styles.secondaryButton}
 						onPress={handleVerificationComplete}
 					>
-						<ThemedText
-							style={{ color: "white", fontWeight: "600", fontSize: 16 }}
-						>
-							✅ I've Completed Verification
-						</ThemedText>
-					</TouchableOpacity>
+						<Ionicons
+							name="checkmark"
+							size={20}
+							color={DesignSystem.colors.primary[700]}
+							style={{ marginRight: DesignSystem.spacing.sm }}
+						/>
+						<Text style={styles.secondaryButtonText}>
+							I've Completed Verification
+						</Text>
+					</Pressable>
 
-					<ThemedText
-						style={{
-							fontSize: 12,
-							color: "#666",
-							textAlign: "center",
-							marginTop: 8,
-						}}
-					>
-						Note: After completing verification in your browser, return here to
+					<Text style={styles.note}>
+						After completing verification in your browser, return here to
 						finalize the job.
-					</ThemedText>
-				</>
+					</Text>
+				</View>
 			)}
 
 			{step === "complete" && (
-				<View
-					style={{
-						backgroundColor: "#E8F5E8",
-						padding: 16,
-						borderRadius: 8,
-						alignItems: "center",
-					}}
-				>
-					<Ionicons
-						name="checkmark-circle"
-						size={48}
-						color="#4CAF50"
+				<View style={styles.content}>
+					<ProofVerifiedCard
+						title="Verification Complete!"
+						subtitle="Your website delivery has been cryptographically verified. Payment should be released automatically."
+						details={[
+							{ icon: "globe", text: "Website accessibility confirmed" },
+							{
+								icon: "shield-checkmark",
+								text: "Cryptographic proof generated",
+							},
+							{ icon: "card", text: "Payment released automatically" },
+						]}
 					/>
-					<ThemedText
-						style={{
-							fontWeight: "600",
-							color: "#2E7D32",
-							fontSize: 18,
-							marginTop: 8,
-							textAlign: "center",
-						}}
-					>
-						🎉 Verification Complete!
-					</ThemedText>
-					<ThemedText
-						style={{
-							color: "#2E7D32",
-							fontSize: 14,
-							textAlign: "center",
-							marginTop: 4,
-						}}
-					>
-						Your website delivery has been cryptographically verified. Payment
-						should be released automatically.
-					</ThemedText>
 				</View>
 			)}
-		</ThemedView>
+		</View>
 	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderRadius: DesignSystem.radius.xl,
+		padding: DesignSystem.spacing["2xl"],
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.secondary,
+		gap: DesignSystem.spacing["2xl"],
+		...DesignSystem.shadows.sm,
+	},
+
+	header: {
+		flexDirection: "row",
+		alignItems: "flex-start",
+		gap: DesignSystem.spacing.lg,
+	},
+
+	headerIcon: {
+		width: 40,
+		height: 40,
+		borderRadius: DesignSystem.radius.lg,
+		backgroundColor: DesignSystem.colors.primary[800] + "20",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+
+	headerText: {
+		flex: 1,
+		gap: DesignSystem.spacing.xs,
+	},
+
+	title: {
+		...DesignSystem.typography.h4,
+		color: DesignSystem.colors.text.primary,
+		fontWeight: "600",
+	},
+
+	subtitle: {
+		...DesignSystem.typography.body.medium,
+		color: DesignSystem.colors.text.secondary,
+		lineHeight: 20,
+	},
+
+	content: {
+		gap: DesignSystem.spacing["2xl"],
+	},
+
+	sectionTitle: {
+		...DesignSystem.typography.h4,
+		color: DesignSystem.colors.text.primary,
+		marginBottom: DesignSystem.spacing.md,
+	},
+
+	templateGrid: {
+		gap: DesignSystem.spacing.md,
+	},
+
+	inputSection: {
+		gap: DesignSystem.spacing.sm,
+	},
+
+	inputLabel: {
+		...DesignSystem.typography.label.medium,
+		color: DesignSystem.colors.text.primary,
+		fontWeight: "600",
+	},
+
+	textInput: {
+		backgroundColor: DesignSystem.colors.surface.primary,
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.primary,
+		borderRadius: DesignSystem.radius.lg,
+		padding: DesignSystem.spacing.lg,
+		...DesignSystem.typography.body.medium,
+		color: DesignSystem.colors.text.primary,
+	},
+
+	textArea: {
+		height: 100,
+		textAlignVertical: "top",
+	},
+
+	primaryButton: {
+		backgroundColor: DesignSystem.colors.primary[900],
+		paddingVertical: DesignSystem.spacing.lg,
+		paddingHorizontal: DesignSystem.spacing["2xl"],
+		borderRadius: DesignSystem.radius.lg,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		...DesignSystem.shadows.sm,
+	},
+
+	primaryButtonText: {
+		...DesignSystem.typography.label.large,
+		color: DesignSystem.colors.text.inverse,
+		fontWeight: "600",
+	},
+
+	secondaryButton: {
+		backgroundColor: DesignSystem.colors.surface.secondary,
+		paddingVertical: DesignSystem.spacing.lg,
+		paddingHorizontal: DesignSystem.spacing["2xl"],
+		borderRadius: DesignSystem.radius.lg,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.primary,
+	},
+
+	secondaryButtonText: {
+		...DesignSystem.typography.label.large,
+		color: DesignSystem.colors.primary[700],
+		fontWeight: "600",
+	},
+
+	note: {
+		...DesignSystem.typography.body.small,
+		color: DesignSystem.colors.text.tertiary,
+		textAlign: "center",
+		lineHeight: 18,
+	},
+});
 
 export default ZKTLSVerification;
