@@ -346,7 +346,7 @@ export default function DashboardScreen() {
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={styles.actionButton}
-							onPress={() => createModalRef.current?.open()}
+							onPress={() => router.push("/create")}
 						>
 							<Ionicons
 								name="add-circle-outline"
@@ -539,16 +539,7 @@ export default function DashboardScreen() {
 					onSubmit={handleSubmitProof}
 				/>
 			</Modalize>
-			<Modalize
-				ref={createModalRef}
-				adjustToContentHeight
-				handlePosition="inside"
-			>
-				<JobCreateSheet
-					onCreate={handleCreateJob}
-					creating={postingJob}
-				/>
-			</Modalize>
+			{/* Removed Modalize for job creation. Use /create page instead. */}
 		</SafeAreaView>
 	);
 }

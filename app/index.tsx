@@ -105,7 +105,6 @@ export default function OnboardingScreen() {
 
 							{/* Arrow */}
 							<View style={styles.timelineArrow}>
-								<View style={styles.arrowLine} />
 								<Ionicons
 									name="chevron-forward"
 									size={20}
@@ -127,7 +126,6 @@ export default function OnboardingScreen() {
 
 							{/* Arrow */}
 							<View style={styles.timelineArrow}>
-								<View style={styles.arrowLine} />
 								<Ionicons
 									name="chevron-forward"
 									size={20}
@@ -571,7 +569,7 @@ const styles = StyleSheet.create({
 	},
 	comparisonDivider: {
 		width: 1,
-		height: 180,
+		height: 210,
 		backgroundColor: "#e1e5e9",
 		marginHorizontal: 24,
 	},

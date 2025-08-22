@@ -9,14 +9,16 @@ import {
 	SafeAreaView,
 	Alert,
 	Switch,
+	ActivityIndicator,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
-interface JobCreateProps {
-	onCreate?: (job: JobFormData) => void;
-	creating?: boolean;
-}
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
+import { ContractService } from "../lib/contractService";
+import Toast from "react-native-toast-message";
 
 interface JobFormData {
 	title: string;
@@ -40,11 +42,12 @@ const PROOF_TYPES = [
 	{ id: "custom", label: "Custom Verification", icon: "settings-outline" },
 ];
 
-export default function CreateJobScreen({
-	onCreate,
-	creating = false,
-}: JobCreateProps) {
+export default function CreateJobScreen() {
 	const router = useRouter();
+	const { data: account } = useAbstraxionAccount();
+	const { client } = useAbstraxionSigningClient();
+
+	const [creating, setCreating] = useState(false);
 	const [formData, setFormData] = useState<JobFormData>({
 		title: "",
 		description: "",
@@ -90,7 +93,7 @@ export default function CreateJobScreen({
 		}));
 	};
 
-	const handleCreate = () => {
+	const handleCreate = async () => {
 		// Validation
 		if (!formData.title.trim()) {
 			Alert.alert("Error", "Please enter a job title");
@@ -105,14 +108,51 @@ export default function CreateJobScreen({
 			return;
 		}
 
-		// Here you would call the contract service to create the job
-		console.log("Creating job:", formData);
+		if (!account || !client) {
+			Alert.alert("Error", "Please connect your wallet first");
+			return;
+		}
 
-		if (onCreate) {
-			onCreate(formData);
-		} else {
-			// Navigate back or show success
-			router.back();
+		setCreating(true);
+
+		try {
+			// Create contract service instance
+			const contractService = new ContractService(account, client);
+
+			// Convert budget to proper format (convert XION to uxion)
+			const budgetAmount = parseFloat(formData.budget);
+			const amountInUxion = Math.floor(budgetAmount * Math.pow(10, 6)); // Convert to uxion (6 decimals)
+
+			// Create the job with optional deadline
+			const deadline = formData.deadline
+				? formData.deadline.toISOString()
+				: undefined;
+
+			const result = await contractService.postJob(
+				`${formData.title}\n\n${formData.description}`, // Combine title and description
+				amountInUxion,
+				deadline
+			);
+
+			Toast.show({
+				type: "success",
+				text1: "Job Created!",
+				text2: `Job posted successfully with ${formData.budget} XION in escrow`,
+				position: "bottom",
+			});
+
+			// Navigate back to dashboard
+			router.replace("/dashboard");
+		} catch (error: any) {
+			console.error("Failed to create job:", error);
+			Toast.show({
+				type: "error",
+				text1: "Failed to Create Job",
+				text2: error?.message || "Unknown error occurred",
+				position: "bottom",
+			});
+		} finally {
+			setCreating(false);
 		}
 	};
 
@@ -126,7 +166,58 @@ export default function CreateJobScreen({
 		formData.title.trim() &&
 		formData.description.trim() &&
 		formData.budget.trim() &&
-		parseFloat(formData.budget) > 0;
+		parseFloat(formData.budget) > 0 &&
+		account &&
+		client;
+
+	// Show wallet connection message if not connected
+	if (!account || !client) {
+		return (
+			<SafeAreaView style={styles.container}>
+				<Stack.Screen
+					options={{
+						title: "Post New Job",
+						headerTitleAlign: "center",
+						headerShadowVisible: false,
+						headerStyle: {
+							backgroundColor: "#FFFFFF",
+						},
+						headerTitleStyle: {
+							fontSize: 20,
+							fontWeight: "700",
+							color: "#111827",
+						},
+						headerLeft: () => (
+							<TouchableOpacity onPress={() => router.back()}>
+								<Ionicons
+									name="arrow-back"
+									size={24}
+									color="#111827"
+								/>
+							</TouchableOpacity>
+						),
+					}}
+				/>
+				<View style={styles.centered}>
+					<Ionicons
+						name="wallet-outline"
+						size={64}
+						color="#D1D5DB"
+					/>
+					<Text style={styles.emptyTitle}>Connect Your Wallet</Text>
+					<Text style={styles.emptySubtitle}>
+						Please connect your wallet to create a job
+					</Text>
+					<TouchableOpacity
+						style={styles.connectButton}
+						onPress={() => router.replace("/dashboard")}
+					>
+						<Text style={styles.connectButtonText}>Go to Dashboard</Text>
+					</TouchableOpacity>
+				</View>
+			</SafeAreaView>
+		);
+	}
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -735,6 +826,37 @@ const styles = StyleSheet.create({
 	},
 	secondaryButtonText: {
 		color: "#6B7280",
+		fontSize: 16,
+		fontWeight: "600",
+	},
+	centered: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 24,
+	},
+	emptyTitle: {
+		fontSize: 20,
+		fontWeight: "700",
+		color: "#111827",
+		marginTop: 16,
+		marginBottom: 8,
+	},
+	emptySubtitle: {
+		fontSize: 16,
+		color: "#6B7280",
+		textAlign: "center",
+		marginBottom: 24,
+	},
+	connectButton: {
+		backgroundColor: "#2563EB",
+		borderRadius: 12,
+		paddingVertical: 16,
+		paddingHorizontal: 32,
+		alignItems: "center",
+	},
+	connectButtonText: {
+		color: "#FFFFFF",
 		fontSize: 16,
 		fontWeight: "600",
 	},
