@@ -15,18 +15,18 @@ interface TabBarItem {
 
 const tabItems: TabBarItem[] = [
 	{
-		name: "create",
-		href: "/(tabs)/create",
-		icon: "add-circle-outline",
-		activeIcon: "add-circle",
-		label: "Create",
-	},
-	{
 		name: "activity",
 		href: "/(tabs)/activity",
 		icon: "time-outline",
 		activeIcon: "time",
 		label: "Activity",
+	},
+	{
+		name: "create",
+		href: "/(tabs)/create",
+		icon: "add-circle-outline",
+		activeIcon: "add-circle",
+		label: "Create",
 	},
 	{
 		name: "profile",

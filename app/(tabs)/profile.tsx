@@ -7,6 +7,7 @@ import {
 	Pressable,
 	Image,
 	Switch,
+	Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -38,6 +39,20 @@ export default function ProofPayProfile() {
 	const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 	const { logout } =
 		require("@burnt-labs/abstraxion-react-native").useAbstraxionAccount();
+
+	const handleLogout = async () => {
+		try {
+			console.log("Attempting to logout...");
+			await logout();
+			console.log("Logout successful");
+			// Navigate to login screen or home
+			router.replace("/");
+		} catch (error) {
+			console.error("Logout failed:", error);
+			// Show error message or handle gracefully
+			Alert.alert("Error", "Failed to sign out. Please try again.");
+		}
+	};
 
 	const userStats: UserStats = {
 		tasksCompleted: 12,
@@ -333,7 +348,7 @@ export default function ProofPayProfile() {
 				<View style={styles.logoutSection}>
 					<Pressable
 						style={styles.logoutButton}
-						onPress={logout}
+						onPress={handleLogout}
 					>
 						<Ionicons
 							name="log-out-outline"
