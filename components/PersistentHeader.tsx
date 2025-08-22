@@ -55,41 +55,63 @@ export default function PersistentHeader({
 }
 
 const styles = StyleSheet.create({
+	// Header - sophisticated design matching onboarding
 	header: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		paddingHorizontal: 20,
-		paddingVertical: 16,
+		paddingHorizontal: 32,
+		paddingVertical: 20,
 		borderBottomWidth: 1,
 		borderBottomColor: "#f0f0f0",
-		backgroundColor: "#fff",
+		backgroundColor: "#ffffff",
+		shadowColor: "#000",
+		shadowOpacity: 0.02,
+		shadowRadius: 8,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 1,
 	},
 	headerLeft: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: 8,
+		gap: 12,
 	},
 	headerRight: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: 12,
+		gap: 16,
 	},
+
+	// Wallet Button - refined design
 	walletButton: {
 		flexDirection: "row",
 		alignItems: "center",
 		backgroundColor: "#f8f9fa",
-		paddingVertical: 8,
-		paddingHorizontal: 12,
-		borderRadius: 8,
-		gap: 6,
+		paddingVertical: 10,
+		paddingHorizontal: 16,
+		borderRadius: 12,
+		gap: 8,
+		borderWidth: 1,
+		borderColor: "#f0f0f0",
+		shadowColor: "#000",
+		shadowOpacity: 0.04,
+		shadowRadius: 8,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 2,
 	},
 	walletText: {
 		fontSize: 14,
 		fontWeight: "500",
-		color: "#666",
+		color: "#191919",
+		letterSpacing: 0.1,
 	},
+
+	// Logout Button - clean and accessible
 	notificationButton: {
-		padding: 8,
+		padding: 12,
+		borderRadius: 12,
+		backgroundColor: "#f8f9fa",
+		borderWidth: 1,
+		borderColor: "#f0f0f0",
 	},
 });

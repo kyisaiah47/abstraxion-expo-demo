@@ -409,261 +409,170 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-	dashboardSubheaderMarketplaceRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 12,
-		paddingVertical: 6,
-		marginBottom: 4,
-		backgroundColor: "#fff",
-		paddingHorizontal: 20,
-		borderBottomWidth: 1,
-		borderBottomColor: "#F3F4F6",
-		minHeight: 0,
-		height: undefined,
-	},
-	dashboardSubheaderText: {
-		fontSize: 12,
-		color: "#6B7280",
-		fontWeight: "400",
-		marginBottom: 0,
-		letterSpacing: 0.2,
-		paddingVertical: 0,
-		marginTop: 0,
-		marginLeft: 0,
-		marginRight: 0,
-		minHeight: 0,
-		height: undefined,
-	},
-	dashboardChip: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#F3F4F6",
-		borderRadius: 16,
-		paddingHorizontal: 10,
-		paddingVertical: 4,
-		gap: 4,
-	},
-	dashboardChipText: {
-		fontSize: 12,
-		color: "#374151",
-		fontWeight: "500",
-	},
+	// Container - matching onboarding generous spacing
 	container: {
 		flex: 1,
 		backgroundColor: "#ffffff",
 	},
 
-	// Header
-	header: {
+	// Stats Subheader - clean and spacious
+	dashboardSubheaderMarketplaceRow: {
 		flexDirection: "row",
-		justifyContent: "space-between",
 		alignItems: "center",
-		paddingHorizontal: 20,
-		paddingVertical: 16,
+		justifyContent: "center",
+		gap: 16,
+		paddingVertical: 20,
+		marginBottom: 8,
+		backgroundColor: "#ffffff",
+		paddingHorizontal: 32,
 		borderBottomWidth: 1,
 		borderBottomColor: "#f0f0f0",
 	},
-	headerTitle: {
-		fontSize: 24,
-		fontWeight: "700",
-		color: "#191919",
-		letterSpacing: -0.5,
+	dashboardSubheaderText: {
+		fontSize: 14,
+		color: "#666",
+		fontWeight: "500",
+		letterSpacing: 0.1,
 	},
-	headerRight: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 12,
-	},
-	walletButton: {
+	dashboardChip: {
 		flexDirection: "row",
 		alignItems: "center",
 		backgroundColor: "#f8f9fa",
+		borderRadius: 20,
+		paddingHorizontal: 16,
 		paddingVertical: 8,
-		paddingHorizontal: 12,
-		borderRadius: 8,
 		gap: 6,
-	},
-	walletText: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#666",
-	},
-	notificationButton: {
-		padding: 8,
-	},
-	headerLeft: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-	},
-
-	// Scroll Container
-	scrollContainer: {
-		flex: 1,
-		paddingHorizontal: 20,
-	},
-
-	// Cards
-	card: {
-		backgroundColor: "#ffffff",
-		borderRadius: 12,
-		padding: 20,
-		marginTop: 16,
 		shadowColor: "#000",
-		shadowOpacity: 0.03,
+		shadowOpacity: 0.04,
 		shadowRadius: 8,
 		shadowOffset: { width: 0, height: 2 },
 		elevation: 2,
+	},
+	dashboardChipText: {
+		fontSize: 14,
+		color: "#191919",
+		fontWeight: "500",
+	},
+
+	// Scroll Container - generous padding like onboarding
+	scrollContainer: {
+		flex: 1,
+		paddingHorizontal: 32,
+		paddingTop: 8,
+	},
+
+	// Cards - matching onboarding sophisticated style
+	card: {
+		backgroundColor: "#ffffff",
+		borderRadius: 16,
+		padding: 32,
+		marginTop: 24,
+		marginBottom: 8,
+		shadowColor: "#000",
+		shadowOpacity: 0.06,
+		shadowRadius: 16,
+		shadowOffset: { width: 0, height: 4 },
+		elevation: 4,
 		borderWidth: 1,
 		borderColor: "#f0f0f0",
 	},
 	cardTitle: {
-		fontSize: 18,
-		fontWeight: "600",
+		fontSize: 24,
+		fontWeight: "700",
 		color: "#191919",
-		marginBottom: 16,
+		marginBottom: 24,
+		letterSpacing: -0.3,
 	},
 	cardHeader: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: 16,
+		marginBottom: 24,
 	},
 	cardDescription: {
-		fontSize: 14,
+		fontSize: 16,
 		color: "#666",
-		lineHeight: 20,
-		marginBottom: 16,
-	},
-	viewAllText: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#191919",
-	},
-
-	// Quick Actions
-	actionGrid: {
-		flexDirection: "row",
-		gap: 12,
-	},
-	actionButton: {
-		flex: 1,
-		alignItems: "center",
-		backgroundColor: "#f8f9fa",
-		paddingVertical: 20,
-		paddingHorizontal: 16,
-		borderRadius: 12,
-		borderWidth: 1,
-		borderColor: "#e1e5e9",
-		gap: 8,
-	},
-	actionButtonText: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#191919",
-		textAlign: "center",
-	},
-
-	// Earnings
-	earningsContent: {
-		gap: 16,
-	},
-	earningsRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-	earningsLabel: {
-		fontSize: 14,
-		color: "#666",
+		lineHeight: 24,
+		marginBottom: 24,
 		fontWeight: "400",
 	},
-	earningsValue: {
+	viewAllText: {
 		fontSize: 16,
-		fontWeight: "600",
+		fontWeight: "500",
 		color: "#191919",
+		letterSpacing: 0.1,
 	},
 
-	// Activity List
+	// Activity List - spacious and clean
 	activityList: {
-		gap: 16,
+		gap: 20,
 	},
 	activityItem: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: 12,
+		gap: 16,
+		paddingVertical: 8,
 	},
 	activityIcon: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
+		width: 48,
+		height: 48,
+		borderRadius: 24,
 		backgroundColor: "#f8f9fa",
 		alignItems: "center",
 		justifyContent: "center",
+		borderWidth: 1,
+		borderColor: "#f0f0f0",
 	},
 	activityContent: {
 		flex: 1,
-		gap: 2,
+		gap: 4,
 	},
 	activityTitle: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#191919",
-	},
-	activitySubtitle: {
-		fontSize: 13,
-		color: "#666",
-	},
-	activityTime: {
-		fontSize: 12,
-		color: "#999",
-	},
-
-	// Demo Button
-	demoButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#f8f9fa",
-		paddingVertical: 16,
-		paddingHorizontal: 16,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: "#e1e5e9",
-		gap: 8,
-	},
-	demoButtonText: {
-		flex: 1,
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#191919",
-	},
-
-	// Empty State
-	emptyState: {
-		alignItems: "center",
-		paddingVertical: 32,
-		gap: 8,
-	},
-	emptyStateText: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: "#666",
+		color: "#191919",
+		lineHeight: 20,
+		letterSpacing: 0.1,
 	},
-	emptyStateSubtext: {
+	activitySubtitle: {
+		fontSize: 14,
+		color: "#666",
+		fontWeight: "400",
+	},
+	activityTime: {
 		fontSize: 14,
 		color: "#999",
+		fontWeight: "400",
+	},
+
+	// Empty State - sophisticated design
+	emptyState: {
+		alignItems: "center",
+		paddingVertical: 48,
+		gap: 16,
+	},
+	emptyStateText: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: "#191919",
 		textAlign: "center",
 	},
-
-	// Loading
-	loading: {
-		paddingVertical: 32,
+	emptyStateSubtext: {
+		fontSize: 16,
+		color: "#666",
+		textAlign: "center",
+		lineHeight: 22,
+		maxWidth: 280,
+		fontWeight: "400",
 	},
 
-	// Bottom Spacing
+	// Loading - centered and spacious
+	loading: {
+		paddingVertical: 48,
+	},
+
+	// Bottom Spacing - generous like onboarding
 	bottomSpacing: {
-		height: 120, // Increased for two-row navigation
+		height: 48,
 	},
 });

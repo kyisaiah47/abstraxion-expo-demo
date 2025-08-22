@@ -110,91 +110,98 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+	// Container - matching onboarding clean white background
 	container: {
 		flex: 1,
-		backgroundColor: "#F9FAFB",
+		backgroundColor: "#ffffff",
 	},
-	header: {
-		paddingHorizontal: 20,
-		paddingVertical: 16,
-		borderBottomWidth: 1,
-		borderBottomColor: "#f0f0f0",
-		backgroundColor: "#fff",
-	},
-	headerTitle: {
-		fontSize: 24,
-		fontWeight: "700",
-		color: "#191919",
-	},
+
+	// Content - generous padding like onboarding
 	content: {
 		flex: 1,
-		paddingHorizontal: 20,
-		paddingTop: 16,
+		paddingHorizontal: 32,
+		paddingTop: 24,
 	},
+
+	// Cards - sophisticated design matching onboarding
 	card: {
-		backgroundColor: "#fff",
-		borderRadius: 12,
-		marginBottom: 16,
+		backgroundColor: "#ffffff",
+		borderRadius: 16,
+		marginBottom: 24,
 		shadowColor: "#000",
-		shadowOpacity: 0.03,
-		shadowRadius: 8,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 2,
+		shadowOpacity: 0.06,
+		shadowRadius: 16,
+		shadowOffset: { width: 0, height: 4 },
+		elevation: 4,
 		borderWidth: 1,
 		borderColor: "#f0f0f0",
 	},
+
+	// Profile Section - spacious and clean
 	profileSection: {
 		flexDirection: "row",
 		alignItems: "center",
-		padding: 20,
-		gap: 16,
+		padding: 32,
+		gap: 20,
 	},
 	avatar: {
-		width: 60,
-		height: 60,
-		borderRadius: 30,
+		width: 72,
+		height: 72,
+		borderRadius: 36,
 		backgroundColor: "#f8f9fa",
 		alignItems: "center",
 		justifyContent: "center",
+		borderWidth: 2,
+		borderColor: "#f0f0f0",
 	},
 	profileInfo: {
 		flex: 1,
+		gap: 4,
 	},
 	addressText: {
-		fontSize: 18,
-		fontWeight: "600",
+		fontSize: 20,
+		fontWeight: "700",
 		color: "#191919",
-		marginBottom: 4,
+		letterSpacing: -0.2,
 	},
 	statusText: {
-		fontSize: 14,
+		fontSize: 16,
 		color: "#666",
+		fontWeight: "400",
 	},
+
+	// Menu Items - generous spacing and clean design
 	menuItem: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: 16,
-		paddingHorizontal: 20,
+		paddingVertical: 20,
+		paddingHorizontal: 32,
 		borderBottomWidth: 1,
-		borderBottomColor: "#f0f0f0",
-		gap: 12,
+		borderBottomColor: "#f8f9fa",
+		gap: 16,
+		minHeight: 64,
 	},
 	menuText: {
 		flex: 1,
-		fontSize: 16,
+		fontSize: 18,
 		color: "#191919",
 		fontWeight: "500",
+		letterSpacing: 0.1,
 	},
+
+	// Logout - distinct styling
 	logoutItem: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: 16,
-		paddingHorizontal: 20,
-		gap: 12,
+		paddingVertical: 20,
+		paddingHorizontal: 32,
+		gap: 16,
+		minHeight: 64,
 	},
 	logoutText: {
-		fontSize: 16,
+		fontSize: 18,
 		color: "#DC2626",
 		fontWeight: "500",
+		letterSpacing: 0.1,
 	},
 });
