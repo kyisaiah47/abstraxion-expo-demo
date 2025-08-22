@@ -50,6 +50,43 @@ let mockFriendRequests: FriendRequest[] = [
 let currentUserId = "1"; // Mock current user
 
 export class UserService {
+	// Username Management
+	static async checkUsernameAvailability(username: string): Promise<boolean> {
+		const existingUser = mockUsers.find(
+			(u) => u.username.toLowerCase() === username.toLowerCase()
+		);
+		return !existingUser;
+	}
+
+	static async registerUsername(
+		username: string,
+		walletAddress: string
+	): Promise<User> {
+		// Check if username is taken
+		const isAvailable = await this.checkUsernameAvailability(username);
+		if (!isAvailable) {
+			throw new Error("Username is already taken");
+		}
+
+		// Check if user already exists with this wallet
+		const existingUser = await this.getUserByWallet(walletAddress);
+		if (existingUser) {
+			throw new Error("User already exists with this wallet address");
+		}
+
+		const newUser: User = {
+			id: Date.now().toString(),
+			walletAddress,
+			username: username.toLowerCase(),
+			displayName: username, // Default display name to username
+			createdAt: new Date(),
+		};
+
+		mockUsers.push(newUser);
+		currentUserId = newUser.id; // Set as current user
+		return newUser;
+	}
+
 	// User Registration and Profile
 	static async registerUser(
 		walletAddress: string,

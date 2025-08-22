@@ -6,14 +6,12 @@ import {
 	Image,
 	TouchableOpacity,
 	ActivityIndicator,
-	Dimensions,
 	SafeAreaView,
 } from "react-native";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
-const { width, height } = Dimensions.get("window");
+import { UserService } from "@/lib/userService";
 
 // Onboarding screens data
 const onboardingScreens = [
@@ -56,15 +54,46 @@ const onboardingScreens = [
 ];
 
 export default function OnboardingScreen() {
-	const { login, isConnected, isConnecting } = useAbstraxionAccount();
+	const {
+		login,
+		isConnected,
+		isConnecting,
+		data: account,
+	} = useAbstraxionAccount();
 	const router = useRouter();
 	const [currentScreen, setCurrentScreen] = useState(0);
+	const [isCheckingUser, setIsCheckingUser] = useState(false);
 
 	useEffect(() => {
-		if (isConnected) {
-			router.replace("/(tabs)/activity");
-		}
-	}, [isConnected, router]);
+		const handleAuthentication = async () => {
+			if (isConnected && account?.bech32Address && !isCheckingUser) {
+				setIsCheckingUser(true);
+
+				try {
+					// Check if user already exists
+					const existingUser = await UserService.getUserByWallet(
+						account.bech32Address
+					);
+
+					if (existingUser) {
+						// User exists, go to main app
+						router.replace("/(tabs)/activity");
+					} else {
+						// User needs to set up username
+						router.replace("/username-setup");
+					}
+				} catch (error) {
+					console.error("Error checking user:", error);
+					// If there's an error, redirect to username setup to be safe
+					router.replace("/username-setup");
+				} finally {
+					setIsCheckingUser(false);
+				}
+			}
+		};
+
+		handleAuthentication();
+	}, [isConnected, account?.bech32Address, isCheckingUser, router]);
 
 	if (isConnected) {
 		return null;
