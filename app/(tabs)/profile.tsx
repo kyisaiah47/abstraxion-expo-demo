@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import PersistentHeader from "../../components/PersistentHeader";
 
 export default function ProfileScreen() {
 	const router = useRouter();
@@ -26,9 +27,8 @@ export default function ProfileScreen() {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<View style={styles.header}>
-				<Text style={styles.headerTitle}>Profile</Text>
-			</View>
+			{/* Persistent Header */}
+			<PersistentHeader address={data?.bech32Address} />
 
 			<View style={styles.content}>
 				{/* Profile Info */}

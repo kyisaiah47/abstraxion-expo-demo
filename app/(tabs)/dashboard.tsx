@@ -7,8 +7,8 @@ import {
 	TouchableOpacity,
 	ScrollView,
 	StyleSheet,
-	Image,
 } from "react-native";
+import PersistentHeader from "../../components/PersistentHeader";
 import * as Clipboard from "expo-clipboard";
 import {
 	useAbstraxionAccount,
@@ -292,38 +292,11 @@ export default function DashboardScreen() {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			{/* Header */}
-			<View style={styles.header}>
-				<View style={styles.headerLeft}>
-					<Image
-						source={require("../../assets/images/icon-sm.png")}
-						style={{ width: 32, height: 32, borderRadius: 8 }}
-					/>
-					{/* <Text style={styles.headerTitle}>Proof of Work</Text> */}
-				</View>
-				<View style={styles.headerRight}>
-					<TouchableOpacity
-						style={styles.walletButton}
-						onPress={copyToClipboard}
-					>
-						<Ionicons
-							name="wallet-outline"
-							size={16}
-							color="#666"
-						/>
-						<Text style={styles.walletText}>
-							{truncateAddress(data?.bech32Address)}
-						</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.notificationButton}>
-						<Ionicons
-							name="notifications-outline"
-							size={20}
-							color="#666"
-						/>
-					</TouchableOpacity>
-				</View>
-			</View>
+			{/* Persistent Header */}
+			<PersistentHeader
+				address={data?.bech32Address}
+				onCopy={copyToClipboard}
+			/>
 
 			<ScrollView
 				style={styles.scrollContainer}

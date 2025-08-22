@@ -10,6 +10,7 @@ import {
 	SafeAreaView,
 	Alert,
 } from "react-native";
+import PersistentHeader from "../../components/PersistentHeader";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -264,7 +265,10 @@ export default function MarketplaceScreen() {
 
 	return (
 		<SafeAreaView style={styles.container}>
+			{/* Persistent Header */}
+			<PersistentHeader address={account?.bech32Address} />
 			<View style={styles.content}>
+				{/* Marketplace header row below persistent header */}
 				<View style={styles.header}>
 					<View style={styles.headerInfoRow}>
 						<Text style={styles.subheading}>
