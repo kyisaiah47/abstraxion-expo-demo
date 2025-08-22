@@ -335,7 +335,7 @@ export default function DashboardScreen() {
 					<View style={styles.actionGrid}>
 						<TouchableOpacity
 							style={styles.actionButton}
-							onPress={() => router.push("/jobs")}
+							onPress={() => router.push("/marketplace")}
 						>
 							<Ionicons
 								name="search-outline"
