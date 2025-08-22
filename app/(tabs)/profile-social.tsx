@@ -248,7 +248,7 @@ export default function ProfileScreen() {
 								currentUser?.walletAddress ||
 								"0x0000000000000000000000000000000000000000"
 							}
-							variant="secondary"
+							variant="default"
 						/>
 					</View>
 				</View>
