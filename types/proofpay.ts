@@ -41,12 +41,13 @@ export interface TaskFormData {
 
 // New Social System Types
 export interface User {
-	id: string;
-	walletAddress: string;
+	id?: string;
+	wallet_address: string;
 	username: string;
-	displayName: string;
-	profilePicture?: string;
-	createdAt: Date;
+	display_name: string;
+	profile_picture?: string | null;
+	created_at: number;
+	updated_at?: number;
 }
 
 export interface Friendship {

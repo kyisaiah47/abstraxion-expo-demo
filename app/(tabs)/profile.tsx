@@ -15,7 +15,11 @@ import SophisticatedHeader from "@/components/SophisticatedHeader";
 import AddressChip from "@/components/AddressChip";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { User } from "@/types/proofpay";
-import { UserService } from "@/lib/userService";
+import { UserService, initializeUserService } from "@/lib/userService";
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
 
 interface MenuItem {
 	id: string;
@@ -33,9 +37,10 @@ export default function ProfileScreen() {
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
-	const { logout } =
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		require("@burnt-labs/abstraxion-react-native").useAbstraxionAccount();
+	// Get wallet address from Abstraxion
+	const { data, logout } = useAbstraxionAccount();
+	const { client } = useAbstraxionSigningClient();
+	const walletAddress = data?.bech32Address;
 
 	const handleLogout = async () => {
 		try {
@@ -49,8 +54,10 @@ export default function ProfileScreen() {
 		}
 	};
 
-	// Load current user data
+	// Initialize UserService and load current user data
 	useEffect(() => {
+		if (!client || !walletAddress) return;
+		initializeUserService(client, walletAddress);
 		const loadUserData = async () => {
 			try {
 				const user = await UserService.getCurrentUser();
@@ -60,7 +67,7 @@ export default function ProfileScreen() {
 			}
 		};
 		loadUserData();
-	}, []);
+	}, [client, walletAddress]);
 
 	const menuSections = [
 		{
@@ -224,15 +231,15 @@ export default function ProfileScreen() {
 						<View style={styles.avatarContainer}>
 							<View style={styles.avatarPlaceholder}>
 								<Text style={styles.avatarText}>
-									{currentUser
-										? currentUser.displayName.charAt(0).toUpperCase()
+									{currentUser?.display_name
+										? currentUser.display_name.charAt(0).toUpperCase()
 										: "U"}
 								</Text>
 							</View>
 						</View>
 						<View style={styles.profileInfo}>
 							<Text style={styles.displayName}>
-								{currentUser?.displayName || "Loading..."}
+								{currentUser?.display_name || "Loading..."}
 							</Text>
 							<Text style={styles.username}>
 								@{currentUser?.username || "username"}
@@ -245,7 +252,7 @@ export default function ProfileScreen() {
 						<Text style={styles.walletLabel}>Wallet Address</Text>
 						<AddressChip
 							address={
-								currentUser?.walletAddress ||
+								currentUser?.wallet_address ||
 								"0x0000000000000000000000000000000000000000"
 							}
 							variant="default"

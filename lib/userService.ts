@@ -1,265 +1,335 @@
-import { User, Friendship, FriendRequest } from "@/types/proofpay";
+import { User, FriendRequest } from "@/types/proofpay";
+import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
-// Mock data store (in real app, this would be API calls)
-let mockUsers: User[] = [
-	{
-		id: "1",
-		walletAddress: "0x1234567890abcdef",
-		username: "alice_crypto",
-		displayName: "Alice Johnson",
-		profilePicture: "https://i.pravatar.cc/100?img=1",
-		createdAt: new Date("2024-01-15"),
-	},
-	{
-		id: "2",
-		walletAddress: "0xabcdef1234567890",
-		username: "bob_blockchain",
-		displayName: "Bob Smith",
-		profilePicture: "https://i.pravatar.cc/100?img=2",
-		createdAt: new Date("2024-02-01"),
-	},
-	{
-		id: "3",
-		walletAddress: "0x9876543210fedcba",
-		username: "charlie_web3",
-		displayName: "Charlie Davis",
-		profilePicture: "https://i.pravatar.cc/100?img=3",
-		createdAt: new Date("2024-02-10"),
-	},
-];
+const CONTRACT_ADDRESS = process.env.EXPO_PUBLIC_CONTRACT_ADDRESS;
 
-let mockFriendships: Friendship[] = [
-	{
-		id: "f1",
-		user1: "1",
-		user2: "2",
-		createdAt: new Date("2024-02-15"),
-	},
-];
+// Static dependencies that will be set by the app
+let staticClient: SigningCosmWasmClient | null = null;
+let staticWalletAddress: string | null = null;
 
-let mockFriendRequests: FriendRequest[] = [
-	{
-		id: "r1",
-		fromUser: "3",
-		toUser: "1",
-		status: "pending",
-		createdAt: new Date("2024-08-20"),
-	},
-];
+// Initialize the service with client and wallet address
+export function initializeUserService(
+	client: SigningCosmWasmClient,
+	walletAddress: string
+) {
+	staticClient = client;
+	staticWalletAddress = walletAddress;
+}
 
-let currentUserId = "1"; // Mock current user
+// Helper function to get initialized dependencies
+function getDeps() {
+	if (!staticClient)
+		throw new Error(
+			"UserService not initialized - call initializeUserService first"
+		);
+	if (!staticWalletAddress) throw new Error("Wallet address not available");
+	if (!CONTRACT_ADDRESS) throw new Error("Contract address not set");
+
+	return {
+		client: staticClient,
+		walletAddress: staticWalletAddress,
+		contractAddress: CONTRACT_ADDRESS,
+	};
+}
 
 export class UserService {
 	// Username Management
 	static async checkUsernameAvailability(username: string): Promise<boolean> {
-		const existingUser = mockUsers.find(
-			(u) => u.username.toLowerCase() === username.toLowerCase()
-		);
-		return !existingUser;
+		const { client, contractAddress } = getDeps();
+		try {
+			const res = await client.queryContractSmart(contractAddress, {
+				is_username_available: { username: username.toLowerCase() },
+			});
+			return res.available;
+		} catch (error) {
+			// If contract throws error, assume username is available
+			console.error("Error checking username availability:", error);
+			return true;
+		}
 	}
 
-	static async registerUsername(
-		username: string,
-		walletAddress: string
-	): Promise<User> {
-		// Check if username is taken
-		const isAvailable = await this.checkUsernameAvailability(username);
-		if (!isAvailable) {
-			throw new Error("Username is already taken");
-		}
+	static async registerUsername(username: string): Promise<User> {
+		const { client, walletAddress, contractAddress } = getDeps();
 
-		// Check if user already exists with this wallet
-		const existingUser = await this.getUserByWallet(walletAddress);
-		if (existingUser) {
-			throw new Error("User already exists with this wallet address");
-		}
-
-		const newUser: User = {
-			id: Date.now().toString(),
-			walletAddress,
-			username: username.toLowerCase(),
-			displayName: username, // Default display name to username
-			createdAt: new Date(),
+		const msg = {
+			register_user: {
+				username: username.toLowerCase(),
+				display_name: username,
+			},
 		};
 
-		mockUsers.push(newUser);
-		currentUserId = newUser.id; // Set as current user
-		return newUser;
+		await client.execute(walletAddress, contractAddress, msg, "auto");
+
+		// Get the registered user
+		const currentUser = await this.getCurrentUser();
+		if (!currentUser) {
+			throw new Error("User registration failed");
+		}
+		return currentUser;
 	}
 
 	// User Registration and Profile
 	static async registerUser(
-		walletAddress: string,
 		username: string,
 		displayName: string
 	): Promise<User> {
-		// Check if username is taken
-		const existingUser = mockUsers.find(
-			(u) => u.username.toLowerCase() === username.toLowerCase()
-		);
-		if (existingUser) {
-			throw new Error("Username is already taken");
-		}
+		const { client, walletAddress, contractAddress } = getDeps();
 
-		const newUser: User = {
-			id: Date.now().toString(),
-			walletAddress,
-			username: username.toLowerCase(),
-			displayName,
-			createdAt: new Date(),
+		const msg = {
+			register_user: {
+				username: username.toLowerCase(),
+				display_name: displayName,
+			},
 		};
 
-		mockUsers.push(newUser);
-		return newUser;
+		await client.execute(walletAddress, contractAddress, msg, "auto");
+
+		// Get the registered user
+		const currentUser = await this.getCurrentUser();
+		if (!currentUser) {
+			throw new Error("User registration failed");
+		}
+		return currentUser;
 	}
 
 	static async getCurrentUser(): Promise<User | null> {
-		return mockUsers.find((u) => u.id === currentUserId) || null;
-	}
+		const { client, walletAddress, contractAddress } = getDeps();
+		try {
+			// First get username by wallet address
+			const usernameResult = await client.queryContractSmart(contractAddress, {
+				get_username_by_wallet: { wallet_address: walletAddress },
+			});
 
-	static async getUserByWallet(walletAddress: string): Promise<User | null> {
-		return mockUsers.find((u) => u.walletAddress === walletAddress) || null;
-	}
+			if (!usernameResult?.username) return null;
 
-	static async updateProfile(
-		userId: string,
-		updates: Partial<User>
-	): Promise<User> {
-		const userIndex = mockUsers.findIndex((u) => u.id === userId);
-		if (userIndex === -1) {
-			throw new Error("User not found");
+			// Then get full user by username
+			const userResult = await client.queryContractSmart(contractAddress, {
+				get_user_by_username: { username: usernameResult.username },
+			});
+
+			return userResult?.user || null;
+		} catch (error) {
+			console.error("Error fetching current user:", error);
+			return null;
 		}
+	}
 
-		mockUsers[userIndex] = { ...mockUsers[userIndex], ...updates };
-		return mockUsers[userIndex];
+	static async getUserByWallet(
+		targetWalletAddress: string
+	): Promise<User | null> {
+		const { client, contractAddress } = getDeps();
+		try {
+			// First get username by wallet address
+			const usernameResult = await client.queryContractSmart(contractAddress, {
+				get_username_by_wallet: { wallet_address: targetWalletAddress },
+			});
+
+			if (!usernameResult?.username) return null;
+
+			// Then get full user by username
+			const userResult = await client.queryContractSmart(contractAddress, {
+				get_user_by_username: { username: usernameResult.username },
+			});
+
+			return userResult?.user || null;
+		} catch (error) {
+			console.error("Error fetching user by wallet:", error);
+			return null;
+		}
+	}
+
+	static async updateProfile(updates: Partial<User>): Promise<User> {
+		const { client, walletAddress, contractAddress } = getDeps();
+
+		const msg = {
+			update_user_profile: {
+				display_name: updates.displayName || null,
+				profile_picture: updates.profilePicture || null,
+			},
+		};
+
+		await client.execute(walletAddress, contractAddress, msg, "auto");
+
+		// Get updated user
+		const updatedUser = await this.getCurrentUser();
+		if (!updatedUser) {
+			throw new Error("User not found after update");
+		}
+		return updatedUser;
 	}
 
 	// User Search
 	static async searchUsers(query: string): Promise<User[]> {
 		if (!query.trim()) return [];
+		const { client, walletAddress, contractAddress } = getDeps();
 
-		const lowercaseQuery = query.toLowerCase();
-		return mockUsers.filter(
-			(user) =>
-				user.id !== currentUserId &&
-				(user.username.toLowerCase().includes(lowercaseQuery) ||
-					user.displayName.toLowerCase().includes(lowercaseQuery))
-		);
+		try {
+			const res = await client.queryContractSmart(contractAddress, {
+				search_users: { query },
+			});
+
+			// Filter out current user
+			const users = res.users || [];
+			return users.filter((user: User) => user.walletAddress !== walletAddress);
+		} catch (error) {
+			console.error("Error searching users:", error);
+			return [];
+		}
 	}
 
 	static async getUserById(userId: string): Promise<User | null> {
-		return mockUsers.find((u) => u.id === userId) || null;
+		const { client, contractAddress } = getDeps();
+		try {
+			// Treat userId as username for contract compatibility
+			const res = await client.queryContractSmart(contractAddress, {
+				get_user_by_username: { username: userId },
+			});
+			return res?.user || null;
+		} catch {
+			return null;
+		}
 	}
 
 	// Friend Management
 	static async sendFriendRequest(toUserId: string): Promise<FriendRequest> {
-		// Check if friendship already exists
-		const existingFriendship = mockFriendships.find(
-			(f) =>
-				(f.user1 === currentUserId && f.user2 === toUserId) ||
-				(f.user1 === toUserId && f.user2 === currentUserId)
-		);
+		const { client, walletAddress, contractAddress } = getDeps();
 
-		if (existingFriendship) {
-			throw new Error("You are already friends with this user");
-		}
+		const msg = {
+			send_friend_request: {
+				to_username: toUserId, // Assuming toUserId is username
+			},
+		};
 
-		// Check if request already exists
-		const existingRequest = mockFriendRequests.find(
-			(r) =>
-				(r.fromUser === currentUserId && r.toUser === toUserId) ||
-				(r.fromUser === toUserId && r.toUser === currentUserId)
-		);
+		await client.execute(walletAddress, contractAddress, msg, "auto");
 
-		if (existingRequest) {
-			throw new Error("Friend request already exists");
-		}
-
-		const newRequest: FriendRequest = {
+		// Return a minimal friend request object
+		return {
 			id: Date.now().toString(),
-			fromUser: currentUserId,
+			fromUser: walletAddress,
 			toUser: toUserId,
 			status: "pending",
 			createdAt: new Date(),
-		};
-
-		mockFriendRequests.push(newRequest);
-		return newRequest;
+		} as FriendRequest;
 	}
 
 	static async respondToFriendRequest(
 		requestId: string,
 		response: "accepted" | "declined"
 	): Promise<void> {
-		const requestIndex = mockFriendRequests.findIndex(
-			(r) => r.id === requestId
-		);
-		if (requestIndex === -1) {
-			throw new Error("Friend request not found");
-		}
+		const { client, walletAddress, contractAddress } = getDeps();
 
-		const request = mockFriendRequests[requestIndex];
-		request.status = response;
+		const msg =
+			response === "accepted"
+				? { accept_friend_request: { from_username: requestId } }
+				: { decline_friend_request: { from_username: requestId } };
 
-		if (response === "accepted") {
-			// Create friendship
-			const newFriendship: Friendship = {
-				id: Date.now().toString(),
-				user1: request.fromUser,
-				user2: request.toUser,
-				createdAt: new Date(),
-			};
-			mockFriendships.push(newFriendship);
-		}
-
-		// Remove the request
-		mockFriendRequests.splice(requestIndex, 1);
+		await client.execute(walletAddress, contractAddress, msg, "auto");
 	}
 
 	static async getFriends(): Promise<User[]> {
-		const friendships = mockFriendships.filter(
-			(f) => f.user1 === currentUserId || f.user2 === currentUserId
-		);
+		const { client, contractAddress } = getDeps();
 
-		const friendIds = friendships.map((f) =>
-			f.user1 === currentUserId ? f.user2 : f.user1
-		);
+		try {
+			// First get current user's username
+			const currentUser = await this.getCurrentUser();
+			if (!currentUser?.username) return [];
 
-		return mockUsers.filter((u) => friendIds.includes(u.id));
+			// Get friend usernames
+			const res = await client.queryContractSmart(contractAddress, {
+				get_user_friends: { username: currentUser.username },
+			});
+
+			const friendUsernames = res.friends || [];
+
+			// Fetch full user objects for each friend
+			const friends = await Promise.all(
+				friendUsernames.map(async (username: string) => {
+					try {
+						const userRes = await client.queryContractSmart(contractAddress, {
+							get_user_by_username: { username },
+						});
+						return userRes?.user;
+					} catch {
+						return null;
+					}
+				})
+			);
+
+			return friends.filter((friend): friend is User => !!friend);
+		} catch (error) {
+			console.error("Error fetching friends:", error);
+			return [];
+		}
 	}
 
 	static async getPendingFriendRequests(): Promise<
 		(FriendRequest & { fromUserData: User })[]
 	> {
-		const pendingRequests = mockFriendRequests.filter(
-			(r) => r.toUser === currentUserId && r.status === "pending"
-		);
+		const { client, contractAddress } = getDeps();
 
-		return pendingRequests.map((request) => ({
-			...request,
-			fromUserData: mockUsers.find((u) => u.id === request.fromUser)!,
-		}));
+		try {
+			// Get current user's username
+			const currentUser = await this.getCurrentUser();
+			if (!currentUser?.username) return [];
+
+			const res = await client.queryContractSmart(contractAddress, {
+				get_pending_requests: { username: currentUser.username },
+			});
+
+			const requests = res.requests || [];
+
+			// Enrich with user data
+			const enrichedRequests = await Promise.all(
+				requests.map(async (request: any) => {
+					try {
+						const fromUserRes = await client.queryContractSmart(
+							contractAddress,
+							{
+								get_user_by_username: { username: request.from_username },
+							}
+						);
+						return {
+							...request,
+							fromUserData: fromUserRes?.user,
+						};
+					} catch {
+						return null;
+					}
+				})
+			);
+
+			return enrichedRequests.filter(
+				(req): req is FriendRequest & { fromUserData: User } =>
+					!!req && !!req.fromUserData
+			);
+		} catch (error) {
+			console.error("Error fetching pending friend requests:", error);
+			return [];
+		}
 	}
 
 	static async getSentFriendRequests(): Promise<
 		(FriendRequest & { toUserData: User })[]
 	> {
-		const sentRequests = mockFriendRequests.filter(
-			(r) => r.fromUser === currentUserId && r.status === "pending"
-		);
-
-		return sentRequests.map((request) => ({
-			...request,
-			toUserData: mockUsers.find((u) => u.id === request.toUser)!,
-		}));
+		// This would require additional contract queries or different contract methods
+		// For now, return empty array as the contract might not support this directly
+		return [];
 	}
 
 	// Helper to check if users are friends
 	static async areFriends(userId1: string, userId2: string): Promise<boolean> {
-		return mockFriendships.some(
-			(f) =>
-				(f.user1 === userId1 && f.user2 === userId2) ||
-				(f.user1 === userId2 && f.user2 === userId1)
-		);
+		const { client, contractAddress } = getDeps();
+
+		try {
+			const res = await client.queryContractSmart(contractAddress, {
+				are_friends: {
+					username1: userId1,
+					username2: userId2,
+				},
+			});
+			return !!res.are_friends;
+		} catch {
+			return false;
+		}
 	}
 }
