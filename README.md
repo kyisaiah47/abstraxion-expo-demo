@@ -1,4 +1,4 @@
-# Proof of Work - Social Payments Platform
+# ProofPay - Social Payments Platform
 
 A modern social payment app inspired by Venmo, with proof-of-work and blockchain security. Request help, send/request payments, and verify actions with text, photo, or zkTLS proofs. All payments are secured by the XION blockchain.
 
