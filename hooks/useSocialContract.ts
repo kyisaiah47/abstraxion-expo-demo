@@ -220,20 +220,37 @@ export function useUserFriends(username: string) {
 	const [error, setError] = useState<string | null>(null);
 
 	const fetch = useCallback(async () => {
+		if (!username || username.trim() === "") {
+			console.log("❌ No username provided to useUserFriends");
+			setFriends([]);
+			setLoading(false);
+			return;
+		}
+
+		console.log("👥 Fetching friends for username:", username);
 		setLoading(true);
 		setError(null);
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
+			console.log("🔗 Calling contract.getUserFriends...");
 			const result = await contract.getUserFriends(username);
+			console.log("📋 getUserFriends result:", JSON.stringify(result, null, 2));
 			setFriends(result.friends || []);
+			console.log("👥 Set friends to:", result.friends || []);
 		} catch (e: any) {
+			console.error("❌ Error in useUserFriends:", e.message);
+			console.error("❌ Full error:", e);
 			setError(e.message);
 			setFriends([]);
 		} finally {
 			setLoading(false);
 		}
 	}, [username]);
+
+	useEffect(() => {
+		fetch();
+	}, [fetch]);
 
 	return { friends, loading, error, refetch: fetch };
 }
@@ -245,20 +262,37 @@ export function usePendingFriendRequests(username: string) {
 	const [error, setError] = useState<string | null>(null);
 
 	const fetch = useCallback(async () => {
+		if (!username || username.trim() === "") {
+			console.log("❌ No username provided to usePendingFriendRequests");
+			setRequests([]);
+			setLoading(false);
+			return;
+		}
+
+		console.log("📨 Fetching pending requests for username:", username);
 		setLoading(true);
 		setError(null);
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
+			console.log("🔗 Calling contract.getPendingRequests...");
 			const result = await contract.getPendingRequests(username);
+			console.log("📋 getPendingRequests result:", JSON.stringify(result, null, 2));
 			setRequests(result.requests || []);
+			console.log("📨 Set requests to:", result.requests || []);
 		} catch (e: any) {
+			console.error("❌ Error in usePendingFriendRequests:", e.message);
+			console.error("❌ Full error:", e);
 			setError(e.message);
 			setRequests([]);
 		} finally {
 			setLoading(false);
 		}
 	}, [username]);
+
+	useEffect(() => {
+		fetch();
+	}, [fetch]);
 
 	return { requests, loading, error, refetch: fetch };
 }

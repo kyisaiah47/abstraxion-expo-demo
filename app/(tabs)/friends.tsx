@@ -36,18 +36,24 @@ export default function FriendsScreen() {
 	// Get current user profile to get their username
 	const { user: currentUser } = useUserProfile(address);
 	const username = currentUser?.username || "";
+	console.log("👤 Current user data:", currentUser);
+	console.log("📝 Username for queries:", username);
+	
 	const {
 		friends,
 		loading: friendsLoading,
 		error: friendsError,
 		refetch: refetchFriends,
 	} = useUserFriends(username);
+	console.log("👥 Friends data:", friends, "loading:", friendsLoading, "error:", friendsError);
+	
 	const {
 		requests: pendingRequests,
 		loading: requestsLoading,
 		error: requestsError,
 		refetch: refetchRequests,
 	} = usePendingFriendRequests(username);
+	console.log("📨 Pending requests data:", pendingRequests, "loading:", requestsLoading, "error:", requestsError);
 	// Get signing client for operations
 	const {
 		sendFriendRequest,
@@ -182,20 +188,19 @@ export default function FriendsScreen() {
 		showStatusBadge: boolean = true
 	) => (
 		<View
-			key={user.username}
 			style={styles.userItem}
 		>
 			<View style={styles.userInfo}>
 				<View style={styles.avatarPlaceholder}>
 					<Text style={styles.avatarText}>
-						{(user.display_name || user.username).charAt(0).toUpperCase()}
+						{(user.display_name || user.username || "?").charAt(0).toUpperCase()}
 					</Text>
 				</View>
 				<View style={styles.userTextContainer}>
 					<Text style={styles.userName}>
-						{user.display_name || user.username}
+						{user.display_name || user.username || "Unknown User"}
 					</Text>
-					<Text style={styles.userUsername}>@{user.username}</Text>
+					<Text style={styles.userUsername}>@{user.username || "unknown"}</Text>
 				</View>
 				{showStatusBadge && renderStatusBadge(false)}
 			</View>
@@ -237,20 +242,19 @@ export default function FriendsScreen() {
 
 	const renderFriendRequestItem = (request: User) => (
 		<View
-			key={request.username}
 			style={styles.requestItem}
 		>
 			<View style={styles.userInfo}>
 				<View style={styles.avatarPlaceholder}>
 					<Text style={styles.avatarText}>
-						{(request.display_name || request.username).charAt(0).toUpperCase()}
+						{(request.display_name || request.username || "?").charAt(0).toUpperCase()}
 					</Text>
 				</View>
 				<View style={styles.userTextContainer}>
 					<Text style={styles.userName}>
-						{request.display_name || request.username}
+						{request.display_name || request.username || "Unknown User"}
 					</Text>
-					<Text style={styles.userUsername}>@{request.username}</Text>
+					<Text style={styles.userUsername}>@{request.username || "unknown"}</Text>
 				</View>
 				{renderStatusBadge(true)}
 			</View>
@@ -429,8 +433,10 @@ export default function FriendsScreen() {
 					</View>
 					{searchResults.length > 0 && (
 						<View style={styles.searchResults}>
-							{searchResults.map((user) =>
-								renderUserItem(user, true, false, false)
+							{searchResults.map((user, index) =>
+								<View key={user.username || user.wallet_address || index}>
+									{renderUserItem(user, true, false, false)}
+								</View>
 							)}
 						</View>
 					)}
@@ -443,8 +449,12 @@ export default function FriendsScreen() {
 						<Text style={styles.sectionTitle}>Friend Requests</Text>
 						{pendingRequests.length > 0 ? (
 							<View style={styles.requestsList}>
-								{pendingRequests.map((request) => {
-									return renderFriendRequestItem(request);
+								{pendingRequests.map((request, index) => {
+									return (
+										<View key={request.username || request.wallet_address || index}>
+											{renderFriendRequestItem(request)}
+										</View>
+									);
 								})}
 							</View>
 						) : (
@@ -469,8 +479,12 @@ export default function FriendsScreen() {
 						<Text style={styles.sectionTitle}>Your Friends</Text>
 						{friends.length > 0 ? (
 							<View style={styles.friendsList}>
-								{friends.map((friend) => {
-									return renderUserItem(friend, false, true, true);
+								{friends.map((friend, index) => {
+									return (
+										<View key={friend.username || friend.wallet_address || index}>
+											{renderUserItem(friend, false, true, true)}
+										</View>
+									);
 								})}
 							</View>
 						) : (
