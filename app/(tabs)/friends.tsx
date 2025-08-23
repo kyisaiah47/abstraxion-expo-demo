@@ -23,11 +23,15 @@ import {
 	useSearchUsers,
 	useUserProfile,
 } from "@/hooks/useSocialContract";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import {
+	useAbstraxionAccount,
+	useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion-react-native";
 
 export default function FriendsScreen() {
 	const { logout, data } = useAbstraxionAccount();
 	const address = data?.bech32Address ?? "";
+	const { client: signingClient } = useAbstraxionSigningClient();
 
 	// Get current user profile to get their username
 	const { user: currentUser } = useUserProfile(address);
@@ -50,7 +54,7 @@ export default function FriendsScreen() {
 		acceptFriendRequest,
 		loading: opsLoading,
 		error: opsError,
-	} = useSocialOperations(data?.signingClient);
+	} = useSocialOperations(signingClient);
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -62,6 +66,8 @@ export default function FriendsScreen() {
 	} = useSearchUsers(debouncedQuery);
 	const [searchResults, setSearchResults] = useState<User[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
+	const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+	const [activeTab, setActiveTab] = useState<"find" | "requests" | "friends">("find");
 	const [showRemoveModal, setShowRemoveModal] = useState<{
 		open: boolean;
 		friend?: User;
@@ -104,13 +110,22 @@ export default function FriendsScreen() {
 	};
 
 	const handleSendFriendRequest = async (toUsername: string) => {
+		console.log("🚀 Sending friend request...");
+		console.log("  - toUsername:", toUsername);
+		console.log("  - address:", address);
+		console.log("  - signingClient:", signingClient);
+		console.log("  - data object:", data);
+
 		try {
 			await sendFriendRequest(toUsername, address);
+			console.log("✅ Friend request sent successfully!");
+
+			// Add to sent requests to update UI
+			setSentRequests((prev) => new Set([...prev, toUsername]));
+
 			Alert.alert("Success", "Friend request sent!");
-			setSearchQuery("");
-			setSearchResults([]);
-			await handleRefresh();
 		} catch (error) {
+			console.error("❌ Friend request failed:", error);
 			Alert.alert(
 				"Error",
 				error instanceof Error ? error.message : "Failed to send friend request"
@@ -186,14 +201,21 @@ export default function FriendsScreen() {
 			</View>
 			{showAddButton && (
 				<Pressable
-					style={styles.addButton}
+					style={[
+						styles.addButton,
+						sentRequests.has(user.username) && styles.addButtonSent,
+					]}
 					onPress={() => handleSendFriendRequest(user.username)}
-					disabled={opsLoading}
+					disabled={opsLoading || sentRequests.has(user.username)}
 				>
 					<Ionicons
-						name="person-add"
+						name={sentRequests.has(user.username) ? "checkmark" : "person-add"}
 						size={20}
-						color={DesignSystem.colors.status.success}
+						color={
+							sentRequests.has(user.username)
+								? DesignSystem.colors.status.success
+								: DesignSystem.colors.status.success
+						}
 					/>
 				</Pressable>
 			)}
@@ -341,6 +363,40 @@ export default function FriendsScreen() {
 					</Text>
 				</View>
 			)}
+			{/* Tab Switcher */}
+			<View style={styles.tabContainer}>
+				<Pressable
+					style={[styles.tab, activeTab === "find" && styles.tabActive]}
+					onPress={() => setActiveTab("find")}
+				>
+					<Text style={[styles.tabText, activeTab === "find" && styles.tabTextActive]}>
+						Find Friends
+					</Text>
+				</Pressable>
+				<Pressable
+					style={[styles.tab, activeTab === "requests" && styles.tabActive]}
+					onPress={() => setActiveTab("requests")}
+				>
+					<Text style={[styles.tabText, activeTab === "requests" && styles.tabTextActive]}>
+						Requests
+						{pendingRequests.length > 0 && (
+							<Text style={styles.tabBadge}> ({pendingRequests.length})</Text>
+						)}
+					</Text>
+				</Pressable>
+				<Pressable
+					style={[styles.tab, activeTab === "friends" && styles.tabActive]}
+					onPress={() => setActiveTab("friends")}
+				>
+					<Text style={[styles.tabText, activeTab === "friends" && styles.tabTextActive]}>
+						Friends
+						{friends.length > 0 && (
+							<Text style={styles.tabBadge}> ({friends.length})</Text>
+						)}
+					</Text>
+				</Pressable>
+			</View>
+
 			<ScrollView
 				style={styles.scrollView}
 				contentContainerStyle={styles.scrollContent}
@@ -352,8 +408,9 @@ export default function FriendsScreen() {
 				}
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Search Section */}
-				<View style={styles.section}>
+				{/* Find Friends Tab */}
+				{activeTab === "find" && (
+					<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Find Friends</Text>
 					<View style={styles.searchContainer}>
 						<Ionicons
@@ -378,43 +435,59 @@ export default function FriendsScreen() {
 						</View>
 					)}
 				</View>
-				{/* Pending Friend Requests */}
-				{pendingRequests.length > 0 && (
+				)}
+
+				{/* Friend Requests Tab */}
+				{activeTab === "requests" && (
 					<View style={styles.section}>
 						<Text style={styles.sectionTitle}>Friend Requests</Text>
-						<View style={styles.requestsList}>
-							{pendingRequests.map((request) => {
-								return renderFriendRequestItem(request);
-							})}
-						</View>
+						{pendingRequests.length > 0 ? (
+							<View style={styles.requestsList}>
+								{pendingRequests.map((request) => {
+									return renderFriendRequestItem(request);
+								})}
+							</View>
+						) : (
+							<View style={styles.emptyState}>
+								<Ionicons
+									name="person-add-outline"
+									size={48}
+									color={DesignSystem.colors.text.tertiary}
+								/>
+								<Text style={styles.emptyStateText}>No pending requests</Text>
+								<Text style={styles.emptyStateSubtext}>
+									Friend requests will appear here
+								</Text>
+							</View>
+						)}
 					</View>
 				)}
-				{/* Friends List */}
-				<View style={styles.section}>
-					<Text style={styles.sectionTitle}>
-						{"Your Friends" +
-							(friends.length > 0 ? " (" + friends.length + ")" : "")}
-					</Text>
-					{friends.length > 0 ? (
-						<View style={styles.friendsList}>
-							{friends.map((friend) => {
-								return renderUserItem(friend, false, true, true);
-							})}
-						</View>
-					) : (
-						<View style={styles.emptyState}>
-							<Ionicons
-								name="people-outline"
-								size={48}
-								color={DesignSystem.colors.text.tertiary}
-							/>
-							<Text style={styles.emptyStateText}>No friends yet</Text>
-							<Text style={styles.emptyStateSubtext}>
-								Search for people to add as friends
-							</Text>
-						</View>
-					)}
-				</View>
+
+				{/* Friends List Tab */}
+				{activeTab === "friends" && (
+					<View style={styles.section}>
+						<Text style={styles.sectionTitle}>Your Friends</Text>
+						{friends.length > 0 ? (
+							<View style={styles.friendsList}>
+								{friends.map((friend) => {
+									return renderUserItem(friend, false, true, true);
+								})}
+							</View>
+						) : (
+							<View style={styles.emptyState}>
+								<Ionicons
+									name="people-outline"
+									size={48}
+									color={DesignSystem.colors.text.tertiary}
+								/>
+								<Text style={styles.emptyStateText}>No friends yet</Text>
+								<Text style={styles.emptyStateSubtext}>
+									Search for people to add as friends
+								</Text>
+							</View>
+						)}
+					</View>
+				)}
 				{/* Bottom Spacer */}
 				<View style={styles.bottomSpacer} />
 			</ScrollView>
@@ -426,6 +499,35 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: DesignSystem.colors.surface.primary,
+	},
+	tabContainer: {
+		flexDirection: "row",
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderBottomWidth: 1,
+		borderBottomColor: DesignSystem.colors.border.secondary,
+	},
+	tab: {
+		flex: 1,
+		paddingVertical: DesignSystem.spacing.lg,
+		paddingHorizontal: DesignSystem.spacing.md,
+		alignItems: "center",
+		borderBottomWidth: 2,
+		borderBottomColor: "transparent",
+	},
+	tabActive: {
+		borderBottomColor: DesignSystem.colors.primary[800],
+	},
+	tabText: {
+		...DesignSystem.typography.label.medium,
+		color: DesignSystem.colors.text.secondary,
+	},
+	tabTextActive: {
+		color: DesignSystem.colors.primary[800],
+		fontWeight: "600",
+	},
+	tabBadge: {
+		color: DesignSystem.colors.text.tertiary,
+		fontSize: 12,
 	},
 	scrollView: {
 		flex: 1,
@@ -517,6 +619,10 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		...DesignSystem.shadows.sm,
+	},
+	addButtonSent: {
+		backgroundColor: DesignSystem.colors.status.success + "20", // Light green background
+		borderColor: DesignSystem.colors.status.success,
 	},
 	pendingText: {
 		...DesignSystem.typography.body.small,
