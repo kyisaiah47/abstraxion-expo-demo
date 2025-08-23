@@ -145,6 +145,12 @@ export default function FriendsScreen() {
 		requestUsername: string,
 		response: "accepted" | "declined"
 	) => {
+		console.log("📨 Responding to friend request...");
+		console.log("  - requestUsername:", requestUsername);
+		console.log("  - response:", response);
+		console.log("  - address:", address);
+		console.log("  - signingClient:", signingClient);
+
 		try {
 			if (response === "accepted") {
 				await acceptFriendRequest(requestUsername, address);
@@ -154,6 +160,7 @@ export default function FriendsScreen() {
 			}
 			await handleRefresh();
 		} catch (error) {
+			console.error("❌ Friend request response failed:", error);
 			Alert.alert(
 				"Error",
 				error instanceof Error ? error.message : "Failed to respond to request"

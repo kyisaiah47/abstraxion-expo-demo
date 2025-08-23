@@ -490,17 +490,25 @@ export function useSocialOperations(signingClient: any) {
 				throw new Error("Signing client not available");
 			}
 
+			console.log("🔗 Executing acceptFriendRequest with:");
+			console.log("  - requesterUsername:", requesterUsername);
+			console.log("  - senderAddress:", senderAddress);
+			console.log("  - CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
+			
+			const message = {
+				accept_friend_request: {
+					from_username: requesterUsername,
+				},
+			};
+			console.log("  - message:", JSON.stringify(message, null, 2));
+
 			setLoading(true);
 			setError(null);
 			try {
 				return await signingClient.execute(
 					senderAddress,
 					CONTRACT_ADDRESS,
-					{
-						accept_friend_request: {
-							requester_username: requesterUsername,
-						},
-					},
+					message,
 					"auto"
 				);
 			} catch (e: any) {
