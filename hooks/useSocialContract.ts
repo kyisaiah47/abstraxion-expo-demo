@@ -278,8 +278,25 @@ export function usePendingFriendRequests(username: string) {
 			console.log("🔗 Calling contract.getPendingRequests...");
 			const result = await contract.getPendingRequests(username);
 			console.log("📋 getPendingRequests result:", JSON.stringify(result, null, 2));
-			setRequests(result.requests || []);
-			console.log("📨 Set requests to:", result.requests || []);
+			
+			// The result contains request objects with from_username, not user objects
+			// We need to fetch the actual user data for each from_username
+			const requestObjects = result.requests || [];
+			const users: User[] = [];
+			
+			for (const request of requestObjects) {
+				try {
+					const userResult = await contract.getUserByUsername(request.from_username);
+					if (userResult.user) {
+						users.push(userResult.user);
+					}
+				} catch (userError) {
+					console.warn("Failed to fetch user data for:", request.from_username, userError);
+				}
+			}
+			
+			setRequests(users);
+			console.log("📨 Set requests to (converted to users):", users);
 		} catch (e: any) {
 			console.error("❌ Error in usePendingFriendRequests:", e.message);
 			console.error("❌ Full error:", e);

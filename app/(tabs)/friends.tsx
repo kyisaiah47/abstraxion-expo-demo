@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
+import ActionButton from "@/components/ActionButton";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { User } from "@/lib/socialContract";
 import {
@@ -54,6 +55,7 @@ export default function FriendsScreen() {
 		refetch: refetchRequests,
 	} = usePendingFriendRequests(username);
 	console.log("📨 Pending requests data:", pendingRequests, "loading:", requestsLoading, "error:", requestsError);
+	console.log("📨 Pending requests detailed:", JSON.stringify(pendingRequests, null, 2));
 	// Get signing client for operations
 	const {
 		sendFriendRequest,
@@ -205,37 +207,23 @@ export default function FriendsScreen() {
 				{showStatusBadge && renderStatusBadge(false)}
 			</View>
 			{showAddButton && (
-				<Pressable
-					style={[
-						styles.addButton,
-						sentRequests.has(user.username) && styles.addButtonSent,
-					]}
+				<ActionButton
+					icon={sentRequests.has(user.username) ? "checkmark" : "person-add"}
+					variant="success"
+					size="large"
+					style={sentRequests.has(user.username) && styles.addButtonSent}
 					onPress={() => handleSendFriendRequest(user.username)}
 					disabled={opsLoading || sentRequests.has(user.username)}
-				>
-					<Ionicons
-						name={sentRequests.has(user.username) ? "checkmark" : "person-add"}
-						size={20}
-						color={
-							sentRequests.has(user.username)
-								? DesignSystem.colors.status.success
-								: DesignSystem.colors.status.success
-						}
-					/>
-				</Pressable>
+				/>
 			)}
 			{showRemoveButton && (
-				<Pressable
-					style={styles.addButton}
+				<ActionButton
+					icon="person-remove"
+					variant="error"
+					size="large"
 					onPress={() => setShowRemoveModal({ open: true, friend: user })}
 					disabled={opsLoading}
-				>
-					<Ionicons
-						name="person-remove"
-						size={20}
-						color={DesignSystem.colors.status.error}
-					/>
-				</Pressable>
+				/>
 			)}
 		</View>
 	);
@@ -256,31 +244,22 @@ export default function FriendsScreen() {
 					</Text>
 					<Text style={styles.userUsername}>@{request.username || "unknown"}</Text>
 				</View>
-				{renderStatusBadge(true)}
 			</View>
 			<View style={styles.requestActions}>
-				<Pressable
-					style={[styles.requestButton, styles.acceptButton]}
+				<ActionButton
+					icon="checkmark"
+					variant="success"
+					size="medium"
 					onPress={() => handleRespondToRequest(request.username, "accepted")}
 					disabled={opsLoading}
-				>
-					<Ionicons
-						name="checkmark"
-						size={16}
-						color={DesignSystem.colors.text.inverse}
-					/>
-				</Pressable>
-				<Pressable
-					style={[styles.requestButton, styles.declineButton]}
+				/>
+				<ActionButton
+					icon="close"
+					variant="error"
+					size="medium"
 					onPress={() => handleRespondToRequest(request.username, "declined")}
 					disabled={opsLoading}
-				>
-					<Ionicons
-						name="close"
-						size={16}
-						color={DesignSystem.colors.text.inverse}
-					/>
-				</Pressable>
+				/>
 			</View>
 		</View>
 	);
@@ -623,17 +602,6 @@ const styles = StyleSheet.create({
 		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.text.secondary,
 	},
-	addButton: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
-		backgroundColor: DesignSystem.colors.surface.secondary,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.primary,
-		alignItems: "center",
-		justifyContent: "center",
-		...DesignSystem.shadows.sm,
-	},
 	addButtonSent: {
 		backgroundColor: DesignSystem.colors.status.success + "20", // Light green background
 		borderColor: DesignSystem.colors.status.success,
@@ -661,19 +629,6 @@ const styles = StyleSheet.create({
 	requestActions: {
 		flexDirection: "row",
 		gap: DesignSystem.spacing.sm,
-	},
-	requestButton: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	acceptButton: {
-		backgroundColor: DesignSystem.colors.status.success,
-	},
-	declineButton: {
-		backgroundColor: DesignSystem.colors.status.error,
 	},
 	friendsList: {
 		backgroundColor: DesignSystem.colors.surface.elevated,
