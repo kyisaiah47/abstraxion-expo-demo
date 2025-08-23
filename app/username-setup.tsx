@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
 		borderColor: DesignSystem.colors.border.secondary,
 	},
 	continueButtonLoading: {
-		backgroundColor: DesignSystem.colors.primary[700],
+		backgroundColor: DesignSystem.colors.primary[600],
 	},
 	continueButtonText: {
 		...DesignSystem.typography.label.large,
