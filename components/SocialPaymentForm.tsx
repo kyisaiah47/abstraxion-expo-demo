@@ -205,7 +205,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 			{/* Amount Display */}
 			<View style={styles.amountSection}>
-				<Text style={styles.currencySymbol}>Ξ</Text>
+				<Text style={styles.currencySymbol}>$</Text>
 				<TextInput
 					style={styles.amountInput}
 					value={formData.amount > 0 ? formData.amount.toString() : ""}
@@ -230,12 +230,19 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					<Ionicons
 						name={getSelectedProofType().icon as any}
 						size={16}
-						color={formData.proofType === "none" ? "#ff6b6b" : "#666"}
+						color={
+							formData.proofType === "zktls"
+								? "#1976D2"
+								: formData.proofType === "none"
+								? "#ff6b6b"
+								: "#666"
+						}
 					/>
 					<Text
 						style={[
 							styles.proofChipText,
 							formData.proofType === "none" && styles.proofChipTextDisabled,
+							formData.proofType === "zktls" && { color: "#1976D2" },
 						]}
 					>
 						{getSelectedProofType().label}
@@ -268,12 +275,20 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 								<Ionicons
 									name={option.icon as any}
 									size={16}
-									color={option.disabled ? "#ff6b6b" : "#333"}
+									color={
+										option.id === "zktls" && formData.proofType === "zktls"
+											? "#1976D2"
+											: option.disabled
+											? "#ff6b6b"
+											: "#333"
+									}
 								/>
 								<Text
 									style={[
 										styles.dropdownMenuItemText,
 										option.disabled && styles.dropdownMenuItemTextDisabled,
+										option.id === "zktls" &&
+											formData.proofType === "zktls" && { color: "#1976D2" },
 									]}
 								>
 									{option.label}

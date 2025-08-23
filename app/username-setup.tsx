@@ -52,24 +52,6 @@ export default function UsernameSetupScreen() {
 	} = useSocialOperations(signingClient);
 
 	useEffect(() => {
-		console.log("🔍 DEBUG INFO:");
-		console.log("📱 Account:", account);
-		console.log("🔌 Connected:", isConnected);
-		console.log("⚡ Signing Client Exists:", !!signingClient);
-		console.log("💰 Granter Address:", account?.bech32Address);
-
-		if (signingClient) {
-			console.log("🎯 Grantee Address:", signingClient._granteeAddress);
-			console.log("🏛️ Treasury:", signingClient._treasury);
-			console.log(
-				"📋 Contract Address from ENV:",
-				process.env.EXPO_PUBLIC_CONTRACT_ADDRESS
-			);
-			console.log("🔑 Signer exists:", !!signingClient._signer);
-		}
-	}, [account, isConnected, signingClient]);
-
-	useEffect(() => {
 		const { valid, message } = validateFormat(username);
 		setFormatError(valid ? "" : message);
 		if (valid && username) refetch();
@@ -81,13 +63,6 @@ export default function UsernameSetupScreen() {
 		isConnected &&
 		!!signingClient &&
 		!!account?.bech32Address;
-
-	console.log("🔍 signingClient:", signingClient);
-	console.log("🔍 signingClient type:", typeof signingClient);
-	console.log(
-		"🔍 signingClient keys:",
-		signingClient ? Object.keys(signingClient) : "null"
-	);
 
 	const handleRegisterUsername = async () => {
 		// Add this check!
@@ -197,6 +172,34 @@ export default function UsernameSetupScreen() {
 	};
 
 	const isButtonDisabled = !isValid || registering;
+
+	// Redirect if user already has a registered username
+	useEffect(() => {
+		if (account?.bech32Address && isConnected && signingClient) {
+			(async () => {
+				try {
+					const contractAddress = process.env.EXPO_PUBLIC_CONTRACT_ADDRESS;
+					if (!contractAddress) {
+						console.error("Contract address is not defined.");
+						return;
+					}
+					const usernameInfo = await signingClient.queryContractSmart(
+						contractAddress!,
+						{
+							get_username_by_wallet: {
+								wallet_address: account.bech32Address,
+							},
+						}
+					);
+					if (usernameInfo && usernameInfo.username) {
+						router.replace("/(tabs)/activity");
+					}
+				} catch (e) {
+					console.error("Contract query error:", e);
+				}
+			})();
+		}
+	});
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -608,16 +611,3 @@ const styles = StyleSheet.create({
 		color: DesignSystem.colors.text.secondary,
 	},
 });
-
-// Debug logging
-console.log("Loaded RPC Endpoint:", process.env.EXPO_PUBLIC_RPC_ENDPOINT);
-console.log("Loaded REST Endpoint:", process.env.EXPO_PUBLIC_REST_ENDPOINT);
-// Debug logging for connected contract
-console.log(
-	"Connected Contract Address (EXPO_PUBLIC_CONTRACT_ADDRESS):",
-	process.env.EXPO_PUBLIC_CONTRACT_ADDRESS
-);
-console.log(
-	"Treasury Contract Address (EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS):",
-	process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS
-);
