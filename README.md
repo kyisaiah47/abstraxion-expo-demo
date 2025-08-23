@@ -6,6 +6,10 @@ A modern social payment app inspired by Venmo, with proof-of-work and blockchain
 
 ### 🔄 Three Payment Flows
 
+- **Task Requests**: "Help me move furniture for $50" - request work with verifiable completion
+- **Payment Requests**: "You owe me $20 for dinner" - request money with optional proof
+- **Direct Payments**: "Thanks for helping!" - send money with optional verification
+
 ## 🚀 Features
 
 - **Social Payments:** Request help, send money, or request payments from friends
