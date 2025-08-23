@@ -4,9 +4,11 @@ import {
 	CosmWasmClient,
 	SigningCosmWasmClient,
 } from "@cosmjs/cosmwasm-stargate";
+import { GasPrice } from "@cosmjs/stargate";
 
 // Ensure EXPO_PUBLIC_RPC_ENDPOINT is defined only once
 const EXPO_PUBLIC_RPC_ENDPOINT = process.env.EXPO_PUBLIC_RPC_ENDPOINT || "";
+const CONTRACT_ADDRESS = process.env.EXPO_PUBLIC_CONTRACT_ADDRESS || "";
 
 // Payment detail hook
 export function usePaymentDetail(paymentId: string) {
@@ -44,12 +46,16 @@ async function getReadClient() {
 
 // Helper to create a write-enabled contract instance
 export async function getWriteClient(signer: any) {
+	const gasPrice = GasPrice.fromString("0.025uxion");
+
 	return await SigningCosmWasmClient.connectWithSigner(
 		EXPO_PUBLIC_RPC_ENDPOINT,
-		signer
+		signer,
+		{
+			gasPrice: gasPrice,
+		}
 	);
 }
-
 // useUserProfile: get user profile by wallet address
 export function useUserProfile(address: string) {
 	const [user, setUser] = useState<User | null>(null);
@@ -229,27 +235,32 @@ export function usePendingPayments(username: string) {
 }
 
 // Ensure `signer` is passed correctly to `getContract`
-export function useSocialOperations(signer: any) {
+export function useSocialOperations(signingClient: any) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const getContract = useCallback(async () => {
-		const client = await getWriteClient(signer);
-		return new SocialPaymentContract(client);
-	}, [signer]);
-
 	// Register user
 	const registerUser = useCallback(
-		async (username: string, wallet_address: string) => {
+		async (username: string, senderAddress: string) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
 			setLoading(true);
 			setError(null);
 			try {
-				const contract = await getContract();
-				if (!(contract.client instanceof SigningCosmWasmClient))
-					throw new Error("Client must be SigningCosmWasmClient for writes");
-				return await contract.registerUser(
-					{ username, wallet_address },
-					wallet_address
+				// Use the Abstraxion signing client directly!
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						register_user: {
+							username,
+							display_name: username,
+							profile_picture: "",
+						},
+					},
+					"auto"
 				);
 			} catch (e: any) {
 				setError(e.message);
@@ -258,22 +269,204 @@ export function useSocialOperations(signer: any) {
 				setLoading(false);
 			}
 		},
-		[getContract, signer]
+		[signingClient]
+	);
+
+	// Send friend request
+	const sendFriendRequest = useCallback(
+		async (toUsername: string, senderAddress: string) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
+			setLoading(true);
+			setError(null);
+			try {
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						send_friend_request: {
+							to_username: toUsername,
+						},
+					},
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[signingClient]
+	);
+
+	// Accept friend request
+	const acceptFriendRequest = useCallback(
+		async (requesterUsername: string, senderAddress: string) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
+			setLoading(true);
+			setError(null);
+			try {
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						accept_friend_request: {
+							requester_username: requesterUsername,
+						},
+					},
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[signingClient]
+	);
+
+	// Send direct payment
+	const sendDirectPayment = useCallback(
+		async (
+			toUsername: string,
+			amount: string,
+			description: string,
+			senderAddress: string
+		) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
+			setLoading(true);
+			setError(null);
+			try {
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						send_direct_payment: {
+							to_username: toUsername,
+							amount,
+							description,
+							payment_type: "DirectPayment",
+							proof_type: "None",
+						},
+					},
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[signingClient]
+	);
+
+	// Create payment request
+	const createPaymentRequest = useCallback(
+		async (
+			toUsername: string,
+			amount: string,
+			description: string,
+			senderAddress: string
+		) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
+			setLoading(true);
+			setError(null);
+			try {
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						create_payment_request: {
+							to_username: toUsername,
+							amount,
+							description,
+							payment_type: "PaymentRequest",
+							proof_type: "None",
+						},
+					},
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[signingClient]
+	);
+
+	// Create help request
+	const createHelpRequest = useCallback(
+		async (
+			toUsername: string,
+			amount: string,
+			description: string,
+			senderAddress: string
+		) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
+			setLoading(true);
+			setError(null);
+			try {
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						create_help_request: {
+							to_username: toUsername,
+							amount,
+							description,
+							payment_type: "HelpRequest",
+							proof_type: "None",
+						},
+					},
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[signingClient]
 	);
 
 	// Approve payment
 	const approvePayment = useCallback(
-		async (paymentId: string) => {
+		async (paymentId: string, senderAddress: string) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
 			setLoading(true);
 			setError(null);
 			try {
-				const contract = await getContract();
-				if (!(contract.client instanceof SigningCosmWasmClient))
-					throw new Error("Client must be SigningCosmWasmClient for writes");
-				return await contract.client.execute(
-					signer,
-					contract.contractAddress,
-					{ approve_payment: { payment_id: paymentId } },
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						approve_payment: {
+							payment_id: paymentId,
+						},
+					},
 					"auto"
 				);
 			} catch (e: any) {
@@ -283,22 +476,27 @@ export function useSocialOperations(signer: any) {
 				setLoading(false);
 			}
 		},
-		[getContract, signer]
+		[signingClient]
 	);
 
 	// Reject payment
 	const rejectPayment = useCallback(
-		async (paymentId: string) => {
+		async (paymentId: string, senderAddress: string) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
 			setLoading(true);
 			setError(null);
 			try {
-				const contract = await getContract();
-				if (!(contract.client instanceof SigningCosmWasmClient))
-					throw new Error("Client must be SigningCosmWasmClient for writes");
-				return await contract.client.execute(
-					signer,
-					contract.contractAddress,
-					{ reject_payment: { payment_id: paymentId } },
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						reject_payment: {
+							payment_id: paymentId,
+						},
+					},
 					"auto"
 				);
 			} catch (e: any) {
@@ -308,14 +506,57 @@ export function useSocialOperations(signer: any) {
 				setLoading(false);
 			}
 		},
-		[getContract, signer]
+		[signingClient]
+	);
+
+	// Submit proof
+	const submitProof = useCallback(
+		async (
+			paymentId: string,
+			proofType: string,
+			proofData: string,
+			senderAddress: string
+		) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
+			setLoading(true);
+			setError(null);
+			try {
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						submit_proof: {
+							payment_id: paymentId,
+							proof_type: proofType,
+							proof_data: proofData,
+						},
+					},
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[signingClient]
 	);
 
 	return {
 		loading,
 		error,
 		registerUser,
+		sendFriendRequest,
+		acceptFriendRequest,
+		sendDirectPayment,
+		createPaymentRequest,
+		createHelpRequest,
 		approvePayment,
 		rejectPayment,
+		submitProof,
 	};
 }

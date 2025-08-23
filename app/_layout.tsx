@@ -27,6 +27,7 @@ global.Buffer = Buffer;
 SplashScreen.preventAutoHideAsync();
 
 const treasuryConfig = {
+	contracts: [process.env.EXPO_PUBLIC_CONTRACT_ADDRESS],
 	treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS,
 	gasPrice: "0.001uxion",
 	rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,

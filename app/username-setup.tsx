@@ -37,7 +37,7 @@ export default function UsernameSetupScreen() {
 	const [username, setUsername] = useState("");
 	const [formatError, setFormatError] = useState("");
 	const router = useRouter();
-	const { data: account, isConnected, logout } = useAbstraxionAccount();
+	const { data: account, isConnected, logout, login } = useAbstraxionAccount();
 	const { client: signingClient } = useAbstraxionSigningClient();
 	const {
 		available,
@@ -52,6 +52,24 @@ export default function UsernameSetupScreen() {
 	} = useSocialOperations(signingClient);
 
 	useEffect(() => {
+		console.log("🔍 DEBUG INFO:");
+		console.log("📱 Account:", account);
+		console.log("🔌 Connected:", isConnected);
+		console.log("⚡ Signing Client Exists:", !!signingClient);
+		console.log("💰 Granter Address:", account?.bech32Address);
+
+		if (signingClient) {
+			console.log("🎯 Grantee Address:", signingClient._granteeAddress);
+			console.log("🏛️ Treasury:", signingClient._treasury);
+			console.log(
+				"📋 Contract Address from ENV:",
+				process.env.EXPO_PUBLIC_CONTRACT_ADDRESS
+			);
+			console.log("🔑 Signer exists:", !!signingClient._signer);
+		}
+	}, [account, isConnected, signingClient]);
+
+	useEffect(() => {
 		const { valid, message } = validateFormat(username);
 		setFormatError(valid ? "" : message);
 		if (valid && username) refetch();
@@ -64,24 +82,31 @@ export default function UsernameSetupScreen() {
 		!!signingClient &&
 		!!account?.bech32Address;
 
+	console.log("🔍 signingClient:", signingClient);
+	console.log("🔍 signingClient type:", typeof signingClient);
+	console.log(
+		"🔍 signingClient keys:",
+		signingClient ? Object.keys(signingClient) : "null"
+	);
+
 	const handleRegisterUsername = async () => {
-		if (!isValid) {
-			Alert.alert(
-				"Wallet Not Connected",
-				"Please connect your wallet before registering."
-			);
+		// Add this check!
+		if (!signingClient) {
+			Alert.alert("Error", "Signing client not ready. Please try again.");
 			return;
 		}
+
+		if (!account?.bech32Address || !isValid) {
+			Alert.alert("Error", "Invalid state for registration");
+			return;
+		}
+
 		try {
-			// Register the user using the contract
 			await registerUser(username, account.bech32Address);
 			router.replace("/(tabs)/activity");
-		} catch {
-			Alert.alert(
-				"Registration Failed",
-				registerError || "Failed to register username. Please try again.",
-				[{ text: "OK" }]
-			);
+		} catch (error) {
+			console.error("Registration error:", error);
+			Alert.alert("Registration Failed", error.message || "Please try again.");
 		}
 	};
 
@@ -111,6 +136,32 @@ export default function UsernameSetupScreen() {
 		} catch (error) {
 			console.error("Logout failed:", error);
 			Alert.alert("Error", "Failed to log out. Please try again.");
+		}
+	};
+
+	// Force Re-authentication function
+	const handleForceReauth = async () => {
+		try {
+			await AsyncStorage.removeItem("xion-authz-temp-account");
+			await AsyncStorage.removeItem("xion-authz-granter-account");
+			await AsyncStorage.removeItem("walletConnection");
+			await logout();
+			setTimeout(async () => {
+				try {
+					await login();
+					Alert.alert(
+						"Re-authentication",
+						"Successfully re-authenticated. Please check your wallet grants."
+					);
+				} catch (e) {
+					Alert.alert(
+						"Re-authentication Failed",
+						e instanceof Error ? e.message : String(e)
+					);
+				}
+			}, 2000);
+		} catch (e) {
+			Alert.alert("Error", e instanceof Error ? e.message : String(e));
 		}
 	};
 
@@ -270,6 +321,20 @@ export default function UsernameSetupScreen() {
 						</View>
 					</View>
 
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#ff6b6b",
+							padding: 15,
+							borderRadius: 10,
+							marginBottom: 10,
+						}}
+						onPress={handleForceReauth}
+					>
+						<Text style={{ color: "white", textAlign: "center" }}>
+							🔄 Force Re-auth (Clear & Login)
+						</Text>
+					</TouchableOpacity>
+
 					{/* Continue Button */}
 					<TouchableOpacity
 						style={[
@@ -327,49 +392,21 @@ export default function UsernameSetupScreen() {
 						</Text>
 					</View>
 
-					{/* Disconnect Button - Only show if connected */}
-					{isConnected && (
-						<TouchableOpacity
-							style={[
-								styles.disconnectButton,
-								!isConnected && styles.disconnectButtonDisabled,
-							]}
-							onPress={handleDisconnectWallet}
-							disabled={!isConnected}
-							activeOpacity={0.8}
-						>
-							<Text
-								style={[
-									styles.disconnectButtonText,
-									!isConnected && styles.disconnectButtonTextDisabled,
-								]}
-							>
-								Disconnect Wallet
-							</Text>
-						</TouchableOpacity>
-					)}
-
-					{/* Logout Button - Only show if connected */}
-					{isConnected && (
-						<TouchableOpacity
-							style={[
-								styles.logoutButton,
-								!isConnected && styles.logoutButtonDisabled,
-							]}
-							onPress={handleLogout}
-							disabled={!isConnected}
-							activeOpacity={0.8}
-						>
-							<Text
-								style={[
-									styles.logoutButtonText,
-									!isConnected && styles.logoutButtonTextDisabled,
-								]}
-							>
-								Logout
-							</Text>
-						</TouchableOpacity>
-					)}
+					{/* Temporary Force Re-authentication Button */}
+					<TouchableOpacity
+						style={{
+							backgroundColor: "#FF9800",
+							padding: 16,
+							borderRadius: 12,
+							alignItems: "center",
+							marginBottom: 24,
+						}}
+						onPress={handleForceReauth}
+					>
+						<Text style={{ color: "#fff", fontWeight: "bold" }}>
+							Force Re-authentication
+						</Text>
+					</TouchableOpacity>
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
