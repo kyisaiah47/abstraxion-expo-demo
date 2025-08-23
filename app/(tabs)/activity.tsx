@@ -167,7 +167,7 @@ export default function PaymentsScreen() {
 					total={userBalance.total}
 					awaitingAmount={userBalance.awaitingAmount}
 					verifiedCount={userBalance.verifiedCount}
-					ctaLabel="+ Start Task"
+					ctaLabel="+ Create"
 					onPressCta={handleStartTask}
 				/>
 				<View style={styles.section}>

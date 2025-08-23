@@ -211,7 +211,6 @@ export default function FriendsScreen() {
 					</Text>
 					<Text style={styles.userUsername}>@{user.username || "unknown"}</Text>
 				</View>
-				{showStatusBadge && renderStatusBadge(false)}
 			</View>
 			{showAddButton && (
 				<ActionButton
@@ -468,7 +467,7 @@ export default function FriendsScreen() {
 								{friends.map((friend, index) => {
 									return (
 										<View key={friend.username || friend.wallet_address || index}>
-											{renderUserItem(friend, false, true, true)}
+											{renderUserItem(friend, false, true, false)}
 										</View>
 									);
 								})}

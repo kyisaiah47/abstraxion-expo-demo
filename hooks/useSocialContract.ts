@@ -236,8 +236,25 @@ export function useUserFriends(username: string) {
 			console.log("🔗 Calling contract.getUserFriends...");
 			const result = await contract.getUserFriends(username);
 			console.log("📋 getUserFriends result:", JSON.stringify(result, null, 2));
-			setFriends(result.friends || []);
-			console.log("👥 Set friends to:", result.friends || []);
+			
+			// The result contains an array of usernames, not user objects
+			// We need to fetch the actual user data for each username
+			const friendUsernames = result.friends || [];
+			const users: User[] = [];
+			
+			for (const friendUsername of friendUsernames) {
+				try {
+					const userResult = await contract.getUserByUsername(friendUsername);
+					if (userResult.user) {
+						users.push(userResult.user);
+					}
+				} catch (userError) {
+					console.warn("Failed to fetch user data for:", friendUsername, userError);
+				}
+			}
+			
+			setFriends(users);
+			console.log("👥 Set friends to (converted to users):", users);
 		} catch (e: any) {
 			console.error("❌ Error in useUserFriends:", e.message);
 			console.error("❌ Full error:", e);
