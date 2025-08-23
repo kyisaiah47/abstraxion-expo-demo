@@ -63,20 +63,68 @@ export function useUserProfile(address: string) {
 	const [error, setError] = useState<string | null>(null);
 
 	const fetch = useCallback(async () => {
+		if (!address || address.trim() === "") {
+			console.log("❌ No address provided to useUserProfile");
+			setUser(null);
+			setLoading(false);
+			return;
+		}
+
+		console.log("🔍 useUserProfile fetching for address:", address);
 		setLoading(true);
 		setError(null);
+
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.getUserByWallet(address);
-			setUser(result.user || null);
+
+			console.log("🔗 Calling contract.getUserByWallet...");
+
+			// First try the direct getUserByWallet method
+			try {
+				const result = await contract.getUserByWallet(address);
+				console.log(
+					"📋 Direct getUserByWallet result:",
+					JSON.stringify(result, null, 2)
+				);
+				setUser(result.user || null);
+				console.log("👤 Set user to:", result.user || null);
+				return;
+			} catch (directError) {
+				console.log("❌ Direct getUserByWallet failed:", directError.message);
+				console.log("🔄 Trying two-step approach...");
+
+				// Try the two-step approach as fallback
+				const usernameResult = await contract.getUsernameByWallet(address);
+				console.log(
+					"📝 Username result:",
+					JSON.stringify(usernameResult, null, 2)
+				);
+
+				if (usernameResult?.username) {
+					const userResult = await contract.getUserByUsername(
+						usernameResult.username
+					);
+					console.log("👤 User result:", JSON.stringify(userResult, null, 2));
+					setUser(userResult.user || null);
+				} else {
+					console.log("❌ No username found for wallet");
+					setUser(null);
+				}
+			}
 		} catch (e: any) {
+			console.error("❌ Error in useUserProfile:", e.message);
+			console.error("❌ Full error:", e);
 			setError(e.message);
 			setUser(null);
 		} finally {
 			setLoading(false);
 		}
 	}, [address]);
+
+	useEffect(() => {
+		fetch();
+	}, [fetch]);
 
 	return { user, loading, error, refetch: fetch };
 }
@@ -182,6 +230,57 @@ export function usePendingFriendRequests(username: string) {
 	}, [username]);
 
 	return { requests, loading, error, refetch: fetch };
+}
+
+// Check username availability hook
+export function useUsernameCheck() {
+	const [isChecking, setIsChecking] = useState(false);
+
+	const checkUsername = useCallback(async (username: string) => {
+		setIsChecking(true);
+		try {
+			const client = await getReadClient();
+			const contract = new SocialPaymentContract(client);
+			const result = await contract.isUsernameAvailable(username);
+			return result.available;
+		} catch (error) {
+			console.error("Error checking username:", error);
+			return false;
+		} finally {
+			setIsChecking(false);
+		}
+	}, []);
+
+	return { checkUsername, isChecking };
+}
+
+// Get current user hook
+export function useCurrentUser(walletAddress: string) {
+	const [user, setUser] = useState<User | null>(null);
+	const [loading, setLoading] = useState(false);
+
+	const fetchCurrentUser = useCallback(async () => {
+		if (!walletAddress) return;
+
+		setLoading(true);
+		try {
+			const client = await getReadClient();
+			const contract = new SocialPaymentContract(client);
+			const result = await contract.getUserByWallet(walletAddress);
+			setUser(result.user || null);
+		} catch (error) {
+			console.error("Error fetching current user:", error);
+			setUser(null);
+		} finally {
+			setLoading(false);
+		}
+	}, [walletAddress]);
+
+	useEffect(() => {
+		fetchCurrentUser();
+	}, [fetchCurrentUser]);
+
+	return { user, loading, refetch: fetchCurrentUser };
 }
 
 // usePaymentHistory: get user's payment history

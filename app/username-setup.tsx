@@ -65,52 +65,53 @@ export default function UsernameSetupScreen() {
 		!!account?.bech32Address;
 
 	const handleRegisterUsername = async () => {
+		console.log("🚀 Starting registration process...");
+		console.log("📊 Initial state:");
+		console.log("  - signingClient:", !!signingClient);
+		console.log("  - account?.bech32Address:", account?.bech32Address);
+		console.log("  - isValid:", isValid);
+		console.log("  - username:", username);
+
 		// Add this check!
 		if (!signingClient) {
+			console.log("❌ Signing client not ready");
 			Alert.alert("Error", "Signing client not ready. Please try again.");
 			return;
 		}
 
 		if (!account?.bech32Address || !isValid) {
+			console.log("❌ Invalid state for registration");
+			console.log("  - account?.bech32Address:", account?.bech32Address);
+			console.log("  - isValid:", isValid);
 			Alert.alert("Error", "Invalid state for registration");
 			return;
 		}
 
+		console.log("✅ All checks passed, proceeding with registration...");
+		console.log("🔗 Calling registerUser with:");
+		console.log("  - username:", username);
+		console.log("  - wallet:", account.bech32Address);
+
 		try {
-			await registerUser(username, account.bech32Address);
+			const result = await registerUser(username, account.bech32Address);
+			console.log("✅ Registration successful!");
+			console.log("📋 Registration result:", result);
+			console.log("🏠 Navigating to main app...");
 			router.replace("/(tabs)/activity");
 		} catch (error) {
-			console.error("Registration error:", error);
+			console.error("❌ Registration error occurred:");
+			console.error("  - Error message:", error.message);
+			console.error("  - Full error:", error);
+			console.error("  - Error stack:", error.stack);
+
+			// Check if it's the "already registered" error
+			if (error.message && error.message.includes("already registered")) {
+				console.log(
+					"🎯 This is the 'already registered' error - wallet exists in contract"
+				);
+			}
+
 			Alert.alert("Registration Failed", error.message || "Please try again.");
-		}
-	};
-
-	// Replace the disconnectWallet logic with a custom implementation
-	const handleDisconnectWallet = async () => {
-		try {
-			console.log("Disconnecting wallet...");
-			// Clear cached wallet connections using AsyncStorage
-			await AsyncStorage.removeItem("walletConnection");
-			Alert.alert(
-				"Wallet Disconnected",
-				"You have been disconnected from your wallet."
-			);
-		} catch (error) {
-			console.error("Failed to disconnect wallet:", error);
-			Alert.alert("Error", "Failed to disconnect wallet. Please try again.");
-		}
-	};
-
-	// Update the handleLogout function to use the existing logout function
-	const handleLogout = async () => {
-		try {
-			console.log("Logging out...");
-			await logout();
-			console.log("Logout successful");
-			router.replace("/"); // Navigate to the root or onboarding screen
-		} catch (error) {
-			console.error("Logout failed:", error);
-			Alert.alert("Error", "Failed to log out. Please try again.");
 		}
 	};
 
@@ -172,34 +173,6 @@ export default function UsernameSetupScreen() {
 	};
 
 	const isButtonDisabled = !isValid || registering;
-
-	// Redirect if user already has a registered username
-	useEffect(() => {
-		if (account?.bech32Address && isConnected && signingClient) {
-			(async () => {
-				try {
-					const contractAddress = process.env.EXPO_PUBLIC_CONTRACT_ADDRESS;
-					if (!contractAddress) {
-						console.error("Contract address is not defined.");
-						return;
-					}
-					const usernameInfo = await signingClient.queryContractSmart(
-						contractAddress!,
-						{
-							get_username_by_wallet: {
-								wallet_address: account.bech32Address,
-							},
-						}
-					);
-					if (usernameInfo && usernameInfo.username) {
-						router.replace("/(tabs)/activity");
-					}
-				} catch (e) {
-					console.error("Contract query error:", e);
-				}
-			})();
-		}
-	});
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -394,22 +367,6 @@ export default function UsernameSetupScreen() {
 								: "Wallet not connected"}
 						</Text>
 					</View>
-
-					{/* Temporary Force Re-authentication Button */}
-					<TouchableOpacity
-						style={{
-							backgroundColor: "#FF9800",
-							padding: 16,
-							borderRadius: 12,
-							alignItems: "center",
-							marginBottom: 24,
-						}}
-						onPress={handleForceReauth}
-					>
-						<Text style={{ color: "#fff", fontWeight: "bold" }}>
-							Force Re-authentication
-						</Text>
-					</TouchableOpacity>
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>

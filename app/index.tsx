@@ -12,6 +12,7 @@ import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { UserService } from "@/lib/userService";
+import { useUserProfile } from "@/hooks/useSocialContract";
 
 // Onboarding screens data
 const onboardingScreens = [
@@ -63,37 +64,65 @@ export default function OnboardingScreen() {
 	const router = useRouter();
 	const [currentScreen, setCurrentScreen] = useState(0);
 	const [isCheckingUser, setIsCheckingUser] = useState(false);
+	const {
+		user,
+		loading: userLoading,
+		error,
+	} = useUserProfile(account?.bech32Address || "");
+
+	// Add this state to track if we've completed at least one user check
+	const [hasCompletedUserCheck, setHasCompletedUserCheck] = useState(false);
 
 	useEffect(() => {
-		const handleAuthentication = async () => {
-			if (isConnected && account?.bech32Address && !isCheckingUser) {
-				setIsCheckingUser(true);
+		console.log("🔄 Authentication check:");
+		console.log("  - isConnected:", isConnected);
+		console.log("  - account?.bech32Address:", account?.bech32Address);
+		console.log("  - userLoading:", userLoading);
+		console.log("  - user:", user);
+		console.log("  - hasCompletedUserCheck:", hasCompletedUserCheck);
+		console.log("  - isCheckingUser:", isCheckingUser);
 
-				try {
-					// Check if user already exists
-					const existingUser = await UserService.getUserByWallet(
-						account.bech32Address
-					);
+		// Mark as checked when we finish loading (whether user found or not)
+		if (
+			isConnected &&
+			account?.bech32Address &&
+			!userLoading &&
+			!hasCompletedUserCheck
+		) {
+			console.log("✅ Marking user check as completed");
+			setHasCompletedUserCheck(true);
+		}
 
-					if (existingUser) {
-						// User exists, go to main app
-						router.replace("/(tabs)/activity");
-					} else {
-						// User needs to set up username
-						router.replace("/username-setup");
-					}
-				} catch (error) {
-					console.error("Error checking user:", error);
-					// If there's an error, redirect to username setup to be safe
-					router.replace("/username-setup");
-				} finally {
-					setIsCheckingUser(false);
-				}
+		// Only make navigation decisions after we've completed at least one check
+		if (
+			isConnected &&
+			account?.bech32Address &&
+			!userLoading &&
+			hasCompletedUserCheck &&
+			!isCheckingUser
+		) {
+			if (user) {
+				console.log("✅ User found, navigating to main app...");
+				router.replace("/(tabs)/activity");
+			} else {
+				console.log("❌ No user found, navigating to username setup...");
+				router.replace("/username-setup");
 			}
-		};
+		}
+	}, [
+		isConnected,
+		account?.bech32Address,
+		user,
+		userLoading,
+		hasCompletedUserCheck,
+		isCheckingUser,
+		router,
+	]);
 
-		handleAuthentication();
-	}, [isConnected, account?.bech32Address, isCheckingUser, router]);
+	// Reset hasCompletedUserCheck when wallet address changes
+	useEffect(() => {
+		setHasCompletedUserCheck(false);
+	}, [account?.bech32Address]);
 
 	if (isConnected) {
 		return null;

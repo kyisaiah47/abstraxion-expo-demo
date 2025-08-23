@@ -234,7 +234,7 @@ export class SocialPaymentContract {
 
 	async getUserByWallet(wallet: string) {
 		return await this.client.queryContractSmart(this.contractAddress, {
-			get_user_by_wallet: { wallet },
+			get_user_by_wallet: { wallet_address: wallet },
 		});
 	}
 
@@ -252,7 +252,7 @@ export class SocialPaymentContract {
 
 	async getUsernameByWallet(wallet: string) {
 		return await this.client.queryContractSmart(this.contractAddress, {
-			get_username_by_wallet: { wallet },
+			get_username_by_wallet: { wallet_address: wallet },
 		});
 	}
 
@@ -264,7 +264,7 @@ export class SocialPaymentContract {
 
 	async hasUsername(wallet: string) {
 		return await this.client.queryContractSmart(this.contractAddress, {
-			has_username: { wallet },
+			has_username: { wallet_address: wallet },
 		});
 	}
 

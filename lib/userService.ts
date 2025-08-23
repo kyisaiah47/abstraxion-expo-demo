@@ -217,7 +217,6 @@ export class UserService {
 		response: "accepted" | "declined"
 	): Promise<void> {
 		const { client, walletAddress, contractAddress } = getDeps();
-
 		const msg =
 			response === "accepted"
 				? { accept_friend_request: { from_username: requestId } }
