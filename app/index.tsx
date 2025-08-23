@@ -303,6 +303,9 @@ export default function OnboardingScreen() {
 								<View style={styles.dashboardCard} />
 							</View>
 						</View>
+
+						{/* Powered by text */}
+						{/* <Text style={styles.poweredByText}>Powered by XION blockchain</Text> */}
 					</View>
 				);
 
@@ -397,9 +400,7 @@ export default function OnboardingScreen() {
 						)}
 					</TouchableOpacity>
 
-					{currentScreen === 0 && (
-						<Text style={styles.footer}>Powered by XION blockchain</Text>
-					)}
+					<Text style={styles.footer}>Powered by XION blockchain</Text>
 				</View>
 			</View>
 		</SafeAreaView>

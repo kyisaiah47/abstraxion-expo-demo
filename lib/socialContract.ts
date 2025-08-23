@@ -11,7 +11,8 @@ export const EXPO_PUBLIC_REST_ENDPOINT =
 	process.env.EXPO_PUBLIC_REST_ENDPOINT ||
 	"https://api.xion-testnet-2.burnt.com:443";
 export const SOCIAL_CONTRACT_ADDRESS =
-	"xion1gk050spal94tpjw0lvfdkzdm0ef837peh8wy025c74jwy07vwe9q4z0nty";
+	process.env.EXPO_PUBLIC_CONTRACT_ADDRESS ||
+	"xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy";
 
 // Add logging to verify the contract address being used
 console.log("Using contract address:", SOCIAL_CONTRACT_ADDRESS);
@@ -224,22 +225,85 @@ export class SocialPaymentContract {
 		);
 	}
 
-	// Read-only queries
-	async getUser(username: string) {
+	// Read-only queries (updated to match contract interface)
+	async getUserByUsername(username: string) {
 		return await this.client.queryContractSmart(this.contractAddress, {
-			get_user: { username: formatUsername(username) },
+			get_user_by_username: { username: formatUsername(username) },
 		});
 	}
 
-	async getPayment(paymentId: string) {
+	async getUserByWallet(wallet: string) {
 		return await this.client.queryContractSmart(this.contractAddress, {
-			get_payment: { payment_id: paymentId },
+			get_user_by_wallet: { wallet },
 		});
 	}
 
-	async getPaymentsByUser(username: string) {
+	async isUsernameAvailable(username: string) {
 		return await this.client.queryContractSmart(this.contractAddress, {
-			get_payments_by_user: { username: formatUsername(username) },
+			is_username_available: { username: formatUsername(username) },
+		});
+	}
+
+	async searchUsers(query: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			search_users: { query },
+		});
+	}
+
+	async getUsernameByWallet(wallet: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			get_username_by_wallet: { wallet },
+		});
+	}
+
+	async getWalletByUsername(username: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			get_wallet_by_username: { username: formatUsername(username) },
+		});
+	}
+
+	async hasUsername(wallet: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			has_username: { wallet },
+		});
+	}
+
+	async getUserFriends(username: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			get_user_friends: { username: formatUsername(username) },
+		});
+	}
+
+	async getPendingRequests(username: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			get_pending_requests: { username: formatUsername(username) },
+		});
+	}
+
+	async areFriends(userA: string, userB: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			are_friends: {
+				username_a: formatUsername(userA),
+				username_b: formatUsername(userB),
+			},
+		});
+	}
+
+	async getPaymentById(paymentId: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			get_payment_by_id: { payment_id: paymentId },
+		});
+	}
+
+	async getPaymentHistory(username: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			get_payment_history: { username: formatUsername(username) },
+		});
+	}
+
+	async getPendingPayments(username: string) {
+		return await this.client.queryContractSmart(this.contractAddress, {
+			get_pending_payments: { username: formatUsername(username) },
 		});
 	}
 }

@@ -45,8 +45,11 @@ export default function UsernameSetupScreen() {
 		error: checkError,
 		refetch,
 	} = useIsUsernameAvailable(username);
-	const { loading: registering, error: registerError } =
-		useSocialOperations(signingClient);
+	const {
+		loading: registering,
+		error: registerError,
+		registerUser,
+	} = useSocialOperations(signingClient);
 
 	useEffect(() => {
 		const { valid, message } = validateFormat(username);
@@ -70,11 +73,8 @@ export default function UsernameSetupScreen() {
 			return;
 		}
 		try {
-			// Assuming `approvePayment` or `rejectPayment` is the intended function
-			await approvePayment({
-				username,
-				wallet_address: account.bech32Address,
-			});
+			// Register the user using the contract
+			await registerUser(username, account.bech32Address);
 			router.replace("/(tabs)/activity");
 		} catch {
 			Alert.alert(

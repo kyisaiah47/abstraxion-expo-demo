@@ -20,7 +20,7 @@ export function usePaymentDetail(paymentId: string) {
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.getPayment(paymentId);
+			const result = await contract.getPaymentById(paymentId);
 			setPayment(result.payment || null);
 		} catch (e: any) {
 			setError(e.message);
@@ -62,13 +62,7 @@ export function useUserProfile(address: string) {
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			// Assume contract has getUserByAddress query
-			const result = await contract.client.queryContractSmart(
-				contract.contractAddress,
-				{
-					get_user_by_address: { wallet_address: address },
-				}
-			);
+			const result = await contract.getUserByWallet(address);
 			setUser(result.user || null);
 		} catch (e: any) {
 			setError(e.message);
@@ -93,7 +87,7 @@ export function useUserByUsername(username: string) {
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.getUser(username);
+			const result = await contract.getUserByUsername(username);
 			setUser(result.user || null);
 		} catch (e: any) {
 			setError(e.message);
@@ -119,9 +113,9 @@ export function useIsUsernameAvailable(username: string) {
 			console.log("Checking username availability for:", username);
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.getUser(username);
+			const result = await contract.isUsernameAvailable(username);
 			console.log("Contract query result:", result);
-			setAvailable(!result.user);
+			setAvailable(result.available ?? null);
 		} catch (e: any) {
 			console.error("Error checking username availability:", e.message);
 			setError(e.message);
@@ -146,12 +140,7 @@ export function useUserFriends(username: string) {
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.client.queryContractSmart(
-				contract.contractAddress,
-				{
-					get_friends: { username },
-				}
-			);
+			const result = await contract.getUserFriends(username);
 			setFriends(result.friends || []);
 		} catch (e: any) {
 			setError(e.message);
@@ -176,12 +165,7 @@ export function usePendingFriendRequests(username: string) {
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.client.queryContractSmart(
-				contract.contractAddress,
-				{
-					get_pending_friend_requests: { username },
-				}
-			);
+			const result = await contract.getPendingRequests(username);
 			setRequests(result.requests || []);
 		} catch (e: any) {
 			setError(e.message);
@@ -206,7 +190,7 @@ export function usePaymentHistory(username: string) {
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.getPaymentsByUser(username);
+			const result = await contract.getPaymentHistory(username);
 			setPayments(result.payments || []);
 		} catch (e: any) {
 			setError(e.message);
@@ -231,12 +215,7 @@ export function usePendingPayments(username: string) {
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			const result = await contract.client.queryContractSmart(
-				contract.contractAddress,
-				{
-					get_pending_payments: { username },
-				}
-			);
+			const result = await contract.getPendingPayments(username);
 			setPending(result.payments || []);
 		} catch (e: any) {
 			setError(e.message);
@@ -258,6 +237,29 @@ export function useSocialOperations(signer: any) {
 		const client = await getWriteClient(signer);
 		return new SocialPaymentContract(client);
 	}, [signer]);
+
+	// Register user
+	const registerUser = useCallback(
+		async (username: string, wallet_address: string) => {
+			setLoading(true);
+			setError(null);
+			try {
+				const contract = await getContract();
+				if (!(contract.client instanceof SigningCosmWasmClient))
+					throw new Error("Client must be SigningCosmWasmClient for writes");
+				return await contract.registerUser(
+					{ username, wallet_address },
+					wallet_address
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[getContract, signer]
+	);
 
 	// Approve payment
 	const approvePayment = useCallback(
@@ -312,6 +314,7 @@ export function useSocialOperations(signer: any) {
 	return {
 		loading,
 		error,
+		registerUser,
 		approvePayment,
 		rejectPayment,
 	};

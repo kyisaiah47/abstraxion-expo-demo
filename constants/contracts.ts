@@ -1,9 +1,15 @@
 export const CONTRACT_CONFIG = {
-	// Back to our original Proof of Work contract - Treasury authorization proven working!
-	address: "xion1gk050spal94tpjw0lvfdkzdm0ef837peh8wy025c74jwy07vwe9q4z0nty", // Updated to social payment contract
-	rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
-	restUrl: "https://api.xion-testnet-2.burnt.com:443",
-	chainId: "xion-testnet-2",
+	address:
+		process.env.EXPO_PUBLIC_CONTRACT_ADDRESS ||
+		"xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy",
+	rpcUrl:
+		process.env.EXPO_PUBLIC_RPC_ENDPOINT ||
+		"https://rpc.xion-testnet-2.burnt.com:443",
+	restUrl:
+		process.env.EXPO_PUBLIC_REST_ENDPOINT ||
+		"https://api.xion-testnet-2.burnt.com:443",
+	chainId: process.env.EXPO_PUBLIC_CHAIN_ID || "xion-testnet-2",
+	enabled: !!process.env.EXPO_PUBLIC_CONTRACT_ADDRESS, // Enable if address is configured
 };
 
 export const TREASURY_CONFIG = {
@@ -28,16 +34,30 @@ export const RECLAIM_CONFIG = {
 };
 
 export const CONTRACT_MESSAGES = {
-	// Social payment contract query messages
-	GET_USER: (username: string) => ({ get_user: { username } }),
+	// Fix: Remove GET_USER (doesn't exist)
+	// Keep GET_USER_BY_USERNAME (exists but user "test" not found - normal)
 	GET_USER_BY_USERNAME: (username: string) => ({
 		get_user_by_username: { username },
 	}),
+
+	// Add the missing methods your contract actually has:
+	GET_USER_BY_WALLET: (wallet: string) => ({
+		get_user_by_wallet: { wallet },
+	}),
+
 	IS_USERNAME_AVAILABLE: (username: string) => ({
 		is_username_available: { username },
 	}),
 
-	// Social payment contract execute messages
+	HAS_USERNAME: (wallet: string) => ({
+		has_username: { wallet },
+	}),
+
+	SEARCH_USERS: (query: string) => ({
+		search_users: { query },
+	}),
+
+	// Execute messages (probably fine as-is)
 	REGISTER_USER: (
 		username: string,
 		displayName: string,
@@ -63,3 +83,9 @@ export enum JobStatus {
 // Helper constants
 export const XION_DECIMALS = 1000000; // 1 XION = 1,000,000 uxion
 export const XION_DENOM = "uxion";
+console.log("🔍 DEBUG: Contract address being used:", CONTRACT_CONFIG.address);
+console.log(
+	"🔍 DEBUG: Environment variable:",
+	process.env.EXPO_PUBLIC_CONTRACT_ADDRESS
+);
+console.log("🔍 DEBUG: Full CONTRACT_CONFIG:", CONTRACT_CONFIG);
