@@ -15,20 +15,23 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
 import { DesignSystem } from "@/constants/DesignSystem";
-import { User } from "@/types/proofpay";
+import { User } from "@/lib/socialContract";
 import {
 	useUserFriends,
 	usePendingFriendRequests,
 	useSocialOperations,
-	useUserByUsername,
+	useSearchUsers,
+	useUserProfile,
 } from "@/hooks/useSocialContract";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 
 export default function FriendsScreen() {
 	const { logout, data } = useAbstraxionAccount();
 	const address = data?.bech32Address ?? "";
-	// TODO: Replace with actual username from your app's user context/store
-	const username = address ? address : "";
+
+	// Get current user profile to get their username
+	const { user: currentUser } = useUserProfile(address);
+	const username = currentUser?.username || "";
 	const {
 		friends,
 		loading: friendsLoading,
@@ -41,19 +44,22 @@ export default function FriendsScreen() {
 		error: requestsError,
 		refetch: refetchRequests,
 	} = usePendingFriendRequests(username);
+	// Get signing client for operations
 	const {
 		sendFriendRequest,
 		acceptFriendRequest,
 		loading: opsLoading,
 		error: opsError,
-	} = useSocialOperations(address);
+	} = useSocialOperations(data?.signingClient);
 
 	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedQuery, setDebouncedQuery] = useState("");
+
 	const {
-		user: foundUser,
+		users: foundUsers,
 		loading: searchLoading,
 		error: searchError,
-	} = useUserByUsername(searchQuery);
+	} = useSearchUsers(debouncedQuery);
 	const [searchResults, setSearchResults] = useState<User[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
 	const [showRemoveModal, setShowRemoveModal] = useState<{
@@ -61,27 +67,35 @@ export default function FriendsScreen() {
 		friend?: User;
 	}>({ open: false });
 
-	// Search logic
+	// Debounce search query
 	useEffect(() => {
-		if (searchQuery.trim().length < 2) {
+		const timer = setTimeout(() => {
+			if (searchQuery.trim().length >= 2) {
+				setDebouncedQuery(searchQuery.trim());
+			} else {
+				setDebouncedQuery("");
+			}
+		}, 300);
+
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
+	// Search results logic
+	useEffect(() => {
+		if (debouncedQuery === "") {
 			setSearchResults([]);
 			return;
 		}
-		if (!searchLoading && foundUser) {
-			// Defensive mapping for contract result
-			const mappedUser = {
-				id: foundUser.wallet_address || "",
-				walletAddress: foundUser.wallet_address || "",
-				username: foundUser.username || "",
-				displayName: foundUser.display_name || foundUser.username || "",
-				profilePicture: foundUser.profile_picture || undefined,
-				createdAt: new Date(),
-			};
-			setSearchResults([mappedUser]);
-		} else {
-			setSearchResults([]);
+
+		// Only show results when search is complete
+		if (!searchLoading) {
+			if (foundUsers && foundUsers.length > 0) {
+				setSearchResults(foundUsers);
+			} else {
+				setSearchResults([]);
+			}
 		}
-	}, [searchQuery, foundUser, searchLoading]);
+	}, [debouncedQuery, foundUsers, searchLoading, searchError]);
 
 	const handleRefresh = async () => {
 		setRefreshing(true);
@@ -89,9 +103,9 @@ export default function FriendsScreen() {
 		setRefreshing(false);
 	};
 
-	const handleSendFriendRequest = async (username: string) => {
+	const handleSendFriendRequest = async (toUsername: string) => {
 		try {
-			await sendFriendRequest(address, username);
+			await sendFriendRequest(toUsername, address);
 			Alert.alert("Success", "Friend request sent!");
 			setSearchQuery("");
 			setSearchResults([]);
@@ -110,7 +124,7 @@ export default function FriendsScreen() {
 	) => {
 		try {
 			if (response === "accepted") {
-				await acceptFriendRequest(address, requestUsername);
+				await acceptFriendRequest(requestUsername, address);
 				Alert.alert("Success", "Friend request accepted!");
 			} else {
 				Alert.alert("Declined", "Friend request declined.");
@@ -149,7 +163,8 @@ export default function FriendsScreen() {
 	const renderUserItem = (
 		user: User,
 		showAddButton: boolean = true,
-		showRemoveButton: boolean = false
+		showRemoveButton: boolean = false,
+		showStatusBadge: boolean = true
 	) => (
 		<View
 			key={user.username}
@@ -158,14 +173,16 @@ export default function FriendsScreen() {
 			<View style={styles.userInfo}>
 				<View style={styles.avatarPlaceholder}>
 					<Text style={styles.avatarText}>
-						{user.displayName.charAt(0).toUpperCase()}
+						{(user.display_name || user.username).charAt(0).toUpperCase()}
 					</Text>
 				</View>
 				<View style={styles.userTextContainer}>
-					<Text style={styles.userName}>{user.displayName}</Text>
+					<Text style={styles.userName}>
+						{user.display_name || user.username}
+					</Text>
 					<Text style={styles.userUsername}>@{user.username}</Text>
 				</View>
-				{renderStatusBadge(false)}
+				{showStatusBadge && renderStatusBadge(false)}
 			</View>
 			{showAddButton && (
 				<Pressable
@@ -176,7 +193,7 @@ export default function FriendsScreen() {
 					<Ionicons
 						name="person-add"
 						size={20}
-						color={DesignSystem.colors.primary[800]}
+						color={DesignSystem.colors.status.success}
 					/>
 				</Pressable>
 			)}
@@ -204,11 +221,13 @@ export default function FriendsScreen() {
 			<View style={styles.userInfo}>
 				<View style={styles.avatarPlaceholder}>
 					<Text style={styles.avatarText}>
-						{request.displayName.charAt(0).toUpperCase()}
+						{(request.display_name || request.username).charAt(0).toUpperCase()}
 					</Text>
 				</View>
 				<View style={styles.userTextContainer}>
-					<Text style={styles.userName}>{request.displayName}</Text>
+					<Text style={styles.userName}>
+						{request.display_name || request.username}
+					</Text>
 					<Text style={styles.userUsername}>@{request.username}</Text>
 				</View>
 				{renderStatusBadge(true)}
@@ -244,7 +263,9 @@ export default function FriendsScreen() {
 		// TODO: Implement contract call to remove friend if available
 		Alert.alert(
 			"Removed",
-			`Friend ${friend.displayName} removed (not implemented)`
+			`Friend ${
+				friend.display_name || friend.username
+			} removed (not implemented)`
 		);
 		setShowRemoveModal({ open: false });
 		await handleRefresh();
@@ -256,7 +277,8 @@ export default function FriendsScreen() {
 			Alert.alert(
 				"Remove Friend",
 				"Are you sure you want to remove " +
-					showRemoveModal.friend.displayName +
+					(showRemoveModal.friend.display_name ||
+						showRemoveModal.friend.username) +
 					"?",
 				[
 					{
@@ -350,7 +372,9 @@ export default function FriendsScreen() {
 					</View>
 					{searchResults.length > 0 && (
 						<View style={styles.searchResults}>
-							{searchResults.map((user) => renderUserItem(user, true, false))}
+							{searchResults.map((user) =>
+								renderUserItem(user, true, false, false)
+							)}
 						</View>
 					)}
 				</View>
@@ -360,15 +384,7 @@ export default function FriendsScreen() {
 						<Text style={styles.sectionTitle}>Friend Requests</Text>
 						<View style={styles.requestsList}>
 							{pendingRequests.map((request) => {
-								const mappedRequest = {
-									id: request.wallet_address || "",
-									walletAddress: request.wallet_address || "",
-									username: request.username || "",
-									displayName: request.display_name || request.username || "",
-									profilePicture: request.profile_picture || undefined,
-									createdAt: new Date(),
-								};
-								return renderFriendRequestItem(mappedRequest);
+								return renderFriendRequestItem(request);
 							})}
 						</View>
 					</View>
@@ -382,15 +398,7 @@ export default function FriendsScreen() {
 					{friends.length > 0 ? (
 						<View style={styles.friendsList}>
 							{friends.map((friend) => {
-								const mappedFriend = {
-									id: friend.wallet_address || "",
-									walletAddress: friend.wallet_address || "",
-									username: friend.username || "",
-									displayName: friend.display_name || friend.username || "",
-									profilePicture: friend.profile_picture || undefined,
-									createdAt: new Date(),
-								};
-								return renderUserItem(mappedFriend, false, true);
+								return renderUserItem(friend, false, true, true);
 							})}
 						</View>
 					) : (
@@ -442,15 +450,16 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
 		paddingHorizontal: DesignSystem.spacing.lg,
+		paddingVertical: DesignSystem.spacing.lg,
 	},
 	searchIcon: {
 		marginRight: DesignSystem.spacing.md,
 	},
 	searchInput: {
 		flex: 1,
-		...DesignSystem.typography.body.large,
+		fontSize: 16,
 		color: DesignSystem.colors.text.primary,
-		minHeight: 56,
+		textAlignVertical: "center",
 	},
 	searchResults: {
 		marginTop: DesignSystem.spacing.lg,
@@ -502,12 +511,12 @@ const styles = StyleSheet.create({
 		width: 40,
 		height: 40,
 		borderRadius: 20,
-		backgroundColor:
-			DesignSystem.colors.primary[50] || DesignSystem.colors.surface.elevated,
+		backgroundColor: DesignSystem.colors.surface.secondary,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.primary[800],
+		borderColor: DesignSystem.colors.border.primary,
 		alignItems: "center",
 		justifyContent: "center",
+		...DesignSystem.shadows.sm,
 	},
 	pendingText: {
 		...DesignSystem.typography.body.small,

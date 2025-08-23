@@ -64,13 +64,11 @@ export function useUserProfile(address: string) {
 
 	const fetch = useCallback(async () => {
 		if (!address || address.trim() === "") {
-			console.log("❌ No address provided to useUserProfile");
 			setUser(null);
 			setLoading(false);
 			return;
 		}
 
-		console.log("🔍 useUserProfile fetching for address:", address);
 		setLoading(true);
 		setError(null);
 
@@ -78,50 +76,34 @@ export function useUserProfile(address: string) {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
 
-			console.log("🔗 Calling contract.getUserByWallet...");
 
 			// First try the direct getUserByWallet method
 			try {
 				const result = await contract.getUserByWallet(address);
-				console.log(
-					"📋 Direct getUserByWallet result:",
-					JSON.stringify(result, null, 2)
-				);
 				setUser(result.user || null);
-				console.log("👤 Set user to:", result.user || null);
 				return;
-			} catch (directError) {
+			} catch (directError: any) {
 				// Check if this is a "not found" error (user not registered)
-				if (directError.message?.includes("not found") || directError.message?.includes("key:")) {
-					console.log("ℹ️ User not registered yet for address:", address);
+				if (directError?.message?.includes("not found") || directError?.message?.includes("key:")) {
 					setUser(null);
 					return;
 				}
 				
-				console.log("❌ Direct getUserByWallet failed:", directError.message);
-				console.log("🔄 Trying two-step approach...");
 
 				// Try the two-step approach as fallback
 				try {
 					const usernameResult = await contract.getUsernameByWallet(address);
-					console.log(
-						"📝 Username result:",
-						JSON.stringify(usernameResult, null, 2)
-					);
 
 					if (usernameResult?.username) {
 						const userResult = await contract.getUserByUsername(
 							usernameResult.username
 						);
-						console.log("👤 User result:", JSON.stringify(userResult, null, 2));
 						setUser(userResult.user || null);
 					} else {
-						console.log("ℹ️ No username found for wallet");
 						setUser(null);
 					}
-				} catch (fallbackError) {
-					if (fallbackError.message?.includes("not found") || fallbackError.message?.includes("key:")) {
-						console.log("ℹ️ User not registered yet (fallback check)");
+				} catch (fallbackError: any) {
+					if (fallbackError?.message?.includes("not found") || fallbackError?.message?.includes("key:")) {
 						setUser(null);
 					} else {
 						throw fallbackError; // Re-throw if it's a real error
@@ -170,6 +152,41 @@ export function useUserByUsername(username: string) {
 	return { user, loading, error, refetch: fetch };
 }
 
+// useSearchUsers: search users by query (partial match)
+export function useSearchUsers(query: string) {
+	const [users, setUsers] = useState<User[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const fetch = useCallback(async () => {
+		if (!query || query.trim().length < 2) {
+			setUsers([]);
+			setLoading(false);
+			return;
+		}
+
+		setLoading(true);
+		setError(null);
+		try {
+			const client = await getReadClient();
+			const contract = new SocialPaymentContract(client);
+			const result = await contract.searchUsers(query.trim());
+			setUsers(result.users || []);
+		} catch (e: any) {
+			setError(e.message);
+			setUsers([]);
+		} finally {
+			setLoading(false);
+		}
+	}, [query]);
+
+	useEffect(() => {
+		fetch();
+	}, [fetch]);
+
+	return { users, loading, error, refetch: fetch };
+}
+
 // useIsUsernameAvailable: check username availability
 export function useIsUsernameAvailable(username: string) {
 	const [available, setAvailable] = useState<boolean | null>(null);
@@ -180,11 +197,9 @@ export function useIsUsernameAvailable(username: string) {
 		setLoading(true);
 		setError(null);
 		try {
-			console.log("Checking username availability for:", username);
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
 			const result = await contract.isUsernameAvailable(username);
-			console.log("Contract query result:", result);
 			setAvailable(result.available ?? null);
 		} catch (e: any) {
 			console.error("Error checking username availability:", e.message);
