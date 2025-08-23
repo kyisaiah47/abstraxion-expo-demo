@@ -74,14 +74,6 @@ export default function OnboardingScreen() {
 	const [hasCompletedUserCheck, setHasCompletedUserCheck] = useState(false);
 
 	useEffect(() => {
-		console.log("🔄 Authentication check:");
-		console.log("  - isConnected:", isConnected);
-		console.log("  - account?.bech32Address:", account?.bech32Address);
-		console.log("  - userLoading:", userLoading);
-		console.log("  - user:", user);
-		console.log("  - hasCompletedUserCheck:", hasCompletedUserCheck);
-		console.log("  - isCheckingUser:", isCheckingUser);
-
 		// Mark as checked when we finish loading (whether user found or not)
 		if (
 			isConnected &&

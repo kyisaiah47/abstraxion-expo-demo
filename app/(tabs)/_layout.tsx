@@ -39,12 +39,6 @@ export default function TabLayout() {
 				/>
 				{/* Hide these from tab bar - they should be stack pages */}
 				<Tabs.Screen
-					name="profile-new"
-					options={{
-						href: null, // This hides it from the tab bar
-					}}
-				/>
-				<Tabs.Screen
 					name="recent-activity"
 					options={{
 						href: null, // This hides it from the tab bar

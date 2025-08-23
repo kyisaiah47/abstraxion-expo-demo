@@ -91,25 +91,41 @@ export function useUserProfile(address: string) {
 				console.log("👤 Set user to:", result.user || null);
 				return;
 			} catch (directError) {
+				// Check if this is a "not found" error (user not registered)
+				if (directError.message?.includes("not found") || directError.message?.includes("key:")) {
+					console.log("ℹ️ User not registered yet for address:", address);
+					setUser(null);
+					return;
+				}
+				
 				console.log("❌ Direct getUserByWallet failed:", directError.message);
 				console.log("🔄 Trying two-step approach...");
 
 				// Try the two-step approach as fallback
-				const usernameResult = await contract.getUsernameByWallet(address);
-				console.log(
-					"📝 Username result:",
-					JSON.stringify(usernameResult, null, 2)
-				);
-
-				if (usernameResult?.username) {
-					const userResult = await contract.getUserByUsername(
-						usernameResult.username
+				try {
+					const usernameResult = await contract.getUsernameByWallet(address);
+					console.log(
+						"📝 Username result:",
+						JSON.stringify(usernameResult, null, 2)
 					);
-					console.log("👤 User result:", JSON.stringify(userResult, null, 2));
-					setUser(userResult.user || null);
-				} else {
-					console.log("❌ No username found for wallet");
-					setUser(null);
+
+					if (usernameResult?.username) {
+						const userResult = await contract.getUserByUsername(
+							usernameResult.username
+						);
+						console.log("👤 User result:", JSON.stringify(userResult, null, 2));
+						setUser(userResult.user || null);
+					} else {
+						console.log("ℹ️ No username found for wallet");
+						setUser(null);
+					}
+				} catch (fallbackError) {
+					if (fallbackError.message?.includes("not found") || fallbackError.message?.includes("key:")) {
+						console.log("ℹ️ User not registered yet (fallback check)");
+						setUser(null);
+					} else {
+						throw fallbackError; // Re-throw if it's a real error
+					}
 				}
 			}
 		} catch (e: any) {

@@ -297,32 +297,27 @@ export default function UsernameSetupScreen() {
 						</View>
 					</View>
 
-					<TouchableOpacity
-						style={{
-							backgroundColor: "#ff6b6b",
-							padding: 15,
-							borderRadius: 10,
-							marginBottom: 10,
-						}}
-						onPress={handleForceReauth}
-					>
-						<Text style={{ color: "white", textAlign: "center" }}>
-							🔄 Force Re-auth (Clear & Login)
-						</Text>
-					</TouchableOpacity>
-
 					{/* Continue Button */}
 					<TouchableOpacity
 						style={[
 							styles.continueButton,
-							isButtonDisabled && styles.continueButtonDisabled,
+							registering && styles.continueButtonLoading,
+							isButtonDisabled && !registering && styles.continueButtonDisabled,
 						]}
 						onPress={handleRegisterUsername}
 						disabled={isButtonDisabled}
 						activeOpacity={0.8}
 					>
 						{registering ? (
-							<ActivityIndicator color={DesignSystem.colors.text.inverse} />
+							<>
+								<ActivityIndicator 
+									color={DesignSystem.colors.text.inverse}
+									size="small" 
+								/>
+								<Text style={styles.continueButtonText}>
+									Creating account...
+								</Text>
+							</>
 						) : (
 							<>
 								<Text
@@ -497,6 +492,9 @@ const styles = StyleSheet.create({
 		backgroundColor: DesignSystem.colors.surface.elevated,
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
+	},
+	continueButtonLoading: {
+		backgroundColor: DesignSystem.colors.primary[700],
 	},
 	continueButtonText: {
 		...DesignSystem.typography.label.large,
