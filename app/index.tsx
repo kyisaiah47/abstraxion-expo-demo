@@ -303,9 +303,6 @@ export default function OnboardingScreen() {
 								<View style={styles.dashboardCard} />
 							</View>
 						</View>
-
-						{/* Powered by text */}
-						<Text style={styles.poweredByText}>Powered by XION blockchain</Text>
 					</View>
 				);
 

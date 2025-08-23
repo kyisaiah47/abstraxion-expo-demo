@@ -575,3 +575,12 @@ const styles = StyleSheet.create({
 // Debug logging
 console.log("Loaded RPC Endpoint:", process.env.EXPO_PUBLIC_RPC_ENDPOINT);
 console.log("Loaded REST Endpoint:", process.env.EXPO_PUBLIC_REST_ENDPOINT);
+// Debug logging for connected contract
+console.log(
+	"Connected Contract Address (EXPO_PUBLIC_CONTRACT_ADDRESS):",
+	process.env.EXPO_PUBLIC_CONTRACT_ADDRESS
+);
+console.log(
+	"Treasury Contract Address (EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS):",
+	process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS
+);
