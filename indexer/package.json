@@ -1,0 +1,47 @@
+{
+  "name": "proofpay-indexer",
+  "version": "1.0.0",
+  "description": "ProofPay blockchain indexer and notification service",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cosmjs/stargate": "^0.32.4",
+    "@cosmjs/tendermint-rpc": "^0.32.4",
+    "@cosmjs/encoding": "^0.32.4",
+    "@supabase/supabase-js": "^2.56.0",
+    "onesignal-node": "^3.4.0",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/node-cron": "^3.0.11",
+    "@types/jest": "^29.5.8",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.3.3",
+    "tsx": "^4.6.2",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "jest": "^29.7.0"
+  },
+  "keywords": [
+    "blockchain",
+    "indexer",
+    "notifications",
+    "xion",
+    "cosmjs"
+  ],
+  "author": "ProofPay",
+  "license": "MIT"
+}
