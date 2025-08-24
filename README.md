@@ -2,29 +2,32 @@
 
 <img src="https://rvpptly5bhkny5oc.public.blob.vercel-storage.com/Proof%20of%20Work" alt="Logo" width="150"/>
 
-A modern social payment app inspired by Venmo, with proof-of-work and blockchain security. Request help, send/request payments, and verify actions with text, photo, or zkTLS proofs. All payments are secured by the XION blockchain.
+A trustless task payment platform supporting Soft, zkTLS, and Hybrid proof systems on the XION blockchain. Create tasks, submit verifiable proofs, and get paid automatically with cryptographic verification or manual review.
 
-## ✨ Key Features
+## 🎯 Features
 
-### 🔄 Three Payment Flows
+- **Soft Proofs**: Manual review for subjective work (content creation, design, etc.)
+- **zkTLS Proofs**: Cryptographic verification of API responses (instant, no human review)
+- **Hybrid Proofs**: zkTLS verification + manual review window for complex tasks
+- **Real-time Updates**: Live task status updates via Supabase realtime
+- **Push Notifications**: OneSignal integration for mobile alerts
+- **Secure File Storage**: Signed URLs for evidence uploads
+- **Auto-release Timers**: Hybrid tasks auto-release unless disputed
 
-- **Task Requests**: "Help me move furniture for $50" - request work with verifiable completion
-- **Payment Requests**: "You owe me $20 for dinner" - request money with optional proof
-- **Direct Payments**: "Thanks for helping!" - send money with optional verification
+## 🚀 Quick Demo
 
-## 🚀 Features
+**One-command setup:**
+```bash
+npm run demo:setup
+```
 
-- **Social Payments:** Request help, send money, or request payments from friends
-- **Proof-of-Work:** Attach proof to payments (None, Text, Photo, zkTLS)
-- **Venmo-Style UI:** Clean, minimal, and intuitive interface
-- **Username Registration:** Onboarding flow for new users with username validation
-- **Tab Navigation:** Switch between Help, Request, and Pay tabs
-- **Blockchain Security:** All transactions are secured by XION blockchain
-- **Crypto Badge:** Subtle badge for blockchain security
-- **Activity Feed:** View recent payment and help activity
-- **Profile Management:** View and edit user profile, wallet, and settings
-- **Task Requests**: "Help me move furniture for $50" - request work with verifiable completion
-- **Direct Payments**: "Thanks for helping!" - send money with optional verification
+This starts:
+- Blockchain indexer (port 3001)
+- Mock zkTLS verifier (port 3002)  
+- React Native app with test data
+- Supabase realtime sync
+
+**Demo takes 3-5 minutes** - see [DEMO.md](DEMO.md) for complete walkthrough.
 
 ## �️ Tech Stack
 

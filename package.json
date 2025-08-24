@@ -7,7 +7,14 @@
 		"android": "expo run:android",
 		"ios": "expo run:ios",
 		"test": "jest --watchAll",
-		"lint": "expo lint"
+		"lint": "expo lint",
+		"demo:setup": "./scripts/dev-stack.sh start",
+		"demo:stop": "./scripts/dev-stack.sh stop",
+		"demo:restart": "./scripts/dev-stack.sh restart",
+		"demo:status": "./scripts/dev-stack.sh status",
+		"demo:logs": "./scripts/dev-stack.sh logs",
+		"seed": "tsx scripts/seed-data.ts",
+		"seed:clear": "tsx scripts/seed-data.ts --clear"
 	},
 	"jest": {
 		"preset": "jest-expo"
@@ -68,7 +75,9 @@
 		"jest": "^29.2.1",
 		"jest-expo": "~53.0.9",
 		"react-test-renderer": "19.0.0",
-		"typescript": "~5.8.3"
+		"typescript": "~5.8.3",
+		"tsx": "^4.6.2",
+		"node-fetch": "^3.3.2"
 	},
 	"private": true
 }

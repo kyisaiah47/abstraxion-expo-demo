@@ -89,6 +89,42 @@ class ProofPayIndexer {
         });
       }
     });
+
+    // Mock event endpoint for development (used by mock verifier)
+    this.app.post('/dev/mock-event', async (req, res) => {
+      try {
+        const mockEvent = req.body;
+        
+        if (!mockEvent.type || !mockEvent.data || !mockEvent.txHash) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid mock event format'
+          });
+        }
+
+        // Process the mock event
+        const success = await this.eventProcessor.processEvent(mockEvent);
+        
+        res.json({ 
+          success, 
+          message: `Processed mock event: ${mockEvent.type}`,
+          taskId: mockEvent.data.task_id
+        });
+
+        logger.info('Processed mock event', { 
+          type: mockEvent.type, 
+          taskId: mockEvent.data.task_id,
+          success 
+        });
+
+      } catch (error) {
+        logger.error('Failed to process mock event', { error });
+        res.status(500).json({ 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        });
+      }
+    });
   }
 
   // ===== LIFECYCLE METHODS =====
