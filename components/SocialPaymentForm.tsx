@@ -22,6 +22,7 @@ import {
 	useUserProfile,
 } from "@/hooks/useSocialContract";
 import { formatXionAmount } from "@/lib/socialContract";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface SocialPaymentFormProps {
 	paymentType: PaymentType;
@@ -57,6 +58,7 @@ const PROOF_TYPE_OPTIONS = [
 
 export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const { paymentType, onSubmit } = props;
+	const { colors } = useTheme();
 	const [formData, setFormData] = useState<PaymentFormData>({
 		type: paymentType,
 		amount: 0,
@@ -308,6 +310,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		loading ||
 		userLoading;
 
+	const styles = createStyles(colors);
+
 	return (
 		<View style={styles.container}>
 			{/* Recipient Username Input */}
@@ -328,7 +332,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 								setShowFriendSuggestions(false);
 							}}
 						>
-							<Ionicons name="close" size={18} color="#666" />
+							<Ionicons name="close" size={18} color={colors.text.secondary} />
 						</Pressable>
 					</View>
 				) : (
@@ -339,7 +343,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 							value={recipient}
 							onChangeText={setRecipient}
 							placeholder="@username"
-							placeholderTextColor="#999"
+							placeholderTextColor={colors.text.tertiary}
 							autoCapitalize="none"
 							autoCorrect={false}
 							editable={!loading}
@@ -401,7 +405,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						setFormData((prev) => ({ ...prev, amount }));
 					}}
 					placeholder="0"
-					placeholderTextColor="#ccc"
+					placeholderTextColor={colors.text.tertiary}
 					keyboardType="numeric"
 					editable={!loading}
 				/>
@@ -420,9 +424,9 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						size={16}
 						color={
 							formData.proofType === "zktls"
-								? "#1976D2"
+								? colors.primary[700]
 								: formData.proofType === "none"
-								? "#ff6b6b"
+								? colors.status?.error || colors.primary[600]
 								: "#666"
 						}
 					/>
@@ -430,7 +434,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						style={[
 							styles.proofChipText,
 							formData.proofType === "none" && styles.proofChipTextDisabled,
-							formData.proofType === "zktls" && { color: "#1976D2" },
+							formData.proofType === "zktls" && { color: colors.primary[700] },
 						]}
 					>
 						{getSelectedProofType().label}
@@ -438,7 +442,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					<Ionicons
 						name={showProofDropdown ? "chevron-up" : "chevron-down"}
 						size={16}
-						color="#666"
+						color={colors.text.secondary}
 					/>
 				</Pressable>
 
@@ -465,9 +469,9 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 									size={16}
 									color={
 										option.id === "zktls" && formData.proofType === "zktls"
-											? "#1976D2"
+											? colors.primary[700]
 											: option.disabled
-											? "#ff6b6b"
+											? colors.status?.error || colors.primary[600]
 											: "#333"
 									}
 								/>
@@ -476,7 +480,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 										styles.dropdownMenuItemText,
 										option.disabled && styles.dropdownMenuItemTextDisabled,
 										option.id === "zktls" &&
-											formData.proofType === "zktls" && { color: "#1976D2" },
+											formData.proofType === "zktls" && { color: colors.primary[700] },
 									]}
 								>
 									{option.label}
@@ -496,7 +500,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						setFormData((prev) => ({ ...prev, description: text }))
 					}
 					placeholder={getDescriptionPlaceholder()}
-					placeholderTextColor="#999"
+					placeholderTextColor={colors.text.tertiary}
 					multiline
 					textAlign="center"
 					editable={!loading}
@@ -507,21 +511,22 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			<Pressable
 				style={[
 					styles.actionButton,
+					{ backgroundColor: isSubmitDisabled ? colors.text.secondary : colors.text.primary },
 					isSubmitDisabled && styles.actionButtonDisabled,
 				]}
 				onPress={handleSubmit}
 				disabled={isSubmitDisabled}
 			>
 				{loading ? (
-					<ActivityIndicator color="#fff" />
+					<ActivityIndicator color={colors.surface.primary} />
 				) : (
-					<Text style={styles.actionButtonText}>{getSubmitButtonText()}</Text>
+					<Text style={[styles.actionButtonText, { color: isSubmitDisabled ? colors.text.tertiary : colors.surface.primary }]}>{getSubmitButtonText()}</Text>
 				)}
 			</Pressable>
 			{feedback && (
 				<Text
 					style={{
-						color: feedback.includes("success") ? "#4caf50" : "#ff6b6b",
+						color: feedback.includes("success") ? colors.status?.success || colors.primary[700] : colors.status?.error || colors.primary[600],
 						marginTop: 12,
 						textAlign: "center",
 					}}
@@ -533,10 +538,10 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#f8f8f8",
+		backgroundColor: colors.surface.primary,
 		paddingHorizontal: 20,
 		alignItems: "center",
 		justifyContent: "flex-start",
@@ -562,12 +567,12 @@ const styles = StyleSheet.create({
 	userDisplayText: {
 		fontSize: 18,
 		fontWeight: "500",
-		color: "#999",
+		color: colors.text.tertiary,
 		textAlign: "center",
 	},
 
 	userDisplayTextValid: {
-		color: "#333",
+		color: colors.text.primary,
 	},
 
 	loadingIndicator: {
@@ -577,27 +582,27 @@ const styles = StyleSheet.create({
 
 	statusText: {
 		fontSize: 14,
-		color: "#666",
+		color: colors.text.secondary,
 		fontStyle: "italic",
 	},
 
 	statusTextError: {
 		fontSize: 14,
-		color: "#ff6b6b",
+		color: colors.status?.error || colors.primary[600],
 		marginTop: 8,
 		textAlign: "center",
 	},
 
 	statusTextSuccess: {
 		fontSize: 14,
-		color: "#333",
+		color: colors.text.primary,
 		fontWeight: "500",
 	},
 
 	userFoundIndicator: {
 		marginTop: 8,
 		alignItems: "center",
-		backgroundColor: "#f5f5f5",
+		backgroundColor: colors.surface.secondary,
 		borderRadius: 8,
 		paddingVertical: 6,
 		paddingHorizontal: 12,
@@ -609,10 +614,10 @@ const styles = StyleSheet.create({
 		top: 60,
 		left: 0,
 		right: 0,
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface.elevated,
 		borderRadius: 12,
 		borderWidth: 1,
-		borderColor: "#e0e0e0",
+		borderColor: colors.border.secondary,
 		shadowColor: "#000",
 		shadowOpacity: 0.1,
 		shadowRadius: 12,
@@ -628,14 +633,14 @@ const styles = StyleSheet.create({
 		paddingVertical: 12,
 		paddingHorizontal: 16,
 		borderBottomWidth: 1,
-		borderBottomColor: "#f0f0f0",
+		borderBottomColor: colors.border.tertiary,
 	},
 
 	suggestionAvatar: {
 		width: 36,
 		height: 36,
 		borderRadius: 18,
-		backgroundColor: "#007AFF",
+		backgroundColor: colors.primary[800],
 		alignItems: "center",
 		justifyContent: "center",
 		marginRight: 12,
@@ -644,7 +649,7 @@ const styles = StyleSheet.create({
 	suggestionAvatarText: {
 		fontSize: 14,
 		fontWeight: "600",
-		color: "#fff",
+		color: colors.text.inverse,
 	},
 
 	suggestionInfo: {
@@ -654,17 +659,17 @@ const styles = StyleSheet.create({
 	suggestionName: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: "#333",
+		color: colors.text.primary,
 	},
 
 	suggestionUsername: {
 		fontSize: 14,
-		color: "#666",
+		color: colors.text.secondary,
 		marginTop: 2,
 	},
 
 	friendBadge: {
-		backgroundColor: "#e3f2fd",
+		backgroundColor: colors.primary[50] || colors.surface.tertiary,
 		borderRadius: 6,
 		paddingVertical: 2,
 		paddingHorizontal: 6,
@@ -672,7 +677,7 @@ const styles = StyleSheet.create({
 
 	friendBadgeText: {
 		fontSize: 10,
-		color: "#1976d2",
+		color: colors.primary[700],
 		fontWeight: "500",
 	},
 
@@ -680,13 +685,13 @@ const styles = StyleSheet.create({
 	selectedUserChip: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "#f8f8f8",
+		backgroundColor: colors.surface.primary,
 		borderRadius: 16,
 		paddingVertical: 4,
 		paddingHorizontal: 12,
 		gap: 6,
 		borderWidth: 1,
-		borderColor: "#e8e8e8",
+		borderColor: colors.border.tertiary,
 		alignSelf: "center",
 	},
 
@@ -702,20 +707,20 @@ const styles = StyleSheet.create({
 	chipAvatarText: {
 		fontSize: 10,
 		fontWeight: "600",
-		color: "#fff",
+		color: colors.text.inverse,
 	},
 
 	chipUsername: {
 		fontSize: 14,
 		fontWeight: "400",
-		color: "#666",
+		color: colors.text.secondary,
 	},
 
 	chipRemoveButton: {
 		width: 18,
 		height: 18,
 		borderRadius: 9,
-		backgroundColor: "#ddd",
+		backgroundColor: colors.surface.tertiary,
 		alignItems: "center",
 		justifyContent: "center",
 	},
@@ -732,13 +737,13 @@ const styles = StyleSheet.create({
 	currencySymbol: {
 		fontSize: 64,
 		fontWeight: "300",
-		color: "#333",
+		color: colors.text.primary,
 	},
 
 	amountInput: {
 		fontSize: 64,
 		fontWeight: "300",
-		color: "#333",
+		color: colors.text.primary,
 		textAlign: "center",
 		minWidth: 40,
 	},
@@ -756,12 +761,12 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface.elevated,
 		borderRadius: 20,
 		paddingVertical: 12,
 		paddingHorizontal: 18,
 		borderWidth: 1,
-		borderColor: "#e0e0e0",
+		borderColor: colors.border.secondary,
 		gap: 8,
 		alignSelf: "center",
 		shadowColor: "#000",
@@ -774,22 +779,22 @@ const styles = StyleSheet.create({
 	proofChipText: {
 		fontSize: 14,
 		fontWeight: "500",
-		color: "#666",
+		color: colors.text.secondary,
 	},
 
 	proofChipTextDisabled: {
-		color: "#ff6b6b",
+		color: colors.status?.error || colors.primary[600],
 	},
 
 	// Dropdown Menu Styles
 	dropdownMenu: {
 		position: "absolute",
 		top: 42,
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface.elevated,
 		borderRadius: 12,
 		paddingVertical: 8,
 		borderWidth: 1,
-		borderColor: "#e0e0e0",
+		borderColor: colors.border.secondary,
 		shadowColor: "#000",
 		shadowOpacity: 0.1,
 		shadowRadius: 8,
@@ -814,11 +819,11 @@ const styles = StyleSheet.create({
 	dropdownMenuItemText: {
 		fontSize: 14,
 		fontWeight: "500",
-		color: "#333",
+		color: colors.text.primary,
 	},
 
 	dropdownMenuItemTextDisabled: {
-		color: "#ff6b6b",
+		color: colors.status?.error || colors.primary[600],
 	},
 
 	// Description Section
@@ -828,13 +833,13 @@ const styles = StyleSheet.create({
 	},
 
 	descriptionInput: {
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface.elevated,
 		borderRadius: 16,
 		padding: 20,
 		borderWidth: 1,
-		borderColor: "#e0e0e0",
+		borderColor: colors.border.secondary,
 		fontSize: 16,
-		color: "#333",
+		color: colors.text.primary,
 		textAlign: "center",
 		minHeight: 80,
 		shadowColor: "#000",
@@ -846,14 +851,14 @@ const styles = StyleSheet.create({
 
 	// Action Button
 	actionButton: {
-		backgroundColor: "#333",
+		backgroundColor: colors.text.primary,
 		borderRadius: 24,
 		paddingVertical: 18,
 		paddingHorizontal: 40,
 		width: "100%",
 		alignItems: "center",
 		marginBottom: 40,
-		shadowColor: "#000",
+		shadowColor: colors.surface.overlay,
 		shadowOpacity: 0.1,
 		shadowRadius: 6,
 		shadowOffset: { width: 0, height: 2 },
@@ -861,7 +866,7 @@ const styles = StyleSheet.create({
 	},
 
 	actionButtonDisabled: {
-		backgroundColor: "#ccc",
+		backgroundColor: colors.surface.tertiary,
 		shadowOpacity: 0,
 		elevation: 0,
 	},
@@ -869,20 +874,20 @@ const styles = StyleSheet.create({
 	actionButtonText: {
 		fontSize: 18,
 		fontWeight: "600",
-		color: "#fff",
+		color: colors.surface.primary,
 	},
 
 	// Modal Styles (kept for potential future use)
 	modalOverlay: {
 		flex: 1,
-		backgroundColor: "rgba(0, 0, 0, 0.5)",
+		backgroundColor: colors.surface.overlay,
 		justifyContent: "center",
 		alignItems: "center",
 		padding: 20,
 	},
 
 	modalContent: {
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface.elevated,
 		borderRadius: 20,
 		padding: 30,
 		width: "90%",
@@ -894,22 +899,22 @@ const styles = StyleSheet.create({
 	modalTitle: {
 		fontSize: 20,
 		fontWeight: "600",
-		color: "#333",
+		color: colors.text.primary,
 	},
 
 	amountModalInput: {
 		fontSize: 48,
 		fontWeight: "300",
-		color: "#333",
+		color: colors.text.primary,
 		textAlign: "center",
 		borderBottomWidth: 1,
-		borderBottomColor: "#e0e0e0",
+		borderBottomColor: colors.border.secondary,
 		paddingVertical: 10,
 		minWidth: 200,
 	},
 
 	modalButton: {
-		backgroundColor: "#007AFF",
+		backgroundColor: colors.primary[800],
 		borderRadius: 12,
 		paddingVertical: 12,
 		paddingHorizontal: 24,
@@ -918,12 +923,12 @@ const styles = StyleSheet.create({
 	modalButtonText: {
 		fontSize: 16,
 		fontWeight: "600",
-		color: "#fff",
+		color: colors.text.inverse,
 	},
 
 	// Legacy Dropdown Styles (now unused)
 	dropdownContent: {
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface.elevated,
 		borderRadius: 16,
 		margin: 20,
 		padding: 8,
@@ -949,16 +954,16 @@ const styles = StyleSheet.create({
 	dropdownItemText: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: "#333",
+		color: colors.text.primary,
 	},
 
 	dropdownItemTextDisabled: {
-		color: "#ff6b6b",
+		color: colors.status?.error || colors.primary[600],
 	},
 
 	// User search styles
 	searchResults: {
-		backgroundColor: "#fff",
+		backgroundColor: colors.surface.elevated,
 		borderRadius: 16,
 		margin: 20,
 		padding: 8,
@@ -982,7 +987,7 @@ const styles = StyleSheet.create({
 		width: 40,
 		height: 40,
 		borderRadius: 20,
-		backgroundColor: "#007AFF",
+		backgroundColor: colors.primary[800],
 		alignItems: "center",
 		justifyContent: "center",
 	},
@@ -990,7 +995,7 @@ const styles = StyleSheet.create({
 	searchUserAvatarText: {
 		fontSize: 16,
 		fontWeight: "600",
-		color: "#fff",
+		color: colors.text.inverse,
 	},
 
 	searchUserInfo: {
@@ -1000,11 +1005,11 @@ const styles = StyleSheet.create({
 	searchUserName: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: "#333",
+		color: colors.text.primary,
 	},
 
 	searchUserUsername: {
 		fontSize: 14,
-		color: "#666",
+		color: colors.text.secondary,
 	},
 });

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { PaymentType } from "@/types/proofpay";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface PaymentTabSwitcherProps {
 	activeTab: PaymentType;
@@ -26,6 +27,9 @@ export default function PaymentTabSwitcher({
 	activeTab,
 	onTabChange,
 }: PaymentTabSwitcherProps) {
+	const { colors } = useTheme();
+	const styles = createStyles(colors);
+	
 	return (
 		<View style={styles.container}>
 			<View style={styles.tabContainer}>
@@ -50,7 +54,7 @@ export default function PaymentTabSwitcher({
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		alignItems: "center",
 		justifyContent: "center",
@@ -59,7 +63,7 @@ const styles = StyleSheet.create({
 	// Venmo-style tab container
 	tabContainer: {
 		flexDirection: "row",
-		backgroundColor: "#f0f0f0", // Light gray background
+		backgroundColor: colors.surface.secondary,
 		borderRadius: 20,
 		padding: 4,
 		gap: 2,
@@ -76,17 +80,17 @@ const styles = StyleSheet.create({
 	},
 
 	tabActive: {
-		backgroundColor: "#333", // Dark background for active
+		backgroundColor: colors.primary[800],
 	},
 
 	// Tab labels
 	tabLabel: {
 		fontSize: 14,
 		fontWeight: "600",
-		color: "#666", // Gray text for inactive
+		color: colors.text.secondary,
 	},
 
 	tabLabelActive: {
-		color: "#fff", // White text for active
+		color: colors.text.inverse,
 	},
 });

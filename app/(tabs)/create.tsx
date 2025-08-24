@@ -16,8 +16,10 @@ import SocialPaymentForm from "@/components/SocialPaymentForm";
 import PaymentTabSwitcher from "@/components/PaymentTabSwitcher";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { PaymentFormData, PaymentType } from "@/types/proofpay";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function CreateScreen() {
+	const { colors } = useTheme();
 	const [activeTab, setActiveTab] = useState<PaymentType>("request_help");
 	const [showQRModal, setShowQRModal] = useState(false);
 	const [requestCode, setRequestCode] = useState("");
@@ -75,7 +77,7 @@ export default function CreateScreen() {
 							<Ionicons
 								name="close"
 								size={24}
-								color={DesignSystem.colors.text.primary}
+								color={colors.text.primary}
 							/>
 						</Pressable>
 					</View>
@@ -85,7 +87,7 @@ export default function CreateScreen() {
 							<Ionicons
 								name="qr-code"
 								size={80}
-								color={DesignSystem.colors.text.secondary}
+								color={colors.text.secondary}
 							/>
 						</View>
 						<Text style={styles.qrSubtext}>
@@ -103,6 +105,8 @@ export default function CreateScreen() {
 			</View>
 		</Modal>
 	);
+
+	const styles = createStyles(colors);
 
 	return (
 		<SafeAreaView
@@ -131,7 +135,7 @@ export default function CreateScreen() {
 						<Ionicons
 							name="shield-checkmark"
 							size={16}
-							color="#666"
+							color={colors.text.tertiary}
 						/>
 						<Text style={styles.cryptoBadgeText}>
 							Secured by XION blockchain
@@ -145,10 +149,10 @@ export default function CreateScreen() {
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#f8f8f8",
+		backgroundColor: colors.surface.primary,
 	},
 
 	keyboardView: {
@@ -175,21 +179,21 @@ const styles = StyleSheet.create({
 
 	cryptoBadgeText: {
 		fontSize: 12,
-		color: "#666",
+		color: colors.text.tertiary,
 		fontWeight: "400",
 	},
 
-	// Modal Styles (unchanged)
+	// Modal Styles
 	modalOverlay: {
 		flex: 1,
-		backgroundColor: "rgba(0, 0, 0, 0.5)",
+		backgroundColor: colors.surface.overlay,
 		justifyContent: "center",
 		alignItems: "center",
 		padding: DesignSystem.spacing["2xl"],
 	},
 
 	modalContent: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.xl,
 		padding: DesignSystem.spacing["3xl"],
 		width: "100%",
@@ -205,7 +209,7 @@ const styles = StyleSheet.create({
 
 	modalTitle: {
 		...DesignSystem.typography.h3,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 	},
 
 	qrContainer: {
@@ -218,18 +222,18 @@ const styles = StyleSheet.create({
 		height: 160,
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: DesignSystem.colors.surface.tertiary,
+		backgroundColor: colors.surface.tertiary,
 		borderRadius: DesignSystem.radius.lg,
 	},
 
 	qrSubtext: {
 		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 		textAlign: "center",
 	},
 
 	modalButton: {
-		backgroundColor: DesignSystem.colors.primary[800],
+		backgroundColor: colors.primary[800],
 		borderRadius: DesignSystem.radius.lg,
 		padding: DesignSystem.spacing.lg,
 		alignItems: "center",
@@ -237,6 +241,6 @@ const styles = StyleSheet.create({
 
 	modalButtonText: {
 		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.inverse,
+		color: colors.text.inverse,
 	},
 });

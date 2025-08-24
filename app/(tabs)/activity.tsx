@@ -16,6 +16,7 @@ import InfoCard from "@/components/InfoCard";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { usePaymentHistory } from "@/hooks/useSocialContract";
+import { useTheme } from "@/contexts/ThemeContext";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import isToday from "dayjs/plugin/isToday";
@@ -24,10 +25,10 @@ dayjs.extend(relativeTime);
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: DesignSystem.colors.surface.primary,
+		backgroundColor: colors.surface.primary,
 	},
 	scrollView: {
 		flex: 1,
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
 	},
 	sectionTitle: {
 		...(DesignSystem.typography.h3 || {}),
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 		marginBottom: DesignSystem.spacing["2xl"],
 	},
 	paymentsList: {
@@ -54,10 +55,13 @@ const styles = StyleSheet.create({
 
 export default function PaymentsScreen() {
 	const { data: account, logout } = useAbstraxionAccount();
+	const { colors } = useTheme();
 	// TODO: Replace with actual user profile fetch logic
 	const username = account?.bech32Address || "";
 	const { payments, refetch } = usePaymentHistory(username);
 	const [refreshing, setRefreshing] = React.useState(false);
+	
+	const styles = createStyles(colors);
 
 	const userBalance = React.useMemo(() => {
 		let total = 0;
@@ -181,7 +185,7 @@ export default function PaymentsScreen() {
 									<Text
 										style={{
 											...DesignSystem.typography.body,
-											color: DesignSystem.colors.text.secondary,
+											color: colors.text.secondary,
 											marginBottom: DesignSystem.spacing.md,
 										}}
 									>

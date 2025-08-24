@@ -20,6 +20,7 @@ import {
 	useAbstraxionAccount,
 	useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface MenuItem {
 	id: string;
@@ -35,7 +36,9 @@ interface MenuItem {
 export default function ProfileScreen() {
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-	const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+	
+	// Theme context
+	const { isDarkMode, toggleDarkMode, colors } = useTheme();
 
 	// Get wallet address from Abstraxion
 	const { data, logout } = useAbstraxionAccount();
@@ -124,8 +127,8 @@ export default function ProfileScreen() {
 					subtitle: "Switch to dark theme",
 					icon: "moon-outline" as const,
 					hasToggle: true,
-					isEnabled: darkModeEnabled,
-					onToggle: setDarkModeEnabled,
+					isEnabled: isDarkMode,
+					onToggle: toggleDarkMode,
 					action: () => {},
 				},
 			],
@@ -162,7 +165,7 @@ export default function ProfileScreen() {
 							<Ionicons
 								name={item.icon}
 								size={20}
-								color={DesignSystem.colors.primary[800]}
+								color={colors.primary[800]}
 							/>
 						</View>
 						<View style={styles.menuTextContainer}>
@@ -179,16 +182,16 @@ export default function ProfileScreen() {
 								value={item.isEnabled}
 								onValueChange={item.onToggle}
 								trackColor={{
-									false: DesignSystem.colors.border.secondary,
-									true: DesignSystem.colors.primary[800],
+									false: colors.border.secondary,
+									true: colors.primary[800],
 								}}
-								thumbColor={DesignSystem.colors.surface.primary}
+								thumbColor={colors.surface.primary}
 							/>
 						) : (
 							<Ionicons
 								name="chevron-forward"
 								size={20}
-								color={DesignSystem.colors.text.tertiary}
+								color={colors.text.tertiary}
 							/>
 						)}
 					</View>
@@ -208,6 +211,8 @@ export default function ProfileScreen() {
 			</View>
 		</View>
 	);
+
+	const styles = createStyles(colors);
 
 	return (
 		<SafeAreaView
@@ -270,10 +275,10 @@ export default function ProfileScreen() {
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: DesignSystem.colors.surface.primary,
+		backgroundColor: colors.surface.primary,
 	},
 
 	scrollView: {
@@ -287,7 +292,7 @@ const styles = StyleSheet.create({
 
 	// Profile Card Styles
 	profileCard: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.xl,
 		padding: DesignSystem.spacing["3xl"],
 		marginBottom: DesignSystem.spacing["3xl"],
@@ -308,14 +313,14 @@ const styles = StyleSheet.create({
 		width: 60,
 		height: 60,
 		borderRadius: 30,
-		backgroundColor: DesignSystem.colors.primary[800],
+		backgroundColor: colors.primary[800],
 		alignItems: "center",
 		justifyContent: "center",
 	},
 
 	avatarText: {
 		...DesignSystem.typography.h3,
-		color: DesignSystem.colors.text.inverse,
+		color: colors.text.inverse,
 		fontWeight: "600",
 	},
 
@@ -325,13 +330,13 @@ const styles = StyleSheet.create({
 
 	displayName: {
 		...DesignSystem.typography.h3,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 		marginBottom: 4,
 	},
 
 	username: {
 		...DesignSystem.typography.body.large,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 	},
 
 	walletSection: {
@@ -340,7 +345,7 @@ const styles = StyleSheet.create({
 
 	walletLabel: {
 		...DesignSystem.typography.label.medium,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 	},
 
 	// Menu Styles
@@ -350,12 +355,12 @@ const styles = StyleSheet.create({
 
 	sectionTitle: {
 		...DesignSystem.typography.h4,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 		marginBottom: DesignSystem.spacing.lg,
 	},
 
 	menuContainer: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.xl,
 		overflow: "hidden",
 		...DesignSystem.shadows.sm,
@@ -363,7 +368,7 @@ const styles = StyleSheet.create({
 
 	menuItem: {
 		borderBottomWidth: 1,
-		borderBottomColor: DesignSystem.colors.border.tertiary,
+		borderBottomColor: colors.border.tertiary,
 	},
 
 	menuItemContent: {
@@ -376,7 +381,7 @@ const styles = StyleSheet.create({
 	},
 
 	menuItemPressed: {
-		backgroundColor: DesignSystem.colors.surface.tertiary,
+		backgroundColor: colors.surface.tertiary,
 	},
 
 	menuItemLeft: {
@@ -389,8 +394,7 @@ const styles = StyleSheet.create({
 		width: 32,
 		height: 32,
 		borderRadius: 16,
-		backgroundColor:
-			DesignSystem.colors.primary[50] || DesignSystem.colors.surface.tertiary,
+		backgroundColor: colors.primary[50] || colors.surface.tertiary,
 		alignItems: "center",
 		justifyContent: "center",
 		marginRight: DesignSystem.spacing.md,
@@ -402,13 +406,13 @@ const styles = StyleSheet.create({
 
 	menuItemTitle: {
 		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 		marginBottom: 2,
 	},
 
 	menuItemSubtitle: {
 		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 	},
 
 	menuItemRight: {

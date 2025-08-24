@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { Link, usePathname } from "expo-router";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface TabBarItem {
 	name: string;
@@ -46,11 +47,14 @@ const tabItems: TabBarItem[] = [
 
 export default function SophisticatedTabBar() {
 	const pathname = usePathname();
+	const { colors } = useTheme();
 
 	const isActive = (href: string) => {
 		if (href === "/(tabs)/activity" && pathname === "/") return true;
 		return pathname === href || pathname.startsWith(href);
 	};
+
+	const styles = createStyles(colors);
 
 	return (
 		<View style={styles.container}>
@@ -63,12 +67,12 @@ export default function SophisticatedTabBar() {
 				/>
 			) : (
 				<View
-					style={[StyleSheet.absoluteFillObject, styles.androidBackground]}
+					style={[StyleSheet.absoluteFillObject, { backgroundColor: `${colors.surface.elevated}F5` }]}
 				/>
 			)}
 
 			{/* Navigation Pills Container */}
-			<View style={styles.pillsContainer}>
+			<View style={[styles.pillsContainer, { backgroundColor: colors.surface.secondary, borderColor: colors.border.tertiary }]}>
 				{tabItems.map((item) => {
 					const active = isActive(item.href);
 
@@ -79,9 +83,9 @@ export default function SophisticatedTabBar() {
 							asChild
 						>
 							<Pressable
-								style={[styles.tabPill, active && styles.tabPillActive]}
+								style={[styles.tabPill, active && { backgroundColor: colors.primary[800], ...DesignSystem.shadows.md }]}
 								android_ripple={{
-									color: DesignSystem.colors.primary[100],
+									color: colors.primary[100] || colors.surface.tertiary,
 									borderless: true,
 									radius: 32,
 								}}
@@ -98,12 +102,16 @@ export default function SophisticatedTabBar() {
 											size={24}
 											color={
 												active
-													? DesignSystem.colors.text.inverse
-													: DesignSystem.colors.text.secondary
+													? colors.text.inverse
+													: colors.text.secondary
 											}
 										/>
 										<Text
-											style={[styles.tabLabel, active && styles.tabLabelActive]}
+											style={[
+												styles.tabLabel, 
+												{ color: colors.text.secondary }, 
+												active && { color: colors.text.inverse, fontWeight: "600" }
+											]}
 										>
 											{item.label}
 										</Text>
@@ -121,7 +129,7 @@ export default function SophisticatedTabBar() {
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		position: "absolute",
 		bottom: 0,
@@ -129,29 +137,23 @@ const styles = StyleSheet.create({
 		right: 0,
 		backgroundColor:
 			Platform.OS === "android"
-				? DesignSystem.colors.surface.elevated
+				? colors.surface.elevated
 				: "transparent",
 		borderTopWidth: 1,
-		borderTopColor: DesignSystem.colors.border.secondary,
+		borderTopColor: colors.border.secondary,
 		paddingHorizontal: DesignSystem.spacing["2xl"],
 		paddingTop: DesignSystem.spacing.xl,
 		zIndex: 100,
-	},
-
-	androidBackground: {
-		backgroundColor: `${DesignSystem.colors.surface.elevated}F5`, // 96% opacity
 	},
 
 	pillsContainer: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		backgroundColor: DesignSystem.colors.surface.secondary,
 		borderRadius: DesignSystem.radius["2xl"],
 		padding: DesignSystem.spacing.sm,
 		...DesignSystem.shadows.lg,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.tertiary,
 	},
 
 	tabPill: {
@@ -161,11 +163,6 @@ const styles = StyleSheet.create({
 		paddingVertical: DesignSystem.spacing.md,
 		paddingHorizontal: DesignSystem.spacing.lg,
 		backgroundColor: "transparent",
-	},
-
-	tabPillActive: {
-		backgroundColor: DesignSystem.colors.primary[800],
-		...DesignSystem.shadows.md,
 	},
 
 	tabContent: {
@@ -181,16 +178,11 @@ const styles = StyleSheet.create({
 
 	tabLabel: {
 		...DesignSystem.typography.label.small,
-		color: DesignSystem.colors.text.secondary,
 		textAlign: "center",
-	},
-
-	tabLabelActive: {
-		color: DesignSystem.colors.text.inverse,
-		fontWeight: "600",
 	},
 
 	safeAreaSpacer: {
 		height: Platform.OS === "ios" ? 34 : DesignSystem.spacing.xl,
 	},
 });
+

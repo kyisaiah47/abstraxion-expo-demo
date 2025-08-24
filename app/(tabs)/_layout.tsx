@@ -3,8 +3,18 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import SophisticatedTabBar from "@/components/SophisticatedTabBar";
 import { DesignSystem } from "@/constants/DesignSystem";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function TabLayout() {
+	const { colors } = useTheme();
+	
+	const styles = StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.surface.primary,
+		},
+	});
+
 	return (
 		<View style={styles.container}>
 			<Tabs
@@ -66,10 +76,3 @@ export default function TabLayout() {
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: DesignSystem.colors.surface.primary,
-	},
-});

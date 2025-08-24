@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DesignSystem } from "@/constants/DesignSystem";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface InfoCardProps {
 	title: string;
@@ -14,13 +15,16 @@ export default function InfoCard({
 	body,
 	icon = "shield-checkmark",
 }: InfoCardProps) {
+	const { colors } = useTheme();
+	const styles = createStyles(colors);
+	
 	return (
 		<View style={styles.container}>
 			<View style={styles.iconContainer}>
 				<Ionicons
 					name={icon}
 					size={24}
-					color={DesignSystem.colors.primary[700]}
+					color={colors.primary[700] || colors.primary[800]}
 				/>
 			</View>
 
@@ -32,15 +36,15 @@ export default function InfoCard({
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		flexDirection: "row",
 		alignItems: "flex-start",
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.xl,
 		padding: DesignSystem.spacing["2xl"],
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
+		borderColor: colors.border.secondary,
 		gap: DesignSystem.spacing.lg,
 		...DesignSystem.shadows.sm,
 	},
@@ -49,7 +53,7 @@ const styles = StyleSheet.create({
 		width: 40,
 		height: 40,
 		borderRadius: DesignSystem.radius.lg,
-		backgroundColor: DesignSystem.colors.primary[800] + "20",
+		backgroundColor: colors.primary[800] + "20",
 		alignItems: "center",
 		justifyContent: "center",
 	},
@@ -61,12 +65,12 @@ const styles = StyleSheet.create({
 
 	title: {
 		...DesignSystem.typography.h4,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 	},
 
 	body: {
 		...DesignSystem.typography.body.medium,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 		lineHeight: 22,
 	},
 });

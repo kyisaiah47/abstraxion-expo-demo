@@ -17,6 +17,7 @@ import SophisticatedHeader from "@/components/SophisticatedHeader";
 import ActionButton from "@/components/ActionButton";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { User } from "@/lib/socialContract";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
 	useUserFriends,
 	usePendingFriendRequests,
@@ -33,6 +34,7 @@ export default function FriendsScreen() {
 	const { logout, data } = useAbstraxionAccount();
 	const address = data?.bech32Address ?? "";
 	const { client: signingClient } = useAbstraxionSigningClient();
+	const { colors } = useTheme();
 
 	// Get current user profile to get their username
 	const { user: currentUser } = useUserProfile(address);
@@ -170,8 +172,8 @@ export default function FriendsScreen() {
 
 	const renderStatusBadge = (pending?: boolean) => {
 		let color = pending
-			? DesignSystem.colors.status.warning
-			: DesignSystem.colors.status.success;
+			? colors.status?.warning || colors.primary[500]
+			: colors.status?.success || colors.primary[600];
 		let text = pending ? "Pending" : "Friend";
 		return (
 			<View
@@ -183,7 +185,7 @@ export default function FriendsScreen() {
 					marginLeft: 8,
 				}}
 			>
-				<Text style={{ color: DesignSystem.colors.text.inverse, fontSize: 12 }}>
+				<Text style={{ color: colors.text.inverse, fontSize: 12 }}>
 					{text}
 				</Text>
 			</View>
@@ -325,6 +327,8 @@ export default function FriendsScreen() {
 		}
 	};
 
+	const styles = createStyles(colors);
+
 	return (
 		<SafeAreaView
 			style={styles.container}
@@ -339,14 +343,14 @@ export default function FriendsScreen() {
 				<View style={{ padding: 24, alignItems: "center" }}>
 					<ActivityIndicator
 						size="large"
-						color={DesignSystem.colors.primary[800]}
+						color={colors.primary[800]}
 					/>
 				</View>
 			)}
 			{anyError && (
 				<View style={{ padding: 24, alignItems: "center" }}>
 					<Text
-						style={{ color: DesignSystem.colors.status.error, fontSize: 16 }}
+						style={{ color: colors.status?.error || colors.text.primary, fontSize: 16 }}
 					>
 						Error: {anyError}
 					</Text>
@@ -405,7 +409,7 @@ export default function FriendsScreen() {
 						<Ionicons
 							name="search"
 							size={20}
-							color={DesignSystem.colors.text.secondary}
+							color={colors.text.secondary}
 							style={styles.searchIcon}
 						/>
 						<TextInput
@@ -413,7 +417,7 @@ export default function FriendsScreen() {
 							value={searchQuery}
 							onChangeText={setSearchQuery}
 							placeholder="Search by name or username..."
-							placeholderTextColor={DesignSystem.colors.text.tertiary}
+							placeholderTextColor={colors.text.tertiary}
 						/>
 					</View>
 					{searchResults.length > 0 && (
@@ -447,7 +451,7 @@ export default function FriendsScreen() {
 								<Ionicons
 									name="person-add-outline"
 									size={48}
-									color={DesignSystem.colors.text.tertiary}
+									color={colors.text.tertiary}
 								/>
 								<Text style={styles.emptyStateText}>No pending requests</Text>
 								<Text style={styles.emptyStateSubtext}>
@@ -477,7 +481,7 @@ export default function FriendsScreen() {
 								<Ionicons
 									name="people-outline"
 									size={48}
-									color={DesignSystem.colors.text.tertiary}
+									color={colors.text.tertiary}
 								/>
 								<Text style={styles.emptyStateText}>No friends yet</Text>
 								<Text style={styles.emptyStateSubtext}>
@@ -494,16 +498,16 @@ export default function FriendsScreen() {
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: DesignSystem.colors.surface.primary,
+		backgroundColor: colors.surface.primary,
 	},
 	tabContainer: {
 		flexDirection: "row",
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderBottomWidth: 1,
-		borderBottomColor: DesignSystem.colors.border.secondary,
+		borderBottomColor: colors.border.secondary,
 	},
 	tab: {
 		flex: 1,
@@ -514,18 +518,18 @@ const styles = StyleSheet.create({
 		borderBottomColor: "transparent",
 	},
 	tabActive: {
-		borderBottomColor: DesignSystem.colors.primary[800],
+		borderBottomColor: colors.primary[800],
 	},
 	tabText: {
 		...DesignSystem.typography.label.medium,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 	},
 	tabTextActive: {
-		color: DesignSystem.colors.primary[800],
+		color: colors.primary[800],
 		fontWeight: "600",
 	},
 	tabBadge: {
-		color: DesignSystem.colors.text.tertiary,
+		color: colors.text.tertiary,
 		fontSize: 12,
 	},
 	scrollView: {
@@ -540,16 +544,16 @@ const styles = StyleSheet.create({
 	},
 	sectionTitle: {
 		...DesignSystem.typography.h3,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 		marginBottom: DesignSystem.spacing.lg,
 	},
 	searchContainer: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.lg,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
+		borderColor: colors.border.secondary,
 		paddingHorizontal: DesignSystem.spacing.lg,
 		paddingVertical: DesignSystem.spacing.lg,
 	},
@@ -559,15 +563,15 @@ const styles = StyleSheet.create({
 	searchInput: {
 		flex: 1,
 		fontSize: 16,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 		textAlignVertical: "center",
 	},
 	searchResults: {
 		marginTop: DesignSystem.spacing.lg,
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.lg,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
+		borderColor: colors.border.secondary,
 	},
 	userItem: {
 		flexDirection: "row",
@@ -576,7 +580,7 @@ const styles = StyleSheet.create({
 		paddingVertical: DesignSystem.spacing.lg,
 		paddingHorizontal: DesignSystem.spacing.lg,
 		borderBottomWidth: 1,
-		borderBottomColor: DesignSystem.colors.border.tertiary,
+		borderBottomColor: colors.border.tertiary,
 	},
 	userInfo: {
 		flexDirection: "row",
@@ -587,14 +591,14 @@ const styles = StyleSheet.create({
 		width: 40,
 		height: 40,
 		borderRadius: 20,
-		backgroundColor: DesignSystem.colors.primary[800],
+		backgroundColor: colors.primary[800],
 		alignItems: "center",
 		justifyContent: "center",
 		marginRight: DesignSystem.spacing.md,
 	},
 	avatarText: {
 		...DesignSystem.typography.label.medium,
-		color: DesignSystem.colors.text.inverse,
+		color: colors.text.inverse,
 		fontWeight: "600",
 	},
 	userTextContainer: {
@@ -602,26 +606,26 @@ const styles = StyleSheet.create({
 	},
 	userName: {
 		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 	},
 	userUsername: {
 		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 	},
 	addButtonSent: {
-		backgroundColor: DesignSystem.colors.status.success + "20", // Light green background
-		borderColor: DesignSystem.colors.status.success,
+		backgroundColor: (colors.status?.success || colors.primary[600]) + "20", // Light green background
+		borderColor: colors.status?.success || colors.primary[600],
 	},
 	pendingText: {
 		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 		fontStyle: "italic",
 	},
 	requestsList: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.lg,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
+		borderColor: colors.border.secondary,
 	},
 	requestItem: {
 		flexDirection: "row",
@@ -630,17 +634,17 @@ const styles = StyleSheet.create({
 		paddingVertical: DesignSystem.spacing.lg,
 		paddingHorizontal: DesignSystem.spacing.lg,
 		borderBottomWidth: 1,
-		borderBottomColor: DesignSystem.colors.border.tertiary,
+		borderBottomColor: colors.border.tertiary,
 	},
 	requestActions: {
 		flexDirection: "row",
 		gap: DesignSystem.spacing.sm,
 	},
 	friendsList: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
+		backgroundColor: colors.surface.elevated,
 		borderRadius: DesignSystem.radius.lg,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
+		borderColor: colors.border.secondary,
 	},
 	emptyState: {
 		alignItems: "center",
@@ -649,13 +653,13 @@ const styles = StyleSheet.create({
 	},
 	emptyStateText: {
 		...DesignSystem.typography.h4,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 		marginTop: DesignSystem.spacing.lg,
 		textAlign: "center",
 	},
 	emptyStateSubtext: {
 		...DesignSystem.typography.body.medium,
-		color: DesignSystem.colors.text.tertiary,
+		color: colors.text.tertiary,
 		marginTop: DesignSystem.spacing.sm,
 		textAlign: "center",
 	},

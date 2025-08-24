@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import {
 	DarkTheme,
 	DefaultTheme,
-	ThemeProvider,
+	ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -15,6 +15,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/contexts/ThemeContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Toast from "react-native-toast-message";
 
 import { Buffer } from "buffer";
@@ -39,8 +41,34 @@ const treasuryConfig = {
 	// redirectUri: "https://your-domain.com/auth-callback"
 };
 
+function NavigationWrapper() {
+	const { isDarkMode } = useTheme();
+	
+	return (
+		<NavigationThemeProvider
+			value={isDarkMode ? DarkTheme : DefaultTheme}
+		>
+			<Stack
+				screenOptions={{
+					headerShown: false, // Hide headers for all screens
+				}}
+			>
+				<Stack.Screen name="index" />
+				<Stack.Screen
+					name="(tabs)"
+					options={{ headerShown: false }}
+				/>
+				<Stack.Screen
+					name="create"
+					options={{ headerShown: false }}
+				/>
+			</Stack>
+			<StatusBar style={isDarkMode ? "light" : "auto"} />
+		</NavigationThemeProvider>
+	);
+}
+
 export default function RootLayout() {
-	const colorScheme = useColorScheme();
 	const [loaded] = useFonts({
 		SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
 	});
@@ -58,34 +86,17 @@ export default function RootLayout() {
 	return (
 		<>
 			<GestureHandlerRootView style={{ flex: 1 }}>
-				<AbstraxionProvider config={treasuryConfig}>
-					<ThemeProvider
-						value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-					>
-						<Stack
-							screenOptions={{
-								headerShown: false, // Hide headers for all screens
-							}}
-						>
-							<Stack.Screen name="index" />
-							<Stack.Screen
-								name="(tabs)"
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen
-								name="create"
-								options={{ headerShown: false }}
-							/>
-						</Stack>
-						<StatusBar style="auto" />
-					</ThemeProvider>
-				</AbstraxionProvider>
-				<Toast
-					config={{
-						success: (props) => <CustomToast {...props} />,
-						// You can also override 'error', 'info', etc if you want
-					}}
-				/>
+				<ThemeProvider>
+					<AbstraxionProvider config={treasuryConfig}>
+						<NavigationWrapper />
+					</AbstraxionProvider>
+					<Toast
+						config={{
+							success: (props) => <CustomToast {...props} />,
+							// You can also override 'error', 'info', etc if you want
+						}}
+					/>
+				</ThemeProvider>
 			</GestureHandlerRootView>
 		</>
 	);

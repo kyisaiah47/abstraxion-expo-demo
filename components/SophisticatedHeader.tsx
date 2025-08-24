@@ -5,6 +5,7 @@ import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { DesignSystem } from "@/constants/DesignSystem";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface SophisticatedHeaderProps {
 	title: string;
@@ -26,6 +27,7 @@ export default function SophisticatedHeader({
 	variant = "default",
 }: SophisticatedHeaderProps) {
 	const insets = useSafeAreaInsets();
+	const { colors } = useTheme();
 
 	const handleLogout = () => {
 		if (onLogout) {
@@ -62,6 +64,8 @@ export default function SophisticatedHeader({
 		);
 	};
 
+	const styles = createStyles(colors);
+
 	return (
 		<View
 			style={[
@@ -80,7 +84,7 @@ export default function SophisticatedHeader({
 							style={styles.actionButton}
 							onPress={handleBack}
 							android_ripple={{
-								color: DesignSystem.colors.primary[100],
+								color: colors.primary[100] || colors.surface.tertiary,
 								borderless: true,
 								radius: 24,
 							}}
@@ -95,7 +99,7 @@ export default function SophisticatedHeader({
 									<Ionicons
 										name="chevron-back"
 										size={24}
-										color={DesignSystem.colors.text.primary}
+										color={colors.text.primary}
 									/>
 								</View>
 							)}
@@ -125,7 +129,7 @@ export default function SophisticatedHeader({
 							style={styles.logoutButton}
 							onPress={handleLogout}
 							android_ripple={{
-								color: DesignSystem.colors.status.error + "20",
+								color: colors.status?.error + "20" || colors.surface.tertiary,
 								borderless: true,
 								radius: 24,
 							}}
@@ -140,7 +144,7 @@ export default function SophisticatedHeader({
 									<Ionicons
 										name="log-out-outline"
 										size={22}
-										color={DesignSystem.colors.status.error}
+										color={colors.status?.error || colors.text.primary}
 									/>
 								</View>
 							)}
@@ -155,11 +159,11 @@ export default function SophisticatedHeader({
 	);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		backgroundColor: "transparent",
 		borderBottomWidth: 1,
-		borderBottomColor: DesignSystem.colors.border.secondary,
+		borderBottomColor: colors.border.secondary,
 		zIndex: 50,
 	},
 
@@ -168,11 +172,11 @@ const styles = StyleSheet.create({
 	},
 
 	defaultBackground: {
-		backgroundColor: `${DesignSystem.colors.surface.elevated}FB`, // 98% opacity
+		backgroundColor: `${colors.surface.elevated}FB`, // 98% opacity
 	},
 
 	androidBlur: {
-		backgroundColor: `${DesignSystem.colors.surface.elevated}F0`, // 94% opacity
+		backgroundColor: `${colors.surface.elevated}F0`, // 94% opacity
 	},
 
 	content: {
@@ -205,23 +209,23 @@ const styles = StyleSheet.create({
 
 	title: {
 		...DesignSystem.typography.h2,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 	},
 
 	titleCentered: {
 		...DesignSystem.typography.h3,
-		color: DesignSystem.colors.text.primary,
+		color: colors.text.primary,
 		textAlign: "center",
 	},
 
 	subtitle: {
 		...DesignSystem.typography.body.medium,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 	},
 
 	subtitleCentered: {
 		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
+		color: colors.text.secondary,
 		textAlign: "center",
 	},
 
@@ -229,9 +233,9 @@ const styles = StyleSheet.create({
 		width: 48,
 		height: 48,
 		borderRadius: DesignSystem.radius.lg,
-		backgroundColor: DesignSystem.colors.surface.secondary,
+		backgroundColor: colors.surface.secondary,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.primary,
+		borderColor: colors.border.primary,
 		...DesignSystem.shadows.sm,
 	},
 
@@ -239,9 +243,9 @@ const styles = StyleSheet.create({
 		width: 48,
 		height: 48,
 		borderRadius: DesignSystem.radius.lg,
-		backgroundColor: DesignSystem.colors.surface.secondary,
+		backgroundColor: colors.surface.secondary,
 		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.primary,
+		borderColor: colors.border.primary,
 		...DesignSystem.shadows.sm,
 	},
 
@@ -264,7 +268,7 @@ const styles = StyleSheet.create({
 
 	bottomBorder: {
 		height: 1,
-		backgroundColor: DesignSystem.colors.border.secondary,
+		backgroundColor: colors.border.secondary,
 		marginHorizontal: DesignSystem.layout.containerPadding,
 	},
 });
