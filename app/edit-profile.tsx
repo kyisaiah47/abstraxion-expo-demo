@@ -3,7 +3,6 @@ import {
 	View,
 	Text,
 	StyleSheet,
-	TextInput,
 	Pressable,
 	Alert,
 	KeyboardAvoidingView,
@@ -17,6 +16,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { User } from "@/types/proofpay";
 import { UserService } from "@/lib/userService";
+import FormInput from "@/components/FormInput";
 import {
 	useSocialOperations,
 	useIsUsernameAvailable,
@@ -136,58 +136,34 @@ export default function EditProfileScreen() {
 
 					{/* Form Fields */}
 					<View style={styles.formSection}>
-						{/* Display Name Field */}
-						<View style={styles.fieldContainer}>
-							<Text style={styles.fieldLabel}>Display Name</Text>
-							<View style={styles.inputContainer}>
-								<TextInput
-									style={styles.input}
-									value={displayName}
-									onChangeText={setDisplayName}
-									placeholder="Enter your display name"
-									placeholderTextColor={colors.text.tertiary}
-									autoCapitalize="words"
-									maxLength={50}
-								/>
-							</View>
-						</View>
+						<FormInput
+							label="Display Name"
+							value={displayName}
+							onChangeText={setDisplayName}
+							placeholder="Enter your display name"
+							autoCapitalize="words"
+							maxLength={50}
+						/>
 
-						{/* Username Field */}
-						<View style={styles.fieldContainer}>
-							<Text style={styles.fieldLabel}>Username</Text>
-							<View style={styles.inputContainer}>
-								<View style={styles.usernameInputWrapper}>
-									<Text style={styles.atSymbol}>@</Text>
-									<TextInput
-										style={styles.usernameInput}
-										value={username}
-										onChangeText={setUsername}
-										placeholder="username"
-										placeholderTextColor={colors.text.tertiary}
-										autoCapitalize="none"
-										autoCorrect={false}
-										maxLength={30}
-									/>
-								</View>
-								{username !== currentUser?.username && isUsernameAvailable !== null && (
-									<View style={styles.availabilityIndicator}>
-										<Ionicons 
-											name={isUsernameAvailable ? "checkmark-circle" : "close-circle"}
-											size={20}
-											color={isUsernameAvailable ? colors.status?.success || "#059669" : colors.status?.error || "#DC2626"}
-										/>
-									</View>
-								)}
-							</View>
-							{username !== currentUser?.username && isUsernameAvailable !== null && (
-								<Text style={[
-									styles.availabilityText,
-									{ color: isUsernameAvailable ? colors.status?.success || "#059669" : colors.status?.error || "#DC2626" }
-								]}>
-									{isUsernameAvailable ? "Username is available" : "Username is not available"}
-								</Text>
-							)}
-						</View>
+						<FormInput
+							label="Username"
+							value={username}
+							onChangeText={setUsername}
+							placeholder="username"
+							prefix="@"
+							autoCapitalize="none"
+							autoCorrect={false}
+							maxLength={30}
+							suffix={username !== currentUser?.username && isUsernameAvailable !== null ? (
+								<Ionicons 
+									name={isUsernameAvailable ? "checkmark-circle" : "close-circle"}
+									size={20}
+									color={isUsernameAvailable ? colors.status?.success || "#059669" : colors.status?.error || "#DC2626"}
+								/>
+							) : undefined}
+							success={username !== currentUser?.username && isUsernameAvailable === true ? "Username is available" : undefined}
+							error={username !== currentUser?.username && isUsernameAvailable === false ? "Username is not available" : undefined}
+						/>
 					</View>
 
 					{/* Info Section */}
@@ -281,54 +257,7 @@ const createStyles = (colors: any) =>
 			color: colors.text.secondary,
 		},
 		formSection: {
-			gap: DesignSystem.spacing["2xl"],
-		},
-		fieldContainer: {
-			gap: DesignSystem.spacing.sm,
-		},
-		fieldLabel: {
-			...DesignSystem.typography.label.medium,
-			color: colors.text.primary,
-			fontWeight: "600",
-		},
-		inputContainer: {
-			flexDirection: "row",
-			alignItems: "center",
-			backgroundColor: colors.surface.elevated,
-			borderRadius: DesignSystem.radius.lg,
-			borderWidth: 1,
-			borderColor: colors.border.secondary,
-			paddingHorizontal: DesignSystem.spacing.lg,
-			paddingVertical: DesignSystem.spacing.md,
-		},
-		input: {
-			...DesignSystem.typography.body.large,
-			color: colors.text.primary,
-			flex: 1,
-			paddingVertical: 0,
-		},
-		usernameInputWrapper: {
-			flexDirection: "row",
-			alignItems: "center",
-			flex: 1,
-		},
-		atSymbol: {
-			...DesignSystem.typography.body.large,
-			color: colors.text.secondary,
-			marginRight: 4,
-		},
-		usernameInput: {
-			...DesignSystem.typography.body.large,
-			color: colors.text.primary,
-			flex: 1,
-			paddingVertical: 0,
-		},
-		availabilityIndicator: {
-			marginLeft: DesignSystem.spacing.sm,
-		},
-		availabilityText: {
-			...DesignSystem.typography.body.small,
-			marginTop: 4,
+			marginTop: DesignSystem.spacing.xl,
 		},
 		infoSection: {
 			marginTop: DesignSystem.spacing["3xl"],

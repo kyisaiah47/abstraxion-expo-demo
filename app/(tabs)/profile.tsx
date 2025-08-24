@@ -171,7 +171,7 @@ export default function ProfileScreen() {
 					title: "Wallet Settings",
 					subtitle: "Manage connected wallets",
 					icon: "wallet-outline" as const,
-					action: () => Alert.alert("Wallet", "Wallet management coming soon!"),
+					action: () => router.push("/wallet-settings"),
 				},
 			],
 		},
