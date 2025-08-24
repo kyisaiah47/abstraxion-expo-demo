@@ -92,12 +92,19 @@ cd mock-verifier && npm install && cd ..
 1. **Create OneSignal App**
    - Go to [onesignal.com](https://onesignal.com)
    - Create new app
-   - Choose "React Native / Expo"
-   - Note App ID and API Key
+   - Choose your platforms:
+     - **Apple iOS (APNs)** for iOS devices
+     - **Google Android (FCM)** for Android devices
+   - Note your App ID from Settings → Keys & IDs
 
-2. **Configure Push Notifications**
+2. **Get API Key**
+   - Go to Settings → Keys & IDs
+   - Copy the "REST API Key" (this is your ONESIGNAL_API_KEY)
+   - Copy the "OneSignal App ID" (this is your ONESIGNAL_APP_ID)
+
+3. **Configure Push Notifications**
    - Add OneSignal SDK to your app (already included)
-   - Set up platform-specific keys (iOS/Android)
+   - For production: Set up Apple Developer certificates (iOS) and Firebase project (Android)
 
 ### 4. Environment Configuration
 

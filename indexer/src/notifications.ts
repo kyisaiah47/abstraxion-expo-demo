@@ -12,16 +12,29 @@ import {
 const logger = createLogger('notifications');
 
 export class NotificationService {
-  private oneSignalClient: OneSignal.Client;
+  private oneSignalClient: OneSignal.Client | null = null;
   private supabaseService: SupabaseService;
+  private oneSignalEnabled: boolean = false;
 
   constructor(supabaseService: SupabaseService) {
-    this.oneSignalClient = new OneSignal.Client(ONESIGNAL_APP_ID, ONESIGNAL_API_KEY);
     this.supabaseService = supabaseService;
     
-    logger.info('OneSignal client initialized', { 
-      appId: ONESIGNAL_APP_ID.slice(0, 8) + '...' 
-    });
+    // Only initialize OneSignal if credentials are provided
+    if (ONESIGNAL_APP_ID && ONESIGNAL_API_KEY && 
+        ONESIGNAL_APP_ID !== 'your-onesignal-app-id' && 
+        ONESIGNAL_API_KEY !== 'your-onesignal-api-key') {
+      try {
+        this.oneSignalClient = new OneSignal.Client(ONESIGNAL_APP_ID, ONESIGNAL_API_KEY);
+        this.oneSignalEnabled = true;
+        logger.info('OneSignal client initialized', { 
+          appId: ONESIGNAL_APP_ID.slice(0, 8) + '...' 
+        });
+      } catch (error) {
+        logger.warn('Failed to initialize OneSignal, notifications disabled', { error });
+      }
+    } else {
+      logger.info('OneSignal credentials not provided, notifications disabled');
+    }
   }
 
   // ===== MAIN NOTIFICATION METHODS =====
@@ -290,6 +303,15 @@ export class NotificationService {
   }): Promise<void> {
     const { walletAddress, title, message, data } = params;
 
+    // Skip if OneSignal is not enabled
+    if (!this.oneSignalEnabled || !this.oneSignalClient) {
+      logger.debug('Push notification skipped (OneSignal not configured)', { 
+        walletAddress: walletAddress.slice(0, 8) + '...',
+        title 
+      });
+      return;
+    }
+
     try {
       // Use wallet address as external user ID
       const payload: PushNotificationPayload = {
@@ -327,6 +349,13 @@ export class NotificationService {
   // ===== UTILITY METHODS =====
 
   async testNotification(walletAddress: string): Promise<boolean> {
+    if (!this.oneSignalEnabled) {
+      logger.info('Test notification skipped (OneSignal not configured)', { 
+        walletAddress: walletAddress.slice(0, 8) + '...' 
+      });
+      return true; // Return true for development purposes
+    }
+
     try {
       await this.sendPushNotification({
         walletAddress,
