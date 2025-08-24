@@ -7,10 +7,10 @@ import {
 	SafeAreaView,
 	TouchableOpacity,
 	ActivityIndicator,
-	Alert,
 	KeyboardAvoidingView,
 	Platform,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
@@ -77,7 +77,12 @@ export default function UsernameSetupScreen() {
 		// Add this check!
 		if (!signingClient) {
 			console.log("❌ Signing client not ready");
-			Alert.alert("Error", "Signing client not ready. Please try again.");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Signing client not ready. Please try again.',
+				position: 'bottom',
+			});
 			return;
 		}
 
@@ -85,7 +90,12 @@ export default function UsernameSetupScreen() {
 			console.log("❌ Invalid state for registration");
 			console.log("  - account?.bech32Address:", account?.bech32Address);
 			console.log("  - isValid:", isValid);
-			Alert.alert("Error", "Invalid state for registration");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Invalid state for registration',
+				position: 'bottom',
+			});
 			return;
 		}
 
@@ -120,7 +130,12 @@ export default function UsernameSetupScreen() {
 				);
 			}
 
-			Alert.alert("Registration Failed", errorMsg || "Please try again.");
+			Toast.show({
+				type: 'error',
+				text1: 'Registration Failed',
+				text2: errorMsg || 'Please try again.',
+				position: 'bottom',
+			});
 		}
 	};
 
@@ -134,19 +149,28 @@ export default function UsernameSetupScreen() {
 			setTimeout(async () => {
 				try {
 					await login();
-					Alert.alert(
-						"Re-authentication",
-						"Successfully re-authenticated. Please check your wallet grants."
-					);
+					Toast.show({
+						type: 'success',
+						text1: 'Re-authentication',
+						text2: 'Successfully re-authenticated. Please check your wallet grants.',
+						position: 'bottom',
+					});
 				} catch (e) {
-					Alert.alert(
-						"Re-authentication Failed",
-						e instanceof Error ? e.message : String(e)
-					);
+					Toast.show({
+						type: 'error',
+						text1: 'Re-authentication Failed',
+						text2: e instanceof Error ? e.message : String(e),
+						position: 'bottom',
+					});
 				}
 			}, 2000);
 		} catch (e) {
-			Alert.alert("Error", e instanceof Error ? e.message : String(e));
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: e instanceof Error ? e.message : String(e),
+				position: 'bottom',
+			});
 		}
 	};
 

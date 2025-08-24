@@ -42,10 +42,10 @@ const onboardingScreens = [
 	},
 	{
 		id: 3,
-		title: "Create, share, verify.\nGet paid.",
+		title: "Web3 made simple.\nWeb2 familiar.",
 		subtitle: null,
 		description:
-			"Create tasks, share QR codes, verify completion, receive instant payment.",
+			"No wallets, no seed phrases, no complexity. Just sign in and start earning.",
 		background: "#ffffff",
 		backgroundColor: "#ffffff",
 		showLogo: false,

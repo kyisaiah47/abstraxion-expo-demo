@@ -6,6 +6,7 @@ import {
 	Pressable,
 	Modal,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
 
@@ -16,6 +17,7 @@ interface ConfirmationModalProps {
 	confirmText?: string;
 	cancelText?: string;
 	confirmStyle?: "default" | "destructive";
+	icon?: keyof typeof Ionicons.glyphMap;
 	onConfirm: () => void;
 	onCancel: () => void;
 }
@@ -27,6 +29,7 @@ export default function ConfirmationModal({
 	confirmText = "Confirm",
 	cancelText = "Cancel",
 	confirmStyle = "default",
+	icon = "alert-circle-outline",
 	onConfirm,
 	onCancel,
 }: ConfirmationModalProps) {
@@ -42,9 +45,18 @@ export default function ConfirmationModal({
 		>
 			<View style={styles.overlay}>
 				<View style={styles.modal}>
-					<View style={styles.content}>
-						<Text style={styles.title}>{title}</Text>
-						<Text style={styles.message}>{message}</Text>
+					<View style={styles.header}>
+						<View style={styles.iconContainer}>
+							<Ionicons
+								name={icon}
+								size={24}
+								color={confirmStyle === "destructive" ? colors.status?.error || '#DC2626' : colors.primary[700]}
+							/>
+						</View>
+						<View style={styles.content}>
+							<Text style={styles.title}>{title}</Text>
+							<Text style={styles.message}>{message}</Text>
+						</View>
 					</View>
 					
 					<View style={styles.actions}>
@@ -81,34 +93,41 @@ const createStyles = (colors: any) =>
 	StyleSheet.create({
 		overlay: {
 			flex: 1,
-			backgroundColor: 'rgba(0, 0, 0, 0.5)',
-			justifyContent: 'center',
-			alignItems: 'center',
-			paddingHorizontal: DesignSystem.spacing.xl,
+			backgroundColor: 'rgba(0, 0, 0, 0.3)',
+			justifyContent: 'flex-end',
+			paddingBottom: 100,
+			paddingHorizontal: DesignSystem.spacing.lg,
 		},
 		modal: {
-			backgroundColor: colors.surface.elevated,
+			backgroundColor: colors.surface.secondary,
 			borderRadius: DesignSystem.radius.xl,
-			width: '100%',
-			maxWidth: 400,
+			borderWidth: 1,
+			borderColor: colors.border.primary,
 			overflow: 'hidden',
 			...DesignSystem.shadows.lg,
 		},
-		content: {
+		header: {
+			flexDirection: 'row',
+			alignItems: 'flex-start',
 			padding: DesignSystem.spacing.xl,
 		},
+		iconContainer: {
+			marginRight: DesignSystem.spacing.md,
+			marginTop: 2,
+		},
+		content: {
+			flex: 1,
+		},
 		title: {
-			...DesignSystem.typography.h3,
+			...DesignSystem.typography.label.large,
 			color: colors.text.primary,
 			fontWeight: '600',
-			marginBottom: DesignSystem.spacing.md,
-			textAlign: 'center',
+			marginBottom: 4,
 		},
 		message: {
 			...DesignSystem.typography.body.medium,
 			color: colors.text.secondary,
-			lineHeight: 22,
-			textAlign: 'center',
+			lineHeight: 20,
 		},
 		actions: {
 			flexDirection: 'row',
@@ -129,15 +148,15 @@ const createStyles = (colors: any) =>
 			// Default confirm button styling
 		},
 		destructiveButton: {
-			backgroundColor: colors.status?.error ? `${colors.status.error}10` : '#DC262610',
+			backgroundColor: colors.status?.error ? `${colors.status.error}08` : '#DC262608',
 		},
 		cancelText: {
-			...DesignSystem.typography.label.large,
+			...DesignSystem.typography.label.medium,
 			color: colors.text.secondary,
 			fontWeight: '500',
 		},
 		confirmText: {
-			...DesignSystem.typography.label.large,
+			...DesignSystem.typography.label.medium,
 			color: colors.primary[700],
 			fontWeight: '600',
 		},

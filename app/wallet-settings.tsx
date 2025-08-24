@@ -4,7 +4,6 @@ import {
 	Text,
 	StyleSheet,
 	Pressable,
-	Alert,
 	ScrollView,
 	Share,
 } from "react-native";
@@ -14,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
 import AddressChip from "@/components/AddressChip";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import {
 	useAbstraxionAccount,
 	useAbstraxionSigningClient,
@@ -32,6 +32,7 @@ interface WalletInfo {
 export default function WalletSettingsScreen() {
 	const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
 	
 	const { colors } = useTheme();
 	const styles = createStyles(colors);
@@ -92,37 +93,29 @@ export default function WalletSettingsScreen() {
 	};
 
 	const handleDisconnectWallet = () => {
-		Alert.alert(
-			"Disconnect Wallet",
-			"Are you sure you want to disconnect your wallet? You'll need to reconnect to use ProofPay.",
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Disconnect",
-					style: "destructive",
-					onPress: async () => {
-						try {
-							await logout();
-							Toast.show({
-								type: 'success',
-								text1: 'Disconnected',
-								text2: 'Wallet disconnected successfully',
-								position: 'bottom',
-							});
-							router.replace("/");
-						} catch (error) {
-							console.error("Error disconnecting wallet:", error);
-							Toast.show({
-								type: 'error',
-								text1: 'Error',
-								text2: 'Failed to disconnect wallet',
-								position: 'bottom',
-							});
-						}
-					},
-				},
-			]
-		);
+		setShowDisconnectConfirm(true);
+	};
+
+	const confirmDisconnect = async () => {
+		setShowDisconnectConfirm(false);
+		try {
+			await logout();
+			Toast.show({
+				type: 'success',
+				text1: 'Disconnected',
+				text2: 'Wallet disconnected successfully',
+				position: 'bottom',
+			});
+			router.replace("/");
+		} catch (error) {
+			console.error("Error disconnecting wallet:", error);
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Failed to disconnect wallet',
+				position: 'bottom',
+			});
+		}
 	};
 
 	const handleRefresh = () => {
@@ -324,6 +317,18 @@ export default function WalletSettingsScreen() {
 				{/* Bottom Spacer */}
 				<View style={styles.bottomSpacer} />
 			</ScrollView>
+
+			<ConfirmationModal
+				visible={showDisconnectConfirm}
+				title="Disconnect Wallet"
+				message="Are you sure you want to disconnect your wallet? You'll need to reconnect to use ProofPay."
+				confirmText="Disconnect"
+				cancelText="Cancel"
+				confirmStyle="destructive"
+				icon="log-out-outline"
+				onConfirm={confirmDisconnect}
+				onCancel={() => setShowDisconnectConfirm(false)}
+			/>
 		</SafeAreaView>
 	);
 }

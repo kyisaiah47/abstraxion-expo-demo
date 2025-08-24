@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
 	View,
 	Text,
@@ -6,8 +6,8 @@ import {
 	ScrollView,
 	Pressable,
 	Switch,
-	Alert,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -23,7 +23,6 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
-import Toast from "react-native-toast-message";
 import ZkTLSSelectionModal from "@/components/ZkTLSSelectionModal";
 
 interface MenuItem {
@@ -50,7 +49,7 @@ export default function ProfileScreen() {
 		totalEarned: 0,
 		averageRating: 0,
 	});
-	
+
 	// Theme and auth context
 	const { user } = useAuth();
 	const { isDarkMode, toggleDarkMode, colors } = useTheme();
@@ -68,7 +67,12 @@ export default function ProfileScreen() {
 			router.replace("/");
 		} catch (error) {
 			console.error("Logout failed:", error);
-			Alert.alert("Error", "Failed to sign out. Please try again.");
+			Toast.show({
+				type: "error",
+				text1: "Error",
+				text2: "Failed to sign out. Please try again.",
+				position: "bottom",
+			});
 		}
 	};
 
@@ -79,19 +83,26 @@ export default function ProfileScreen() {
 		try {
 			// Get user tasks statistics
 			const { data: tasks, error: tasksError } = await supabase
-				.from('tasks')
-				.select('*')
+				.from("tasks")
+				.select("*")
 				.or(`payer.eq.${user.walletAddress},worker.eq.${user.walletAddress}`);
 
 			if (tasksError) {
-				console.error('Error fetching tasks:', tasksError);
+				console.error("Error fetching tasks:", tasksError);
 				return;
 			}
 
 			const totalTasks = tasks?.length || 0;
-			const completedTasks = tasks?.filter(task => task.status === 'released').length || 0;
-			const totalEarned = tasks?.filter(task => task.status === 'released' && task.worker === user.walletAddress)
-				.reduce((sum, task) => sum + (parseFloat(task.amount) / 1000000), 0) || 0;
+			const completedTasks =
+				tasks?.filter((task) => task.status === "released").length || 0;
+			const totalEarned =
+				tasks
+					?.filter(
+						(task) =>
+							task.status === "released" && task.worker === user.walletAddress
+					)
+					.reduce((sum, task) => sum + parseFloat(task.amount) / 1000000, 0) ||
+				0;
 
 			setUserStats({
 				totalTasks,
@@ -102,27 +113,27 @@ export default function ProfileScreen() {
 
 			// Get unread notifications count
 			const { data: userData, error: userError } = await supabase
-				.from('users')
-				.select('id')
-				.eq('wallet_address', user.walletAddress)
+				.from("users")
+				.select("id")
+				.eq("wallet_address", user.walletAddress)
 				.single();
 
 			if (userError || !userData) {
-				console.log('User not found in database');
+				console.log("User not found in database");
 				return;
 			}
 
 			const { count, error: notifError } = await supabase
-				.from('notifications')
-				.select('*', { count: 'exact', head: true })
-				.eq('user_id', userData.id)
-				.is('read_at', null);
+				.from("notifications")
+				.select("*", { count: "exact", head: true })
+				.eq("user_id", userData.id)
+				.is("read_at", null);
 
 			if (!notifError) {
 				setUnreadCount(count || 0);
 			}
 		} catch (error) {
-			console.error('Error fetching user stats:', error);
+			console.error("Error fetching user stats:", error);
 		}
 	};
 
@@ -153,7 +164,10 @@ export default function ProfileScreen() {
 				{
 					id: "activity-feed",
 					title: "Activity Feed",
-					subtitle: unreadCount > 0 ? `${unreadCount} new notification${unreadCount > 1 ? 's' : ''}` : "View your task activity",
+					subtitle:
+						unreadCount > 0
+							? `${unreadCount} new notification${unreadCount > 1 ? "s" : ""}`
+							: "View your task activity",
 					icon: "notifications-outline" as const,
 					action: () => router.push("/(tabs)/recent-activity"),
 					hasNotification: unreadCount > 0,
@@ -275,13 +289,22 @@ export default function ProfileScreen() {
 							/>
 						) : (
 							<View style={styles.rightContent}>
-								{item.hasNotification && item.notificationCount && item.notificationCount > 0 && (
-									<View style={[styles.notificationBadge, { backgroundColor: colors.status?.error || '#DC2626' }]}>
-										<Text style={styles.notificationText}>
-											{item.notificationCount > 9 ? '9+' : item.notificationCount}
-										</Text>
-									</View>
-								)}
+								{item.hasNotification &&
+									item.notificationCount &&
+									item.notificationCount > 0 && (
+										<View
+											style={[
+												styles.notificationBadge,
+												{ backgroundColor: colors.status?.error || "#DC2626" },
+											]}
+										>
+											<Text style={styles.notificationText}>
+												{item.notificationCount > 9
+													? "9+"
+													: item.notificationCount}
+											</Text>
+										</View>
+									)}
 								<Ionicons
 									name="chevron-forward"
 									size={20}
@@ -361,21 +384,38 @@ export default function ProfileScreen() {
 				</View>
 
 				{/* Stats Card */}
-				<View style={[styles.statsCard, { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary }]}>
+				<View
+					style={[
+						styles.statsCard,
+						{
+							backgroundColor: colors.surface.secondary,
+							borderColor: colors.border.primary,
+						},
+					]}
+				>
 					<View style={styles.statsRow}>
 						<View style={styles.statItem}>
 							<Text style={[styles.statValue, { color: colors.text.primary }]}>
 								{userStats.totalTasks}
 							</Text>
-							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+							<Text
+								style={[styles.statLabel, { color: colors.text.secondary }]}
+							>
 								Total Tasks
 							</Text>
 						</View>
 						<View style={styles.statItem}>
-							<Text style={[styles.statValue, { color: colors.status?.success || '#059669' }]}>
+							<Text
+								style={[
+									styles.statValue,
+									{ color: colors.status?.success || "#059669" },
+								]}
+							>
 								{userStats.completedTasks}
 							</Text>
-							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+							<Text
+								style={[styles.statLabel, { color: colors.text.secondary }]}
+							>
 								Completed
 							</Text>
 						</View>
@@ -383,18 +423,28 @@ export default function ProfileScreen() {
 							<Text style={[styles.statValue, { color: colors.text.primary }]}>
 								${userStats.totalEarned.toFixed(1)}
 							</Text>
-							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+							<Text
+								style={[styles.statLabel, { color: colors.text.secondary }]}
+							>
 								Earned
 							</Text>
 						</View>
 						<View style={styles.statItem}>
 							<View style={styles.ratingContainer}>
-								<Text style={[styles.statValue, { color: colors.text.primary }]}>
+								<Text
+									style={[styles.statValue, { color: colors.text.primary }]}
+								>
 									{userStats.averageRating.toFixed(1)}
 								</Text>
-								<Ionicons name="star" size={16} color="#F59E0B" />
+								<Ionicons
+									name="star"
+									size={16}
+									color="#F59E0B"
+								/>
 							</View>
-							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+							<Text
+								style={[styles.statLabel, { color: colors.text.secondary }]}
+							>
 								Rating
 							</Text>
 						</View>
@@ -421,209 +471,210 @@ export default function ProfileScreen() {
 	);
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.surface.primary,
-	},
+const createStyles = (colors: any) =>
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.surface.primary,
+		},
 
-	scrollView: {
-		flex: 1,
-	},
+		scrollView: {
+			flex: 1,
+		},
 
-	scrollContent: {
-		paddingHorizontal: DesignSystem.layout.containerPadding,
-		paddingTop: DesignSystem.spacing["2xl"],
-	},
+		scrollContent: {
+			paddingHorizontal: DesignSystem.layout.containerPadding,
+			paddingTop: DesignSystem.spacing["2xl"],
+		},
 
-	// Profile Card Styles
-	profileCard: {
-		backgroundColor: colors.surface.secondary,
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing["3xl"],
-		marginBottom: DesignSystem.spacing["3xl"],
-		...DesignSystem.shadows.md,
-	},
+		// Profile Card Styles
+		profileCard: {
+			backgroundColor: colors.surface.secondary,
+			borderRadius: DesignSystem.radius.xl,
+			padding: DesignSystem.spacing["3xl"],
+			marginBottom: DesignSystem.spacing["3xl"],
+			...DesignSystem.shadows.md,
+		},
 
-	profileHeader: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginBottom: DesignSystem.spacing["2xl"],
-	},
+		profileHeader: {
+			flexDirection: "row",
+			alignItems: "center",
+			marginBottom: DesignSystem.spacing["2xl"],
+		},
 
-	avatarContainer: {
-		marginRight: DesignSystem.spacing.lg,
-	},
+		avatarContainer: {
+			marginRight: DesignSystem.spacing.lg,
+		},
 
-	avatarPlaceholder: {
-		width: 60,
-		height: 60,
-		borderRadius: 30,
-		backgroundColor: colors.primary[800],
-		alignItems: "center",
-		justifyContent: "center",
-	},
+		avatarPlaceholder: {
+			width: 60,
+			height: 60,
+			borderRadius: 30,
+			backgroundColor: colors.primary[800],
+			alignItems: "center",
+			justifyContent: "center",
+		},
 
-	avatarText: {
-		...DesignSystem.typography.h3,
-		color: colors.text.inverse,
-		fontWeight: "600",
-	},
+		avatarText: {
+			...DesignSystem.typography.h3,
+			color: colors.text.inverse,
+			fontWeight: "600",
+		},
 
-	profileInfo: {
-		flex: 1,
-	},
+		profileInfo: {
+			flex: 1,
+		},
 
-	displayName: {
-		...DesignSystem.typography.h3,
-		color: colors.text.primary,
-		marginBottom: 4,
-	},
+		displayName: {
+			...DesignSystem.typography.h3,
+			color: colors.text.primary,
+			marginBottom: 4,
+		},
 
-	username: {
-		...DesignSystem.typography.body.large,
-		color: colors.text.secondary,
-	},
+		username: {
+			...DesignSystem.typography.body.large,
+			color: colors.text.secondary,
+		},
 
-	walletSection: {
-		gap: DesignSystem.spacing.md,
-	},
+		walletSection: {
+			gap: DesignSystem.spacing.md,
+		},
 
-	walletLabel: {
-		...DesignSystem.typography.label.medium,
-		color: colors.text.secondary,
-	},
+		walletLabel: {
+			...DesignSystem.typography.label.medium,
+			color: colors.text.secondary,
+		},
 
-	// Menu Styles
-	menuSection: {
-		marginBottom: DesignSystem.spacing["3xl"],
-	},
+		// Menu Styles
+		menuSection: {
+			marginBottom: DesignSystem.spacing["3xl"],
+		},
 
-	sectionTitle: {
-		...DesignSystem.typography.h4,
-		color: colors.text.primary,
-		marginBottom: DesignSystem.spacing.lg,
-	},
+		sectionTitle: {
+			...DesignSystem.typography.h4,
+			color: colors.text.primary,
+			marginBottom: DesignSystem.spacing.lg,
+		},
 
-	menuContainer: {
-		backgroundColor: colors.surface.secondary,
-		borderRadius: DesignSystem.radius.xl,
-		overflow: "hidden",
-		...DesignSystem.shadows.sm,
-	},
+		menuContainer: {
+			backgroundColor: colors.surface.secondary,
+			borderRadius: DesignSystem.radius.xl,
+			overflow: "hidden",
+			...DesignSystem.shadows.sm,
+		},
 
-	menuItem: {
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border.tertiary,
-	},
+		menuItem: {
+			borderBottomWidth: 1,
+			borderBottomColor: colors.border.tertiary,
+		},
 
-	menuItemContent: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		paddingVertical: DesignSystem.spacing.lg,
-		paddingHorizontal: DesignSystem.spacing["2xl"],
-		minHeight: 60,
-	},
+		menuItemContent: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "space-between",
+			paddingVertical: DesignSystem.spacing.lg,
+			paddingHorizontal: DesignSystem.spacing["2xl"],
+			minHeight: 60,
+		},
 
-	menuItemPressed: {
-		backgroundColor: colors.surface.tertiary,
-	},
+		menuItemPressed: {
+			backgroundColor: colors.surface.tertiary,
+		},
 
-	menuItemLeft: {
-		flexDirection: "row",
-		alignItems: "center",
-		flex: 1,
-	},
+		menuItemLeft: {
+			flexDirection: "row",
+			alignItems: "center",
+			flex: 1,
+		},
 
-	menuIconContainer: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
-		backgroundColor: colors.primary[50] || colors.surface.tertiary,
-		alignItems: "center",
-		justifyContent: "center",
-		marginRight: DesignSystem.spacing.md,
-	},
+		menuIconContainer: {
+			width: 32,
+			height: 32,
+			borderRadius: 16,
+			backgroundColor: colors.primary[50] || colors.surface.tertiary,
+			alignItems: "center",
+			justifyContent: "center",
+			marginRight: DesignSystem.spacing.md,
+		},
 
-	menuTextContainer: {
-		flex: 1,
-	},
+		menuTextContainer: {
+			flex: 1,
+		},
 
-	menuItemTitle: {
-		...DesignSystem.typography.label.large,
-		color: colors.text.primary,
-		marginBottom: 2,
-	},
+		menuItemTitle: {
+			...DesignSystem.typography.label.large,
+			color: colors.text.primary,
+			marginBottom: 2,
+		},
 
-	menuItemSubtitle: {
-		...DesignSystem.typography.body.small,
-		color: colors.text.secondary,
-	},
+		menuItemSubtitle: {
+			...DesignSystem.typography.body.small,
+			color: colors.text.secondary,
+		},
 
-	menuItemRight: {
-		marginLeft: DesignSystem.spacing.md,
-	},
+		menuItemRight: {
+			marginLeft: DesignSystem.spacing.md,
+		},
 
-	rightContent: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: DesignSystem.spacing.sm,
-	},
+		rightContent: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: DesignSystem.spacing.sm,
+		},
 
-	notificationBadge: {
-		width: 20,
-		height: 20,
-		borderRadius: 10,
-		alignItems: 'center',
-		justifyContent: 'center',
-		marginRight: DesignSystem.spacing.xs,
-	},
+		notificationBadge: {
+			width: 20,
+			height: 20,
+			borderRadius: 10,
+			alignItems: "center",
+			justifyContent: "center",
+			marginRight: DesignSystem.spacing.xs,
+		},
 
-	notificationText: {
-		...DesignSystem.typography.body.small,
-		color: 'white',
-		fontWeight: '600',
-		fontSize: 10,
-	},
+		notificationText: {
+			...DesignSystem.typography.body.small,
+			color: "white",
+			fontWeight: "600",
+			fontSize: 10,
+		},
 
-	// Stats Card Styles
-	statsCard: {
-		borderRadius: DesignSystem.radius.xl,
-		padding: DesignSystem.spacing.xl,
-		marginBottom: DesignSystem.spacing["3xl"],
-		borderWidth: 1,
-		...DesignSystem.shadows.sm,
-	},
+		// Stats Card Styles
+		statsCard: {
+			borderRadius: DesignSystem.radius.xl,
+			padding: DesignSystem.spacing.xl,
+			marginBottom: DesignSystem.spacing["3xl"],
+			borderWidth: 1,
+			...DesignSystem.shadows.sm,
+		},
 
-	statsRow: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-	},
+		statsRow: {
+			flexDirection: "row",
+			justifyContent: "space-between",
+		},
 
-	statItem: {
-		alignItems: 'center',
-		flex: 1,
-	},
+		statItem: {
+			alignItems: "center",
+			flex: 1,
+		},
 
-	statValue: {
-		...DesignSystem.typography.h3,
-		fontWeight: '700',
-		marginBottom: 4,
-	},
+		statValue: {
+			...DesignSystem.typography.h3,
+			fontWeight: "700",
+			marginBottom: 4,
+		},
 
-	statLabel: {
-		...DesignSystem.typography.body.small,
-		textAlign: 'center',
-	},
+		statLabel: {
+			...DesignSystem.typography.body.small,
+			textAlign: "center",
+		},
 
-	ratingContainer: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: 4,
-	},
+		ratingContainer: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: 4,
+		},
 
-	bottomSpacer: {
-		height: 140, // Space for tab bar
-	},
-});
+		bottomSpacer: {
+			height: 140, // Space for tab bar
+		},
+	});

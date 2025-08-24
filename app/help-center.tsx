@@ -5,7 +5,6 @@ import {
 	StyleSheet,
 	Pressable,
 	ScrollView,
-	Alert,
 	Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -125,11 +124,21 @@ export default function HelpCenterScreen() {
 			if (canOpen) {
 				await Linking.openURL(discordUrl);
 			} else {
-				Alert.alert("Error", "Could not open Discord");
+				Toast.show({
+					type: 'error',
+					text1: 'Error',
+					text2: 'Could not open Discord',
+					position: 'bottom',
+				});
 			}
 		} catch (error) {
 			console.error('Error opening Discord:', error);
-			Alert.alert("Error", "Could not open Discord");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Could not open Discord',
+				position: 'bottom',
+			});
 		}
 	};
 
@@ -140,11 +149,21 @@ export default function HelpCenterScreen() {
 			if (canOpen) {
 				await Linking.openURL(docsUrl);
 			} else {
-				Alert.alert("Error", "Could not open documentation");
+				Toast.show({
+					type: 'error',
+					text1: 'Error',
+					text2: 'Could not open documentation',
+					position: 'bottom',
+				});
 			}
 		} catch (error) {
 			console.error('Error opening docs:', error);
-			Alert.alert("Error", "Could not open documentation");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Could not open documentation',
+				position: 'bottom',
+			});
 		}
 	};
 
@@ -178,21 +197,36 @@ export default function HelpCenterScreen() {
 			title: "Reset Tutorial",
 			subtitle: "Show onboarding screens again",
 			icon: "refresh-outline" as const,
-			action: () => Alert.alert("Coming Soon", "Tutorial reset will be available soon!"),
+			action: () => Toast.show({
+				type: 'info',
+				text1: 'Coming Soon',
+				text2: 'Tutorial reset will be available soon!',
+				position: 'bottom',
+			}),
 		},
 		{
 			id: "report-bug",
 			title: "Report Bug",
 			subtitle: "Help us improve ProofPay",
 			icon: "bug-outline" as const,
-			action: () => Alert.alert("Bug Report", "Please use email or Discord to report bugs with detailed steps to reproduce."),
+			action: () => Toast.show({
+				type: 'info',
+				text1: 'Bug Report',
+				text2: 'Please use email or Discord to report bugs with detailed steps to reproduce.',
+				position: 'bottom',
+			}),
 		},
 		{
 			id: "feature-request",
 			title: "Request Feature",
 			subtitle: "Suggest new features",
 			icon: "bulb-outline" as const,
-			action: () => Alert.alert("Feature Request", "We'd love to hear your ideas! Please share them via email or Discord."),
+			action: () => Toast.show({
+				type: 'info',
+				text1: 'Feature Request',
+				text2: "We'd love to hear your ideas! Please share them via email or Discord.",
+				position: 'bottom',
+			}),
 		},
 	];
 

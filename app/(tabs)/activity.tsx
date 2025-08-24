@@ -4,9 +4,9 @@ import {
 	Text,
 	StyleSheet,
 	ScrollView,
-	Alert,
 	RefreshControl,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
@@ -91,7 +91,12 @@ export default function PaymentsScreen() {
 			await logout();
 			router.replace("/");
 		} catch {
-			Alert.alert("Error", "Failed to sign out. Please try again.");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Failed to sign out. Please try again.',
+				position: 'bottom',
+			});
 		}
 	};
 

@@ -18,6 +18,7 @@ import ActionButton from "@/components/ActionButton";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { User } from "@/lib/socialContract";
 import { useTheme } from "@/contexts/ThemeContext";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import {
 	useUserFriends,
 	usePendingFriendRequests,
@@ -303,31 +304,6 @@ export default function FriendsScreen() {
 		await handleRefresh();
 	};
 
-	// Remove friend modal
-	useEffect(() => {
-		if (showRemoveModal.open && showRemoveModal.friend) {
-			Alert.alert(
-				"Remove Friend",
-				"Are you sure you want to remove " +
-					(showRemoveModal.friend.display_name ||
-						showRemoveModal.friend.username) +
-					"?",
-				[
-					{
-						text: "Cancel",
-						style: "cancel",
-						onPress: () => setShowRemoveModal({ open: false }),
-					},
-					{
-						text: "Remove",
-						style: "destructive",
-						onPress: () => handleRemoveFriend(showRemoveModal.friend!),
-					},
-				]
-			);
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [showRemoveModal]);
 
 	const anyLoading =
 		friendsLoading ||
@@ -518,6 +494,29 @@ export default function FriendsScreen() {
 				{/* Bottom Spacer */}
 				<View style={styles.bottomSpacer} />
 			</ScrollView>
+
+			<ConfirmationModal
+				visible={showRemoveModal.open}
+				title="Remove Friend"
+				message={
+					showRemoveModal.friend
+						? `Are you sure you want to remove ${
+								showRemoveModal.friend.display_name ||
+								showRemoveModal.friend.username
+						  }?`
+						: ""
+				}
+				confirmText="Remove"
+				cancelText="Cancel"
+				confirmStyle="destructive"
+				icon="person-remove-outline"
+				onConfirm={() => {
+					if (showRemoveModal.friend) {
+						handleRemoveFriend(showRemoveModal.friend);
+					}
+				}}
+				onCancel={() => setShowRemoveModal({ open: false })}
+			/>
 		</SafeAreaView>
 	);
 }

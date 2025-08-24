@@ -8,9 +8,9 @@ import {
 	ActivityIndicator,
 	RefreshControl,
 	SafeAreaView,
-	Alert,
 	Pressable,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -23,9 +23,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { supabase } from "@/lib/supabase";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import { TaskStatus } from "@/types/proofpay";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
-import Toast from "react-native-toast-message";
 
 type TabType = 'active' | 'pending' | 'completed';
 
@@ -52,6 +52,7 @@ export default function JobsScreen() {
 	const [tasks, setTasks] = useState<Task[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [refreshing, setRefreshing] = useState(false);
+	const [showLogoutModal, setShowLogoutModal] = useState(false);
 
 	// Fetch tasks from Supabase
 	const fetchTasks = async () => {
@@ -194,27 +195,24 @@ export default function JobsScreen() {
 		}
 	};
 
-	const handleLogout = async () => {
-		Alert.alert(
-			"Sign Out",
-			"Are you sure you want to sign out?",
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Sign Out",
-					style: "destructive",
-					onPress: async () => {
-						try {
-							await supabase.auth.signOut();
-							router.replace("/");
-						} catch (error) {
-							console.error('Logout error:', error);
-							Alert.alert("Error", "Failed to sign out. Please try again.");
-						}
-					},
-				},
-			]
-		);
+	const handleLogout = () => {
+		setShowLogoutModal(true);
+	};
+
+	const confirmLogout = async () => {
+		setShowLogoutModal(false);
+		try {
+			await supabase.auth.signOut();
+			router.replace("/");
+		} catch (error) {
+			console.error('Logout error:', error);
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Failed to sign out. Please try again.',
+				position: 'bottom',
+			});
+		}
 	};
 
 	if (!user?.walletAddress) {
@@ -382,6 +380,18 @@ export default function JobsScreen() {
 					/>
 				)}
 			</View>
+
+			<ConfirmationModal
+				visible={showLogoutModal}
+				title="Sign Out"
+				message="Are you sure you want to sign out?"
+				confirmText="Sign Out"
+				cancelText="Cancel"
+				confirmStyle="destructive"
+				icon="log-out-outline"
+				onConfirm={confirmLogout}
+				onCancel={() => setShowLogoutModal(false)}
+			/>
 		</SafeAreaView>
 	);
 }

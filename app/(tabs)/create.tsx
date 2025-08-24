@@ -5,10 +5,10 @@ import {
 	StyleSheet,
 	KeyboardAvoidingView,
 	Platform,
-	Alert,
 	Modal,
 	Pressable,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -52,14 +52,18 @@ export default function CreateScreen() {
 			}
 		};
 
-		Alert.alert(
-			getSuccessMessage(),
-			`Your request has been shared with code: ${code}`,
-			[
-				{ text: "Share", onPress: () => setShowQRModal(true) },
-				{ text: "Done", onPress: () => router.push("/(tabs)/activity") },
-			]
-		);
+		Toast.show({
+			type: 'success',
+			text1: getSuccessMessage(),
+			text2: `Your request has been shared with code: ${code}`,
+			position: 'bottom',
+			visibilityTime: 4000,
+		});
+		
+		// Automatically show QR modal for sharing
+		setTimeout(() => {
+			setShowQRModal(true);
+		}, 1000);
 	};
 
 	const renderQRModal = () => (

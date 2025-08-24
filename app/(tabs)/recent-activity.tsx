@@ -5,7 +5,6 @@ import {
 	StyleSheet,
 	ScrollView,
 	RefreshControl,
-	Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -17,6 +16,7 @@ import { DesignSystem } from "@/constants/DesignSystem";
 import { supabase } from "@/lib/supabase";
 import { Notification, NotificationType } from "@/types/proofpay";
 import Toast from "react-native-toast-message";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 const createStyles = (colors: any) => StyleSheet.create({
 	container: {
@@ -38,6 +38,7 @@ export default function RecentActivityScreen() {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [showLogoutModal, setShowLogoutModal] = useState(false);
 
 	const styles = createStyles(colors);
 
@@ -119,27 +120,24 @@ export default function RecentActivityScreen() {
 		setRefreshing(false);
 	};
 
-	const handleLogout = async () => {
-		Alert.alert(
-			"Sign Out",
-			"Are you sure you want to sign out?",
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Sign Out",
-					style: "destructive",
-					onPress: async () => {
-						try {
-							await supabase.auth.signOut();
-							router.replace("/");
-						} catch (error) {
-							console.error('Logout error:', error);
-							Alert.alert("Error", "Failed to sign out. Please try again.");
-						}
-					},
-				},
-			]
-		);
+	const handleLogout = () => {
+		setShowLogoutModal(true);
+	};
+
+	const confirmLogout = async () => {
+		setShowLogoutModal(false);
+		try {
+			await supabase.auth.signOut();
+			router.replace("/");
+		} catch (error) {
+			console.error('Logout error:', error);
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Failed to sign out. Please try again.',
+				position: 'bottom',
+			});
+		}
 	};
 
 	// Set up real-time subscription for new notifications
@@ -193,6 +191,18 @@ export default function RecentActivityScreen() {
 					onMarkAsRead={handleMarkAsRead}
 				/>
 			</ScrollView>
+
+			<ConfirmationModal
+				visible={showLogoutModal}
+				title="Sign Out"
+				message="Are you sure you want to sign out?"
+				confirmText="Sign Out"
+				cancelText="Cancel"
+				confirmStyle="destructive"
+				icon="log-out-outline"
+				onConfirm={confirmLogout}
+				onCancel={() => setShowLogoutModal(false)}
+			/>
 		</SafeAreaView>
 	);
 }

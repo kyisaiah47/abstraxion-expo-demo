@@ -5,10 +5,10 @@ import {
 	StyleSheet,
 	TextInput,
 	Pressable,
-	Alert,
 	ActivityIndicator,
 	ScrollView,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { PaymentFormData, PaymentType, ProofType } from "@/types/proofpay";
 import {
@@ -166,32 +166,62 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 		if (!isConnected || !account?.bech32Address || !signingClient) {
 			console.log("❌ Wallet not connected");
-			Alert.alert("Wallet Not Connected", "Please connect your wallet.");
+			Toast.show({
+				type: 'error',
+				text1: 'Wallet Not Connected',
+				text2: 'Please connect your wallet.',
+				position: 'bottom',
+			});
 			return;
 		}
 		if (!recipient || !/^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
 			console.log("❌ Invalid recipient:", recipient);
-			Alert.alert("Error", "Enter a valid recipient username.");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Enter a valid recipient username.',
+				position: 'bottom',
+			});
 			return;
 		}
 		if (userLoading) {
 			console.log("⏳ User still loading");
-			Alert.alert("Checking recipient", "Please wait...");
+			Toast.show({
+				type: 'info',
+				text1: 'Checking recipient',
+				text2: 'Please wait...',
+				position: 'bottom',
+			});
 			return;
 		}
 		if (!user) {
 			console.log("❌ User not found");
-			Alert.alert("Error", "Recipient username not found.");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Recipient username not found.',
+				position: 'bottom',
+			});
 			return;
 		}
 		if (formData.amount <= 0) {
 			console.log("❌ Invalid amount:", formData.amount);
-			Alert.alert("Error", "Please enter a valid amount");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Please enter a valid amount',
+				position: 'bottom',
+			});
 			return;
 		}
 		if (!formData.description.trim()) {
 			console.log("❌ No description");
-			Alert.alert("Error", "Please add a description");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Please add a description',
+				position: 'bottom',
+			});
 			return;
 		}
 
