@@ -439,7 +439,7 @@ export function useSocialOperations(signingClient: any) {
 
 	// Register user
 	const registerUser = useCallback(
-		async (username: string, senderAddress: string) => {
+		async (username: string, displayName: string, senderAddress: string) => {
 			if (!signingClient) {
 				throw new Error("Signing client not available");
 			}
@@ -454,7 +454,7 @@ export function useSocialOperations(signingClient: any) {
 					{
 						register_user: {
 							username,
-							display_name: username,
+							display_name: displayName,
 							profile_picture: "",
 						},
 					},

@@ -35,6 +35,7 @@ function validateFormat(username: string): { valid: boolean; message: string } {
 
 export default function UsernameSetupScreen() {
 	const [username, setUsername] = useState("");
+	const [displayName, setDisplayName] = useState("");
 	const [formatError, setFormatError] = useState("");
 	const router = useRouter();
 	const { data: account, isConnected, logout, login } = useAbstraxionAccount();
@@ -62,7 +63,8 @@ export default function UsernameSetupScreen() {
 		available &&
 		isConnected &&
 		!!signingClient &&
-		!!account?.bech32Address;
+		!!account?.bech32Address &&
+		displayName.trim().length > 0;
 
 	const handleRegisterUsername = async () => {
 		console.log("🚀 Starting registration process...");
@@ -93,7 +95,11 @@ export default function UsernameSetupScreen() {
 		console.log("  - wallet:", account.bech32Address);
 
 		try {
-			const result = await registerUser(username, account.bech32Address);
+			const result = await registerUser(
+				username,
+				displayName,
+				account.bech32Address
+			);
 			console.log("✅ Registration successful!");
 			console.log("📋 Registration result:", result);
 			console.log("🏠 Navigating to main app...");
@@ -184,186 +190,222 @@ export default function UsernameSetupScreen() {
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 			>
 				<View style={styles.content}>
-					{/* Header */}
-					<View style={styles.header}>
-						<View style={styles.iconContainer}>
-							<Ionicons
-								name="person-add"
-								size={48}
-								color={DesignSystem.colors.primary[800]}
-							/>
-						</View>
-						<Text style={styles.title}>Choose Your Username</Text>
-						<Text style={styles.subtitle}>
-							This will be your unique identifier on the platform
-						</Text>
-					</View>
-
-					{/* Username Input */}
-					<View style={styles.inputSection}>
-						<View style={styles.inputContainer}>
-							<Text style={styles.atSymbol}>@</Text>
-							<TextInput
-								style={styles.usernameInput}
-								value={username}
-								onChangeText={setUsername}
-								placeholder="username"
-								placeholderTextColor={DesignSystem.colors.text.tertiary}
-								autoCapitalize="none"
-								autoCorrect={false}
-								autoComplete="username"
-								maxLength={50}
-								editable={!registering && isConnected}
-							/>
-							<View style={styles.validationIcon}>
-								{renderValidationIcon()}
-							</View>
+					<View style={styles.mainContent}>
+						{/* Header */}
+						<View style={styles.header}>
+							<Text style={styles.title}>Create Your Profile</Text>
+							<Text style={styles.subtitle}>
+								Choose a username and display name to get started
+							</Text>
 						</View>
 
-						{/* Validation Message */}
-						{formatError ? (
-							<Text style={[styles.validationMessage, styles.validationError]}>
-								{formatError}
-							</Text>
-						) : null}
-						{!formatError && username && checking && (
-							<Text style={styles.validationMessage}>
-								Checking availability...
-							</Text>
-						)}
-						{!formatError && username && !checking && available && (
-							<Text
-								style={[styles.validationMessage, styles.validationSuccess]}
-							>
-								Username is available!
-							</Text>
-						)}
-						{!formatError && username && !checking && !available && (
-							<Text style={[styles.validationMessage, styles.validationError]}>
-								Username is already taken
-							</Text>
-						)}
-						{checkError && (
-							<Text style={[styles.validationMessage, styles.validationError]}>
-								{checkError}
-							</Text>
-						)}
-
-						{/* Character Counter */}
-						<Text style={styles.characterCounter}>
-							{username.length}/50 characters
-						</Text>
-					</View>
-
-					{/* Requirements */}
-					<View style={styles.requirementsSection}>
-						<Text style={styles.requirementsTitle}>Username requirements:</Text>
-						<View style={styles.requirementsList}>
-							<View style={styles.requirement}>
-								<Ionicons
-									name="checkmark"
-									size={16}
-									color={
-										username.length >= 3 && username.length <= 50
-											? DesignSystem.colors.status.success
-											: DesignSystem.colors.text.tertiary
-									}
-								/>
-								<Text style={styles.requirementText}>3-50 characters</Text>
+						{/* Input Fields */}
+						<View style={styles.inputsContainer}>
+							{/* Display Name Input */}
+							<View style={styles.inputWrapper}>
+								<View style={styles.inputContainer}>
+									<Ionicons
+										name="person-outline"
+										size={20}
+										color={DesignSystem.colors.text.secondary}
+										style={styles.inputIcon}
+									/>
+									<TextInput
+										style={styles.displayNameInput}
+										value={displayName}
+										onChangeText={setDisplayName}
+										placeholder="Display Name"
+										placeholderTextColor={DesignSystem.colors.text.tertiary}
+										autoCorrect={true}
+										maxLength={50}
+										editable={!registering && isConnected}
+									/>
+								</View>
 							</View>
-							<View style={styles.requirement}>
-								<Ionicons
-									name="checkmark"
-									size={16}
-									color={
-										/^[a-zA-Z0-9_]+$/.test(username) && username.length > 0
-											? DesignSystem.colors.status.success
-											: DesignSystem.colors.text.tertiary
-									}
-								/>
-								<Text style={styles.requirementText}>
-									Alphanumeric and underscores only
+
+							{/* Username Input */}
+							<View style={styles.inputWrapper}>
+								<View style={styles.inputContainer}>
+									<Ionicons
+										name="at-outline"
+										size={20}
+										color={DesignSystem.colors.text.secondary}
+										style={styles.inputIcon}
+									/>
+									<TextInput
+										style={styles.usernameInput}
+										value={username}
+										onChangeText={setUsername}
+										placeholder="Username"
+										placeholderTextColor={DesignSystem.colors.text.tertiary}
+										autoCapitalize="none"
+										autoCorrect={false}
+										autoComplete="username"
+										maxLength={50}
+										editable={!registering && isConnected}
+									/>
+									<View style={styles.validationIcon}>
+										{renderValidationIcon()}
+									</View>
+								</View>
+
+								{/* Character Counter */}
+								<Text style={styles.characterCounter}>
+									{username.length}/50
 								</Text>
 							</View>
-							<View style={styles.requirement}>
-								<Ionicons
-									name="checkmark"
-									size={16}
-									color={
-										isValid
-											? DesignSystem.colors.status.success
-											: DesignSystem.colors.text.tertiary
-									}
-								/>
-								<Text style={styles.requirementText}>Must be unique</Text>
-							</View>
-						</View>
-					</View>
 
-					{/* Continue Button */}
-					<TouchableOpacity
-						style={[
-							styles.continueButton,
-							registering && styles.continueButtonLoading,
-							isButtonDisabled && !registering && styles.continueButtonDisabled,
-						]}
-						onPress={handleRegisterUsername}
-						disabled={isButtonDisabled}
-						activeOpacity={0.8}
-					>
-						{registering ? (
-							<>
-								<ActivityIndicator 
-									color={DesignSystem.colors.text.inverse}
-									size="small" 
-								/>
-								<Text style={styles.continueButtonText}>
-									Creating account...
-								</Text>
-							</>
-						) : (
-							<>
+							{/* Validation Messages */}
+							{formatError && (
 								<Text
-									style={[
-										styles.continueButtonText,
-										isButtonDisabled && styles.continueButtonTextDisabled,
-									]}
+									style={[styles.validationMessage, styles.validationError]}
 								>
-									Continue
+									{formatError}
 								</Text>
-								<Ionicons
-									name="arrow-forward"
-									size={20}
-									color={
-										isButtonDisabled
-											? DesignSystem.colors.text.secondary
-											: DesignSystem.colors.text.inverse
-									}
-								/>
-							</>
-						)}
-					</TouchableOpacity>
-					{registerError && (
-						<Text style={[styles.validationMessage, styles.validationError]}>
-							{registerError}
-						</Text>
-					)}
+							)}
+							{!formatError && username && checking && (
+								<Text style={styles.validationMessage}>
+									Checking availability...
+								</Text>
+							)}
+							{!formatError && username && !checking && available && (
+								<Text
+									style={[styles.validationMessage, styles.validationSuccess]}
+								>
+									Username is available!
+								</Text>
+							)}
+							{!formatError && username && !checking && !available && (
+								<Text
+									style={[styles.validationMessage, styles.validationError]}
+								>
+									Username is already taken
+								</Text>
+							)}
+							{checkError && (
+								<Text
+									style={[styles.validationMessage, styles.validationError]}
+								>
+									{checkError}
+								</Text>
+							)}
 
-					{/* Wallet Info */}
-					<View style={styles.walletInfo}>
-						<Ionicons
-							name="wallet-outline"
-							size={16}
-							color={DesignSystem.colors.text.secondary}
-						/>
-						<Text style={styles.walletText}>
-							{isConnected && account?.bech32Address
-								? `Connected: ${account.bech32Address.slice(
-										0,
-										8
-								  )}...${account.bech32Address.slice(-6)}`
-								: "Wallet not connected"}
-						</Text>
+							{/* Requirements Card */}
+							<View style={styles.requirementsCard}>
+								<View style={styles.requirementsList}>
+									<View style={styles.requirement}>
+										<Ionicons
+											name="checkmark-circle"
+											size={16}
+											color={
+												username.length >= 3 && username.length <= 50
+													? DesignSystem.colors.status.success
+													: DesignSystem.colors.text.tertiary
+											}
+										/>
+										<Text style={styles.requirementText}>3-50 characters</Text>
+									</View>
+									<View style={styles.requirement}>
+										<Ionicons
+											name="checkmark-circle"
+											size={16}
+											color={
+												/^[a-zA-Z0-9_]+$/.test(username) && username.length > 0
+													? DesignSystem.colors.status.success
+													: DesignSystem.colors.text.tertiary
+											}
+										/>
+										<Text style={styles.requirementText}>
+											Letters, numbers, underscores only
+										</Text>
+									</View>
+									<View style={styles.requirement}>
+										<Ionicons
+											name="checkmark-circle"
+											size={16}
+											color={
+												isValid
+													? DesignSystem.colors.status.success
+													: DesignSystem.colors.text.tertiary
+											}
+										/>
+										<Text style={styles.requirementText}>
+											Username available
+										</Text>
+									</View>
+								</View>
+							</View>
+
+							{/* Continue Button */}
+							<TouchableOpacity
+								style={[
+									styles.continueButton,
+									registering && styles.continueButtonLoading,
+									isButtonDisabled &&
+										!registering &&
+										styles.continueButtonDisabled,
+								]}
+								onPress={handleRegisterUsername}
+								disabled={isButtonDisabled}
+								activeOpacity={0.8}
+							>
+								{registering ? (
+									<>
+										<ActivityIndicator
+											color={DesignSystem.colors.text.inverse}
+											size="small"
+										/>
+										<Text style={styles.continueButtonText}>
+											Creating account...
+										</Text>
+									</>
+								) : (
+									<>
+										<Text
+											style={[
+												styles.continueButtonText,
+												isButtonDisabled && styles.continueButtonTextDisabled,
+											]}
+										>
+											Continue
+										</Text>
+										<Ionicons
+											name="arrow-forward"
+											size={20}
+											color={
+												isButtonDisabled
+													? DesignSystem.colors.text.secondary
+													: DesignSystem.colors.text.inverse
+											}
+										/>
+									</>
+								)}
+							</TouchableOpacity>
+							{registerError && (
+								<Text
+									style={[styles.validationMessage, styles.validationError]}
+								>
+									{registerError}
+								</Text>
+							)}
+						</View>
+
+						{/* Wallet Info */}
+						<View style={styles.walletInfo}>
+							<Ionicons
+								name="wallet-outline"
+								size={16}
+								color={DesignSystem.colors.text.secondary}
+							/>
+							<Text style={styles.walletText}>
+								{isConnected && account?.bech32Address
+									? `Connected: ${account.bech32Address.slice(
+											0,
+											8
+									  )}...${account.bech32Address.slice(-6)}`
+									: "Wallet not connected"}
+							</Text>
+						</View>
 					</View>
 				</View>
 			</KeyboardAvoidingView>
@@ -382,22 +424,17 @@ const styles = StyleSheet.create({
 	content: {
 		flex: 1,
 		paddingHorizontal: DesignSystem.layout.containerPadding,
-		paddingTop: DesignSystem.spacing["4xl"],
+		paddingTop: DesignSystem.spacing["2xl"],
+		paddingBottom: DesignSystem.spacing.xl,
+		justifyContent: "space-between",
+	},
+	mainContent: {
+		flex: 1,
 		justifyContent: "center",
 	},
 	header: {
 		alignItems: "center",
-		marginBottom: DesignSystem.spacing["4xl"],
-	},
-	iconContainer: {
-		width: 96,
-		height: 96,
-		borderRadius: 48,
-		backgroundColor:
-			DesignSystem.colors.primary[50] || DesignSystem.colors.surface.elevated,
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: DesignSystem.spacing["2xl"],
+		marginBottom: DesignSystem.spacing["3xl"],
 	},
 	title: {
 		...DesignSystem.typography.h1,
@@ -411,28 +448,41 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		maxWidth: 280,
 	},
-	inputSection: {
-		marginBottom: DesignSystem.spacing["3xl"],
+	inputsContainer: {
+		marginBottom: DesignSystem.spacing.xl,
+	},
+	inputWrapper: {
+		marginBottom: DesignSystem.spacing.lg,
+	},
+	inputIcon: {
+		marginRight: DesignSystem.spacing.md,
+	},
+	displayNameInput: {
+		flex: 1,
+		...DesignSystem.typography.body.large,
+		color: DesignSystem.colors.text.primary,
+		padding: 0,
 	},
 	inputContainer: {
 		flexDirection: "row",
 		alignItems: "center",
 		backgroundColor: DesignSystem.colors.surface.elevated,
 		borderRadius: DesignSystem.radius.xl,
-		borderWidth: 2,
+		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
-		paddingHorizontal: DesignSystem.spacing["2xl"],
-		paddingVertical: DesignSystem.spacing.lg,
-		marginBottom: DesignSystem.spacing.sm,
+		paddingHorizontal: DesignSystem.spacing.xl,
+		paddingVertical: DesignSystem.spacing.xl,
+		minHeight: 56,
+		...DesignSystem.shadows.sm,
 	},
 	atSymbol: {
-		...DesignSystem.typography.h3,
+		...DesignSystem.typography.body.large,
 		color: DesignSystem.colors.text.secondary,
 		marginRight: DesignSystem.spacing.xs,
 	},
 	usernameInput: {
 		flex: 1,
-		...DesignSystem.typography.h3,
+		...DesignSystem.typography.body.large,
 		color: DesignSystem.colors.text.primary,
 		padding: 0,
 	},
@@ -457,15 +507,17 @@ const styles = StyleSheet.create({
 		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.text.tertiary,
 		textAlign: "right",
-		paddingHorizontal: DesignSystem.spacing.sm,
+		marginTop: DesignSystem.spacing.xs,
+		marginRight: DesignSystem.spacing.sm,
 	},
-	requirementsSection: {
-		marginBottom: DesignSystem.spacing["4xl"],
-	},
-	requirementsTitle: {
-		...DesignSystem.typography.label.medium,
-		color: DesignSystem.colors.text.secondary,
-		marginBottom: DesignSystem.spacing.md,
+	requirementsCard: {
+		backgroundColor: DesignSystem.colors.surface.elevated,
+		borderRadius: DesignSystem.radius.lg,
+		paddingHorizontal: DesignSystem.spacing.lg,
+		paddingVertical: DesignSystem.spacing.md,
+		marginBottom: DesignSystem.spacing.xl,
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.secondary,
 	},
 	requirementsList: {
 		gap: DesignSystem.spacing.sm,
@@ -476,25 +528,27 @@ const styles = StyleSheet.create({
 		gap: DesignSystem.spacing.sm,
 	},
 	requirementText: {
-		...DesignSystem.typography.body.medium,
+		...DesignSystem.typography.body.small,
 		color: DesignSystem.colors.text.secondary,
 	},
 	continueButton: {
 		backgroundColor: DesignSystem.colors.primary[800],
 		borderRadius: DesignSystem.radius.xl,
-		paddingVertical: DesignSystem.spacing["2xl"],
-		paddingHorizontal: DesignSystem.spacing["3xl"],
+		paddingVertical: DesignSystem.spacing.xl,
+		paddingHorizontal: DesignSystem.spacing["2xl"],
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		gap: DesignSystem.spacing.md,
-		marginBottom: DesignSystem.spacing["2xl"],
+		gap: DesignSystem.spacing.sm,
+		marginTop: DesignSystem.spacing.lg,
+		marginBottom: DesignSystem.spacing.lg,
 		...DesignSystem.shadows.lg,
 	},
 	continueButtonDisabled: {
 		backgroundColor: DesignSystem.colors.surface.elevated,
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
+		shadowOpacity: 0,
 	},
 	continueButtonLoading: {
 		backgroundColor: DesignSystem.colors.primary[600],
@@ -516,56 +570,6 @@ const styles = StyleSheet.create({
 	},
 	walletText: {
 		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
-	},
-	disconnectButton: {
-		backgroundColor: DesignSystem.colors.status.error,
-		borderRadius: DesignSystem.radius.xl,
-		paddingVertical: DesignSystem.spacing["2xl"],
-		paddingHorizontal: DesignSystem.spacing["3xl"],
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: DesignSystem.spacing.md,
-		marginBottom: DesignSystem.spacing["2xl"],
-		...DesignSystem.shadows.lg,
-	},
-	disconnectButtonDisabled: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-	},
-	disconnectButtonText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.inverse,
-		fontWeight: "600",
-	},
-	disconnectButtonTextDisabled: {
-		color: DesignSystem.colors.text.secondary,
-	},
-	logoutButton: {
-		backgroundColor: DesignSystem.colors.primary[600],
-		borderRadius: DesignSystem.radius.xl,
-		paddingVertical: DesignSystem.spacing["2xl"],
-		paddingHorizontal: DesignSystem.spacing["3xl"],
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: DesignSystem.spacing.md,
-		marginBottom: DesignSystem.spacing["2xl"],
-		...DesignSystem.shadows.lg,
-	},
-	logoutButtonDisabled: {
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-	},
-	logoutButtonText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.inverse,
-		fontWeight: "600",
-	},
-	logoutButtonTextDisabled: {
 		color: DesignSystem.colors.text.secondary,
 	},
 });
