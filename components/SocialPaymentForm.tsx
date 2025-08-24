@@ -113,32 +113,56 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	}, [recipient, user, userLoading]);
 
 	const handleSubmit = async () => {
+		console.log("🚀 SUBMIT DEBUG - Starting submission...");
+		console.log("📋 Form Data:", {
+			paymentType,
+			recipient,
+			amount: formData.amount,
+			description: formData.description,
+			proofType: formData.proofType
+		});
+		console.log("👤 User Info:", { user, userLoading });
+		console.log("🔗 Wallet Info:", { 
+			isConnected, 
+			address: account?.bech32Address, 
+			hasSigningClient: !!signingClient 
+		});
+
 		if (!isConnected || !account?.bech32Address || !signingClient) {
+			console.log("❌ Wallet not connected");
 			Alert.alert("Wallet Not Connected", "Please connect your wallet.");
 			return;
 		}
 		if (!recipient || !/^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
+			console.log("❌ Invalid recipient:", recipient);
 			Alert.alert("Error", "Enter a valid recipient username.");
 			return;
 		}
 		if (userLoading) {
+			console.log("⏳ User still loading");
 			Alert.alert("Checking recipient", "Please wait...");
 			return;
 		}
 		if (!user) {
+			console.log("❌ User not found");
 			Alert.alert("Error", "Recipient username not found.");
 			return;
 		}
 		if (formData.amount <= 0) {
+			console.log("❌ Invalid amount:", formData.amount);
 			Alert.alert("Error", "Please enter a valid amount");
 			return;
 		}
 		if (!formData.description.trim()) {
+			console.log("❌ No description");
 			Alert.alert("Error", "Please add a description");
 			return;
 		}
+
+		console.log("✅ All validations passed, proceeding...");
 		setLoading(true);
 		setFeedback(null);
+		
 		try {
 			const payload = {
 				to_username: recipient,
@@ -147,19 +171,55 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				payment_type: paymentType,
 				proof_type: formData.proofType,
 			};
+			console.log("📦 Final payload:", payload);
+			console.log("💰 Formatted amount:", formatXionAmount(formData.amount));
+
 			if (paymentType === "send_money") {
-				await sendDirectPayment(account.bech32Address, payload);
+				console.log("💸 Calling sendDirectPayment...");
+				await sendDirectPayment(
+					payload.to_username,
+					payload.amount,
+					payload.description,
+					account.bech32Address
+				);
+				console.log("✅ sendDirectPayment completed");
 			} else if (paymentType === "request_money") {
-				await createPaymentRequest(account.bech32Address, payload);
+				console.log("💳 Calling createPaymentRequest...");
+				await createPaymentRequest(
+					payload.to_username,
+					payload.amount,
+					payload.description,
+					account.bech32Address
+				);
+				console.log("✅ createPaymentRequest completed");
 			} else if (paymentType === "request_help") {
-				await createHelpRequest(account.bech32Address, payload);
+				console.log("🙏 Calling createHelpRequest...");
+				await createHelpRequest(
+					payload.to_username,
+					payload.amount,
+					payload.description,
+					account.bech32Address
+				);
+				console.log("✅ createHelpRequest completed");
 			}
+			
+			console.log("🎉 Transaction submitted successfully!");
 			setFeedback("Transaction submitted successfully!");
 			onSubmit(formData);
 		} catch (err: any) {
-			setFeedback(err?.message || "Transaction failed. Please try again.");
+			console.error("💥 Transaction failed:", err);
+			console.error("💥 Error message:", err?.message);
+			console.error("💥 Full error:", err);
+			
+			// Check if it's a contract method not found error
+			if (err?.message?.includes("Invalid type") || err?.message?.includes("unknown request")) {
+				setFeedback("Payment features are currently in development. Smart contract methods not yet deployed.");
+			} else {
+				setFeedback(err?.message || "Transaction failed. Please try again.");
+			}
 		} finally {
 			setLoading(false);
+			console.log("🏁 Submit process finished");
 		}
 	};
 
@@ -225,32 +285,49 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		<View style={styles.container}>
 			{/* Recipient Username Input */}
 			<View style={styles.userSection}>
-				<View style={styles.inputContainer}>
-					<TextInput
-						style={[styles.userDisplayText, user && styles.userDisplayTextValid]}
-						value={recipient}
-						onChangeText={setRecipient}
-						placeholder="@username"
-						placeholderTextColor="#999"
-						autoCapitalize="none"
-						autoCorrect={false}
-						editable={!loading}
-						onFocus={() => setShowFriendSuggestions(recipient.length > 0 && !user)}
-					/>
-					{userLoading && (
-						<View style={styles.loadingIndicator}>
-							<Text style={styles.statusText}>Checking...</Text>
+				{user ? (
+					/* Selected User Chip */
+					<View style={styles.selectedUserChip}>
+						<View style={styles.chipAvatar}>
+							<Text style={styles.chipAvatarText}>
+								{(user.display_name || user.username).charAt(0).toUpperCase()}
+							</Text>
 						</View>
-					)}
-					{recipient && !userLoading && !user && !showFriendSuggestions && (
-						<Text style={styles.statusTextError}>User not found</Text>
-					)}
-					{recipient && !userLoading && user && (
-						<View style={styles.userFoundIndicator}>
-							<Text style={styles.statusTextSuccess}>✓ {user.display_name || user.username}</Text>
-						</View>
-					)}
-				</View>
+						<Text style={styles.chipUsername}>{user.display_name || user.username}</Text>
+						<Pressable 
+							style={styles.chipRemoveButton}
+							onPress={() => {
+								setRecipient("");
+								setShowFriendSuggestions(false);
+							}}
+						>
+							<Ionicons name="close" size={18} color="#666" />
+						</Pressable>
+					</View>
+				) : (
+					/* Username Input */
+					<View style={styles.inputContainer}>
+						<TextInput
+							style={styles.userDisplayText}
+							value={recipient}
+							onChangeText={setRecipient}
+							placeholder="@username"
+							placeholderTextColor="#999"
+							autoCapitalize="none"
+							autoCorrect={false}
+							editable={!loading}
+							onFocus={() => setShowFriendSuggestions(recipient.length > 0 && !user)}
+						/>
+						{userLoading && (
+							<View style={styles.loadingIndicator}>
+								<Text style={styles.statusText}>Checking...</Text>
+							</View>
+						)}
+						{recipient && !userLoading && !user && !showFriendSuggestions && (
+							<Text style={styles.statusTextError}>User not found</Text>
+						)}
+					</View>
+				)}
 				
 				{/* Friend Suggestions Dropdown */}
 				{showFriendSuggestions && getSuggestions().length > 0 && (
@@ -462,7 +539,7 @@ const styles = StyleSheet.create({
 	},
 
 	userDisplayTextValid: {
-		color: "#4caf50",
+		color: "#333",
 	},
 
 	loadingIndicator: {
@@ -485,14 +562,14 @@ const styles = StyleSheet.create({
 
 	statusTextSuccess: {
 		fontSize: 14,
-		color: "#4caf50",
+		color: "#333",
 		fontWeight: "500",
 	},
 
 	userFoundIndicator: {
 		marginTop: 8,
 		alignItems: "center",
-		backgroundColor: "#f0f9f0",
+		backgroundColor: "#f5f5f5",
 		borderRadius: 8,
 		paddingVertical: 6,
 		paddingHorizontal: 12,
@@ -569,6 +646,55 @@ const styles = StyleSheet.create({
 		fontSize: 10,
 		color: "#1976d2",
 		fontWeight: "500",
+	},
+
+	// Selected User Chip
+	selectedUserChip: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#fff",
+		borderRadius: 25,
+		paddingVertical: 8,
+		paddingHorizontal: 16,
+		gap: 10,
+		borderWidth: 1,
+		borderColor: "#e0e0e0",
+		shadowColor: "#000",
+		shadowOpacity: 0.05,
+		shadowRadius: 8,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 2,
+	},
+
+	chipAvatar: {
+		width: 28,
+		height: 28,
+		borderRadius: 14,
+		backgroundColor: "#333",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+
+	chipAvatarText: {
+		fontSize: 12,
+		fontWeight: "600",
+		color: "#fff",
+	},
+
+	chipUsername: {
+		fontSize: 16,
+		fontWeight: "500",
+		color: "#333",
+		flex: 1,
+	},
+
+	chipRemoveButton: {
+		width: 24,
+		height: 24,
+		borderRadius: 12,
+		backgroundColor: "#f5f5f5",
+		alignItems: "center",
+		justifyContent: "center",
 	},
 
 	// Amount Display
@@ -697,18 +823,18 @@ const styles = StyleSheet.create({
 
 	// Action Button
 	actionButton: {
-		backgroundColor: "#007AFF",
+		backgroundColor: "#333",
 		borderRadius: 24,
 		paddingVertical: 18,
 		paddingHorizontal: 40,
 		width: "100%",
 		alignItems: "center",
 		marginBottom: 40,
-		shadowColor: "#007AFF",
-		shadowOpacity: 0.3,
-		shadowRadius: 10,
-		shadowOffset: { width: 0, height: 4 },
-		elevation: 6,
+		shadowColor: "#000",
+		shadowOpacity: 0.1,
+		shadowRadius: 6,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 3,
 	},
 
 	actionButtonDisabled: {

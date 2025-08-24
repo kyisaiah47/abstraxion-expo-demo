@@ -559,9 +559,8 @@ export function useSocialOperations(signingClient: any) {
 					{
 						send_direct_payment: {
 							to_username: toUsername,
-							amount,
+							amount: { denom: "uxion", amount },
 							description,
-							payment_type: "DirectPayment",
 							proof_type: "None",
 						},
 					},
@@ -598,9 +597,8 @@ export function useSocialOperations(signingClient: any) {
 					{
 						create_payment_request: {
 							to_username: toUsername,
-							amount,
+							amount: { denom: "uxion", amount },
 							description,
-							payment_type: "PaymentRequest",
 							proof_type: "None",
 						},
 					},
@@ -637,9 +635,8 @@ export function useSocialOperations(signingClient: any) {
 					{
 						create_help_request: {
 							to_username: toUsername,
-							amount,
+							amount: { denom: "uxion", amount },
 							description,
-							payment_type: "HelpRequest",
 							proof_type: "None",
 						},
 					},
