@@ -319,7 +319,11 @@ export class NotificationService {
         include_external_user_ids: [walletAddress],
         headings: { en: title },
         contents: { en: message },
-        data
+        data: {
+          type: data.type || 'unknown',
+          task_id: data.task_id || '',
+          ...data
+        }
       };
 
       const response = await this.oneSignalClient.createNotification(payload);

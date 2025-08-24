@@ -19,7 +19,7 @@ const ConfigSchema = z.object({
 
   // Optional Configuration
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
-  HEALTH_CHECK_PORT: z.string().transform(Number).default(3001),
+  HEALTH_CHECK_PORT: z.string().transform(Number).default('3001'),
   CRON_SCHEDULE: z.string().default('*/1 * * * *'), // Every minute
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });

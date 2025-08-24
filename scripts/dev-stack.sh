@@ -135,7 +135,11 @@ check_env() {
     fi
     
     # Check critical env vars in indexer
-    source "$INDEXER_DIR/.env"
+    while IFS= read -r line; do
+        if [[ $line =~ ^[A-Z_][A-Z0-9_]*= ]]; then
+            export "$line"
+        fi
+    done < "$INDEXER_DIR/.env"
     
     if [ -z "$SUPABASE_URL" ]; then
         echo_error "SUPABASE_URL not set in indexer/.env"

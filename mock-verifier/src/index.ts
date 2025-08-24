@@ -298,7 +298,7 @@ app.post('/verify/batch', async (req, res) => {
       const result = await singleResult.json();
       results.push({
         task_id: request.task_id,
-        ...result
+        ...(typeof result === 'object' && result !== null ? result : {})
       });
     } catch (error) {
       results.push({

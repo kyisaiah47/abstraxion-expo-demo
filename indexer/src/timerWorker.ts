@@ -42,7 +42,6 @@ export class TimerWorker {
   stop(): void {
     if (this.cronJob) {
       this.cronJob.stop();
-      this.cronJob.destroy();
       this.cronJob = null;
     }
     

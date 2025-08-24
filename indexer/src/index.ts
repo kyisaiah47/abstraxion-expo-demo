@@ -80,10 +80,10 @@ class ProofPayIndexer {
 
       try {
         const result = await this.notificationService.testNotification(walletAddress);
-        res.json({ success: result });
+        return res.json({ success: result });
       } catch (error) {
         logger.error('Test notification failed', { error, walletAddress });
-        res.status(500).json({ 
+        return res.status(500).json({ 
           success: false, 
           error: error instanceof Error ? error.message : 'Unknown error' 
         });
@@ -105,21 +105,21 @@ class ProofPayIndexer {
         // Process the mock event
         const success = await this.eventProcessor.processEvent(mockEvent);
         
-        res.json({ 
-          success, 
-          message: `Processed mock event: ${mockEvent.type}`,
-          taskId: mockEvent.data.task_id
-        });
-
         logger.info('Processed mock event', { 
           type: mockEvent.type, 
           taskId: mockEvent.data.task_id,
           success 
         });
 
+        return res.json({ 
+          success, 
+          message: `Processed mock event: ${mockEvent.type}`,
+          taskId: mockEvent.data.task_id
+        });
+
       } catch (error) {
         logger.error('Failed to process mock event', { error });
-        res.status(500).json({ 
+        return res.status(500).json({ 
           success: false, 
           error: error instanceof Error ? error.message : 'Unknown error' 
         });

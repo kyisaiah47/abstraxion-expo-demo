@@ -1,5 +1,5 @@
-import { WebsocketClient } from '@cosmjs/tendermint-rpc';
-import { fromBase64, toUtf8 } from '@cosmjs/encoding';
+import { WebsocketClient, Tendermint34Client } from '@cosmjs/tendermint-rpc';
+import { fromBase64, fromUtf8 } from '@cosmjs/encoding';
 import { XION_RPC_WS, CONTRACT_ADDRESS } from './config';
 import { createLogger } from './logger';
 import { 
@@ -18,6 +18,7 @@ const logger = createLogger('blockchain');
 
 export class BlockchainListener {
   private wsClient: WebsocketClient | null = null;
+  private tmClient: Tendermint34Client | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 10;
   private reconnectDelay = 5000; // 5 seconds
@@ -37,10 +38,13 @@ export class BlockchainListener {
     try {
       logger.info('Connecting to XION WebSocket...', { url: XION_RPC_WS });
       
-      this.wsClient = new WebsocketClient(XION_RPC_WS);
+      this.wsClient = new WebsocketClient(XION_RPC_WS, (error) => {
+        logger.error('WebSocket error', { error });
+        this.isConnected = false;
+        this.scheduleReconnect();
+      });
       
-      // Set up event listeners
-      this.setupEventListeners();
+      this.tmClient = await Tendermint34Client.create(this.wsClient);
       
       // Subscribe to new blocks and transactions
       await this.subscribeToEvents();
@@ -71,21 +75,6 @@ export class BlockchainListener {
     }
   }
 
-  private setupEventListeners(): void {
-    if (!this.wsClient) return;
-
-    this.wsClient.addEventListener('error', (error) => {
-      logger.error('WebSocket error', { error });
-      this.isConnected = false;
-      this.scheduleReconnect();
-    });
-
-    this.wsClient.addEventListener('close', () => {
-      logger.warn('WebSocket connection closed');
-      this.isConnected = false;
-      this.scheduleReconnect();
-    });
-  }
 
   private async scheduleReconnect(): Promise<void> {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
@@ -108,18 +97,28 @@ export class BlockchainListener {
   // ===== EVENT SUBSCRIPTION =====
 
   private async subscribeToEvents(): Promise<void> {
-    if (!this.wsClient) {
-      throw new Error('WebSocket client not initialized');
+    if (!this.tmClient) {
+      throw new Error('Tendermint client not initialized');
     }
 
     // Subscribe to new blocks to catch contract events
-    const query = `tm.event='NewBlock'`;
+    const query = "tm.event='NewBlock'";
     
     try {
-      const stream = this.wsClient.subscribeToQuery(query);
+      const stream = this.tmClient.subscribeTx(query);
       
       logger.info('Subscribed to new blocks', { query });
       
+      // Process the stream in the background
+      this.processEventStream(stream);
+    } catch (error) {
+      logger.error('Failed to subscribe to events', { error });
+      throw error;
+    }
+  }
+
+  private async processEventStream(stream: any): Promise<void> {
+    try {
       for await (const event of stream) {
         try {
           await this.processNewBlock(event);
@@ -128,8 +127,9 @@ export class BlockchainListener {
         }
       }
     } catch (error) {
-      logger.error('Failed to subscribe to events', { error });
-      throw error;
+      logger.error('Event stream error', { error });
+      this.isConnected = false;
+      await this.scheduleReconnect();
     }
   }
 
@@ -141,12 +141,12 @@ export class BlockchainListener {
 
     // Get block results to access transaction results
     try {
-      const blockResults = await this.wsClient?.blockResults(parseInt(blockHeight));
-      if (!blockResults?.txsResults) return;
+      const blockResults = await this.tmClient?.blockResults(parseInt(blockHeight));
+      if (!blockResults?.results) return;
 
       // Process each transaction in the block
-      for (let txIndex = 0; txIndex < blockResults.txsResults.length; txIndex++) {
-        const txResult = blockResults.txsResults[txIndex];
+      for (let txIndex = 0; txIndex < blockResults.results.length; txIndex++) {
+        const txResult = blockResults.results[txIndex];
         if (txResult.code !== 0) continue; // Skip failed transactions
 
         await this.processTxEvents(txResult, blockHeight, txIndex);
@@ -190,7 +190,17 @@ export class BlockchainListener {
     
     if (!contractAttribute) return false;
     
-    const contractAddress = toUtf8(fromBase64(contractAttribute.value));
+    let contractAddress: string;
+    try {
+      if (typeof contractAttribute.value === 'string') {
+        contractAddress = fromUtf8(fromBase64(contractAttribute.value));
+      } else {
+        // Assume it's already decoded bytes
+        contractAddress = fromUtf8(contractAttribute.value);
+      }
+    } catch {
+      return false;
+    }
     return contractAddress === CONTRACT_ADDRESS;
   }
 
@@ -207,8 +217,28 @@ export class BlockchainListener {
     // Convert attributes to key-value pairs
     const attributes: Record<string, string> = {};
     for (const attr of event.attributes) {
-      const key = toUtf8(fromBase64(attr.key));
-      const value = toUtf8(fromBase64(attr.value));
+      let key: string;
+      try {
+        if (typeof attr.key === 'string') {
+          key = fromUtf8(fromBase64(attr.key));
+        } else {
+          key = fromUtf8(attr.key);
+        }
+      } catch {
+        continue; // Skip invalid keys
+      }
+
+      let value: string;
+      try {
+        if (typeof attr.value === 'string') {
+          value = fromUtf8(fromBase64(attr.value));
+        } else {
+          value = fromUtf8(attr.value);
+        }
+      } catch {
+        continue; // Skip invalid values
+      }
+
       attributes[key] = value;
     }
 
