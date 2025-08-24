@@ -21,6 +21,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
+import ConfirmationModal from "@/components/ConfirmationModal";
 dayjs.extend(relativeTime);
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
@@ -60,6 +61,7 @@ export default function PaymentsScreen() {
 	const username = account?.bech32Address || "";
 	const { payments, refetch } = usePaymentHistory(username);
 	const [refreshing, setRefreshing] = React.useState(false);
+	const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 	
 	const styles = createStyles(colors);
 
@@ -86,7 +88,12 @@ export default function PaymentsScreen() {
 		return { total, awaitingAmount, verifiedCount };
 	}, [payments]);
 
-	const handleLogout = async () => {
+	const handleLogout = () => {
+		setShowLogoutModal(true);
+	};
+
+	const confirmLogout = async () => {
+		setShowLogoutModal(false);
 		try {
 			await logout();
 			router.replace("/");
@@ -240,6 +247,18 @@ export default function PaymentsScreen() {
 				</View>
 				<View style={styles.bottomSpacer} />
 			</ScrollView>
+
+			<ConfirmationModal
+				visible={showLogoutModal}
+				title="Sign Out"
+				message="Are you sure you want to sign out of your account?"
+				confirmText="Sign Out"
+				cancelText="Cancel"
+				confirmStyle="destructive"
+				icon="log-out-outline"
+				onConfirm={confirmLogout}
+				onCancel={() => setShowLogoutModal(false)}
+			/>
 		</SafeAreaView>
 	);
 }

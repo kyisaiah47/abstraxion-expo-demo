@@ -83,6 +83,7 @@ export default function FriendsScreen() {
 		open: boolean;
 		friend?: User;
 	}>({ open: false });
+	const [showLogoutModal, setShowLogoutModal] = useState(false);
 
 	// Debounce search query
 	useEffect(() => {
@@ -313,7 +314,12 @@ export default function FriendsScreen() {
 		refreshing;
 	const anyError = friendsError || requestsError || opsError || searchError;
 
-	const handleLogout = async () => {
+	const handleLogout = () => {
+		setShowLogoutModal(true);
+	};
+
+	const confirmLogout = async () => {
+		setShowLogoutModal(false);
 		try {
 			await logout();
 			router.replace("/");
@@ -516,6 +522,18 @@ export default function FriendsScreen() {
 					}
 				}}
 				onCancel={() => setShowRemoveModal({ open: false })}
+			/>
+
+			<ConfirmationModal
+				visible={showLogoutModal}
+				title="Sign Out"
+				message="Are you sure you want to sign out of your account?"
+				confirmText="Sign Out"
+				cancelText="Cancel"
+				confirmStyle="destructive"
+				icon="log-out-outline"
+				onConfirm={confirmLogout}
+				onCancel={() => setShowLogoutModal(false)}
 			/>
 		</SafeAreaView>
 	);

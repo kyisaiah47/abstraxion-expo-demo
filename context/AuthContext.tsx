@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAbstraxionAccount } from '@burnt-labs/abstraxion-react-native';
 import { supabase, signInWithWallet, signOutWallet, getCurrentWalletUser } from '../lib/supabase';
+import Toast from 'react-native-toast-message';
 
 interface User {
   id: string;
@@ -59,10 +60,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('✅ User signed in with wallet auth:', walletAddress.slice(0, 8) + '...');
       } else {
         console.error('Failed to sign in with wallet:', authResult?.error);
+        Toast.show({
+          type: 'error',
+          text1: 'Sign In Failed',
+          text2: 'Unable to connect your wallet. Please try again.',
+          position: 'bottom',
+        });
         setUser(null);
       }
     } catch (error) {
       console.error('Error loading user with wallet auth:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Connection Error',
+        text2: 'Failed to connect to the authentication service.',
+        position: 'bottom',
+      });
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -82,6 +95,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('✅ User signed out');
     } catch (error) {
       console.error('Error signing out:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Sign Out Error',
+        text2: 'Failed to sign out completely. Please try again.',
+        position: 'bottom',
+      });
     }
   };
 

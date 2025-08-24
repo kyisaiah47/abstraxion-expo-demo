@@ -24,6 +24,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import ZkTLSSelectionModal from "@/components/ZkTLSSelectionModal";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 interface MenuItem {
 	id: string;
@@ -43,6 +44,7 @@ export default function ProfileScreen() {
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [unreadCount, setUnreadCount] = useState(0);
 	const [showZkTLSModal, setShowZkTLSModal] = useState(false);
+	const [showLogoutModal, setShowLogoutModal] = useState(false);
 	const [userStats, setUserStats] = useState({
 		totalTasks: 0,
 		completedTasks: 0,
@@ -59,7 +61,12 @@ export default function ProfileScreen() {
 	const { client } = useAbstraxionSigningClient();
 	const walletAddress = data?.bech32Address;
 
-	const handleLogout = async () => {
+	const handleLogout = () => {
+		setShowLogoutModal(true);
+	};
+
+	const confirmLogout = async () => {
+		setShowLogoutModal(false);
 		try {
 			console.log("Attempting to logout...");
 			await logout();
@@ -349,7 +356,15 @@ export default function ProfileScreen() {
 				showsVerticalScrollIndicator={false}
 			>
 				{/* User Profile Card */}
-				<View style={styles.profileCard}>
+				<View
+					style={[
+						styles.profileCard,
+						{
+							backgroundColor: colors.surface.secondary,
+							borderColor: colors.border.primary,
+						},
+					]}
+				>
 					<View style={styles.profileHeader}>
 						<View style={styles.avatarContainer}>
 							<View style={styles.avatarPlaceholder}>
@@ -467,6 +482,18 @@ export default function ProfileScreen() {
 				showCategories={true}
 				showStatus={true}
 			/>
+
+			<ConfirmationModal
+				visible={showLogoutModal}
+				title="Sign Out"
+				message="Are you sure you want to sign out of your account?"
+				confirmText="Sign Out"
+				cancelText="Cancel"
+				confirmStyle="destructive"
+				icon="log-out-outline"
+				onConfirm={confirmLogout}
+				onCancel={() => setShowLogoutModal(false)}
+			/>
 		</SafeAreaView>
 	);
 }
@@ -492,6 +519,7 @@ const createStyles = (colors: any) =>
 			backgroundColor: colors.surface.secondary,
 			borderRadius: DesignSystem.radius.xl,
 			padding: DesignSystem.spacing["3xl"],
+			borderWidth: 1,
 			marginBottom: DesignSystem.spacing["3xl"],
 			...DesignSystem.shadows.md,
 		},
