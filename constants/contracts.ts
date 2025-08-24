@@ -57,7 +57,28 @@ export const CONTRACT_MESSAGES = {
 		search_users: { query },
 	}),
 
-	// Execute messages (probably fine as-is)
+	// Payment/Job query messages
+	LIST_PAYMENTS: {
+		list_payments: {},
+	},
+
+	GET_PAYMENT: (paymentId: string) => ({
+		get_payment: { payment_id: paymentId },
+	}),
+
+	GET_PAYMENTS_BY_SENDER: (senderAddress: string) => ({
+		get_payments_by_sender: { sender: senderAddress },
+	}),
+
+	GET_PAYMENTS_BY_RECEIVER: (receiverAddress: string) => ({
+		get_payments_by_receiver: { receiver: receiverAddress },
+	}),
+
+	LIST_JOBS: {
+		list_jobs: {},
+	},
+
+	// Execute messages
 	REGISTER_USER: (
 		username: string,
 		displayName: string,
@@ -67,6 +88,60 @@ export const CONTRACT_MESSAGES = {
 			username,
 			display_name: displayName,
 			profile_picture: profilePicture,
+		},
+	}),
+
+	SEND_PAYMENT: (recipient: string, amount: number, description: string) => ({
+		send_payment: {
+			recipient,
+			amount: amount.toString(),
+			description,
+		},
+	}),
+
+	POST_JOB: (description: string) => ({
+		post_job: {
+			description,
+		},
+	}),
+
+	ACCEPT_JOB: (jobId: number) => ({
+		accept_job: {
+			job_id: jobId,
+		},
+	}),
+
+	SUBMIT_PROOF: (jobId: number, proofHash: string, proofUrl?: string) => ({
+		submit_proof: {
+			job_id: jobId,
+			proof_hash: proofHash,
+			proof_url: proofUrl,
+		},
+	}),
+
+	ACCEPT_PROOF: (jobId: number) => ({
+		accept_proof: {
+			job_id: jobId,
+		},
+	}),
+
+	REJECT_PROOF: (jobId: number, reason?: string) => ({
+		reject_proof: {
+			job_id: jobId,
+			reason,
+		},
+	}),
+
+	CANCEL_JOB: (jobId: number) => ({
+		cancel_job: {
+			job_id: jobId,
+		},
+	}),
+
+	SUBMIT_ZKTLS_PROOF: (jobId: number, proof: string) => ({
+		submit_zktls_proof: {
+			job_id: jobId,
+			proof,
 		},
 	}),
 };

@@ -10,8 +10,8 @@ interface PaymentTabSwitcherProps {
 
 const PAYMENT_TABS = [
 	{
-		id: "request_help" as PaymentType,
-		label: "Help",
+		id: "request_task" as PaymentType,
+		label: "Task",
 	},
 	{
 		id: "request_money" as PaymentType,

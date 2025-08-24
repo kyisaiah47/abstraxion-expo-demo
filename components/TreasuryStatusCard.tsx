@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { ContractService } from "../lib/contractService";
+import { TreasuryStatus } from "../lib/treasuryOfficial";
 import { TREASURY_CONFIG } from "../constants/contracts";
 
 interface TreasuryStatusProps {
@@ -8,23 +9,15 @@ interface TreasuryStatusProps {
 	onPress?: () => void;
 }
 
-interface TreasuryStatus {
-	isAvailable: boolean;
-	balance: number;
-	canSponsorGas: boolean;
-	estimatedTransactionsLeft: number;
-	lastChecked: Date;
-}
-
 export function TreasuryStatusCard({
 	contractService,
 	onPress,
 }: TreasuryStatusProps) {
 	const [status, setStatus] = useState<TreasuryStatus>({
-		isAvailable: false,
-		balance: 0,
+		isConnected: false,
+		hasPermissions: false,
 		canSponsorGas: false,
-		estimatedTransactionsLeft: 0,
+		balance: 0,
 		lastChecked: new Date(),
 	});
 	const [loading, setLoading] = useState(true);
@@ -52,7 +45,7 @@ export function TreasuryStatusCard({
 	}, [contractService, loadTreasuryStatus]);
 
 	const getStatusColor = () => {
-		if (!status.isAvailable) return "#EF4444"; // Red
+		if (!status.isConnected) return "#EF4444"; // Red
 		if (!status.canSponsorGas) return "#F59E0B"; // Orange
 		return "#22C55E"; // Green
 	};
@@ -60,17 +53,18 @@ export function TreasuryStatusCard({
 	const getStatusText = () => {
 		if (loading) return "Checking Treasury...";
 		if (!TREASURY_CONFIG.enabled) return "Treasury Disabled";
-		if (!status.isAvailable) return "Treasury Unavailable";
+		if (!status.isConnected) return "Treasury Unavailable";
 		if (!status.canSponsorGas) return "Treasury Low Funds";
 		return "Treasury Active";
 	};
 
 	const getSubtext = () => {
-		if (loading || !TREASURY_CONFIG.enabled || !status.isAvailable) return "";
-		if (status.canSponsorGas) {
-			return `${status.estimatedTransactionsLeft} gasless transactions available`;
+		if (loading || !TREASURY_CONFIG.enabled || !status.isConnected) return "";
+		if (status.canSponsorGas && status.balance) {
+			const estimatedTxs = Math.floor(status.balance / 0.2); // Estimate based on average gas cost
+			return `${estimatedTxs} gasless transactions available`;
 		}
-		return `${status.balance.toFixed(2)} XION remaining`;
+		return status.balance ? `${status.balance.toFixed(2)} XION remaining` : "Balance unknown";
 	};
 
 	if (!TREASURY_CONFIG.enabled) {
@@ -102,7 +96,7 @@ export function TreasuryStatusCard({
 
 			{getSubtext() && <Text style={styles.subtext}>{getSubtext()}</Text>}
 
-			{status.isAvailable && (
+			{status.isConnected && status.balance !== undefined && (
 				<Text style={styles.balance}>
 					Treasury Balance: {status.balance.toFixed(2)} XION
 				</Text>

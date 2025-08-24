@@ -11,6 +11,30 @@ import {
 	TreasuryStatus,
 } from "./treasuryOfficial";
 
+// Job types for contract service
+export enum JobStatus {
+	OPEN = "Open",
+	ACCEPTED = "Accepted",
+	PROOF_SUBMITTED = "ProofSubmitted",
+	COMPLETED = "Completed",
+}
+
+export interface Job {
+	id: number;
+	client: string; // wallet address
+	worker?: string; // wallet address
+	escrow_amount: {
+		amount: string;
+		denom: string;
+	};
+	description: string;
+	status: JobStatus;
+	created_at?: number;
+	deadline?: number; // Unix timestamp
+	proof_hash?: string;
+	proof_url?: string;
+}
+
 export interface ContractAccount {
 	bech32Address: string;
 }
@@ -66,7 +90,7 @@ export class ContractService {
 		try {
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
-				CONTRACT_MESSAGES.GET_PAYMENT(paymentId)
+				CONTRACT_MESSAGES.GET_PAYMENT(paymentId.toString())
 			);
 			return result.payment;
 		} catch (error) {
@@ -101,6 +125,19 @@ export class ContractService {
 		}
 	}
 
+	async queryJobs(): Promise<Job[]> {
+		try {
+			const result = await this.client.queryContractSmart(
+				CONTRACT_CONFIG.address,
+				CONTRACT_MESSAGES.LIST_JOBS
+			);
+			return result.jobs || [];
+		} catch (error) {
+			console.error("Error querying jobs:", error);
+			return [];
+		}
+	}
+
 	// ======= EXECUTE FUNCTIONS (COST GAS) =======
 
 	async sendPayment(
@@ -116,7 +153,7 @@ export class ContractService {
 			console.log("Amount:", amount);
 			console.log("Memo:", memo);
 
-			const msg = CONTRACT_MESSAGES.SEND_PAYMENT(receiverAddress, memo);
+			const msg = CONTRACT_MESSAGES.SEND_PAYMENT(receiverAddress, amount, memo || "");
 			console.log("Message Object:", JSON.stringify(msg, null, 2));
 
 			const funds = [{ denom: XION_DENOM, amount: amount.toString() }];
@@ -611,13 +648,13 @@ export class ContractService {
 	/**
 	 * Get Treasury status for display
 	 */
-	async getTreasuryStatus() {
+	async getTreasuryStatus(): Promise<TreasuryStatus> {
 		if (!this.treasuryService) {
 			return {
-				isAvailable: false,
-				balance: 0,
+				isConnected: false,
+				hasPermissions: false,
 				canSponsorGas: false,
-				estimatedTransactionsLeft: 0,
+				balance: 0,
 				lastChecked: new Date(),
 			};
 		}

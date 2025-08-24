@@ -356,7 +356,7 @@ export default function JobsScreen() {
 												color="#6B7280"
 											/>
 											<Text style={styles.dateText}>
-												{formatTimeAgo(item.created_at)}
+												{item.created_at ? formatTimeAgo(item.created_at) : "Unknown"}
 											</Text>
 										</View>
 										{item.deadline && (

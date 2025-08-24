@@ -48,7 +48,7 @@ export default function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 		description: "",
 		reward: 0,
 		deadline: undefined,
-		proofType: "text", // Default to simple text description
+		proofType: "soft", // Default to soft proof (manual approval)
 	});
 	const [customDeadline, setCustomDeadline] = useState("");
 	const [selectedTimeLimit, setSelectedTimeLimit] = useState<string | null>(

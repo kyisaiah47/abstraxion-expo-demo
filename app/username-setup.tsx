@@ -100,18 +100,21 @@ export default function UsernameSetupScreen() {
 			router.replace("/(tabs)/activity");
 		} catch (error) {
 			console.error("❌ Registration error occurred:");
-			console.error("  - Error message:", error.message);
+			const errorMsg = error instanceof Error ? error.message : String(error);
+			console.error("  - Error message:", errorMsg);
 			console.error("  - Full error:", error);
-			console.error("  - Error stack:", error.stack);
+			if (error instanceof Error) {
+				console.error("  - Error stack:", error.stack);
+			}
 
 			// Check if it's the "already registered" error
-			if (error.message && error.message.includes("already registered")) {
+			if (errorMsg && errorMsg.includes("already registered")) {
 				console.log(
 					"🎯 This is the 'already registered' error - wallet exists in contract"
 				);
 			}
 
-			Alert.alert("Registration Failed", error.message || "Please try again.");
+			Alert.alert("Registration Failed", errorMsg || "Please try again.");
 		}
 	};
 

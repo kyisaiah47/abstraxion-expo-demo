@@ -2,15 +2,16 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DesignSystem } from "@/constants/DesignSystem";
-import { ProofStatus } from "@/types/proofpay";
+import { ProofStatus, TaskStatus } from "@/types/proofpay";
 
 interface StatusPillProps {
-	status: ProofStatus;
+	status: ProofStatus | TaskStatus;
 }
 
 export default function StatusPill({ status }: StatusPillProps) {
-	const getStatusConfig = (status: ProofStatus) => {
+	const getStatusConfig = (status: ProofStatus | TaskStatus) => {
 		switch (status) {
+			// Legacy ProofStatus cases
 			case "Proof Confirmed":
 				return {
 					color: DesignSystem.colors.status.success,
@@ -28,6 +29,44 @@ export default function StatusPill({ status }: StatusPillProps) {
 					color: DesignSystem.colors.text.secondary,
 					backgroundColor: DesignSystem.colors.surface.tertiary,
 					icon: "paper-plane" as keyof typeof Ionicons.glyphMap,
+				};
+			
+			// New TaskStatus cases
+			case "pending":
+				return {
+					color: DesignSystem.colors.status.info,
+					backgroundColor: DesignSystem.colors.status.info + "20",
+					icon: "time-outline" as keyof typeof Ionicons.glyphMap,
+				};
+			case "proof_submitted":
+				return {
+					color: DesignSystem.colors.status.warning,
+					backgroundColor: DesignSystem.colors.status.warning + "20",
+					icon: "document-outline" as keyof typeof Ionicons.glyphMap,
+				};
+			case "pending_release":
+				return {
+					color: "#FF6B35",
+					backgroundColor: "#FF6B35" + "20",
+					icon: "hourglass-outline" as keyof typeof Ionicons.glyphMap,
+				};
+			case "released":
+				return {
+					color: DesignSystem.colors.status.success,
+					backgroundColor: DesignSystem.colors.status.success + "20",
+					icon: "checkmark-circle" as keyof typeof Ionicons.glyphMap,
+				};
+			case "disputed":
+				return {
+					color: DesignSystem.colors.status.error,
+					backgroundColor: DesignSystem.colors.status.error + "20",
+					icon: "alert-circle" as keyof typeof Ionicons.glyphMap,
+				};
+			case "refunded":
+				return {
+					color: "#6B7280",
+					backgroundColor: "#6B7280" + "20",
+					icon: "refresh-circle" as keyof typeof Ionicons.glyphMap,
 				};
 			default:
 				return {

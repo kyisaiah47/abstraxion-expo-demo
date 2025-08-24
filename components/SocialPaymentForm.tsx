@@ -31,27 +31,24 @@ interface SocialPaymentFormProps {
 
 const PROOF_TYPE_OPTIONS = [
 	{
-		id: "none" as ProofType,
-		label: "None",
-		icon: "ban",
-		disabled: false,
-	},
-	{
-		id: "text" as ProofType,
-		label: "Text Proof",
-		icon: "chatbubble-outline",
-		disabled: false,
-	},
-	{
-		id: "photo" as ProofType,
-		label: "Photo Proof",
-		icon: "camera-outline",
+		id: "soft" as ProofType,
+		label: "Soft Proof (manual approval)",
+		icon: "document-text-outline",
+		description: "📝 Manual review and approval",
 		disabled: false,
 	},
 	{
 		id: "zktls" as ProofType,
-		label: "zkTLS Proof",
-		icon: "shield-checkmark-outline",
+		label: "zkTLS Proof (instant auto-release)",
+		icon: "shield-checkmark-outline", 
+		description: "🔒 Instant verification & release",
+		disabled: false,
+	},
+	{
+		id: "hybrid" as ProofType,
+		label: "Hybrid (zkTLS + 24h review) — Recommended",
+		icon: "time-outline",
+		description: "⏳ Auto-verify + dispute window",
 		disabled: false,
 	},
 ];
@@ -63,7 +60,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		type: paymentType,
 		amount: 0,
 		description: "",
-		proofType: "none",
+		proofType: "soft",
 	});
 	const [amountText, setAmountText] = useState("");
 	const [recipient, setRecipient] = useState("");
@@ -72,6 +69,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const [showProofDropdown, setShowProofDropdown] = useState(false);
 	const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
 	const [debouncedRecipient, setDebouncedRecipient] = useState("");
+	const [endpoint, setEndpoint] = useState("");
+	const [reviewWindow, setReviewWindow] = useState(24);
 
 	// Wallet and contract hooks
 	const { data: account, isConnected } = useAbstraxionAccount();
@@ -219,15 +218,15 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					account.bech32Address
 				);
 				console.log("✅ createPaymentRequest completed");
-			} else if (paymentType === "request_help") {
-				console.log("🙏 Calling createHelpRequest...");
+			} else if (paymentType === "request_task") {
+				console.log("🙏 Calling createTaskRequest...");
 				await createHelpRequest(
 					payload.to_username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-				console.log("✅ createHelpRequest completed");
+				console.log("✅ createTaskRequest completed");
 			}
 			
 			console.log("🎉 Transaction submitted successfully!");
@@ -242,7 +241,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			if (err?.message?.includes("Invalid type") || err?.message?.includes("unknown request")) {
 				setFeedback("Payment features are currently in development. Smart contract methods not yet deployed.");
 			} else if (err?.message?.includes("Insufficient funds")) {
-				setFeedback(`Insufficient funds. You need ${formData.amount} XION + gas fees. ${paymentType === 'request_help' || paymentType === 'request_money' ? 'Note: Requests should not require funds - this may be a contract issue.' : ''}`);
+				setFeedback(`Insufficient funds. You need ${formData.amount} XION + gas fees. ${paymentType === 'request_task' || paymentType === 'request_money' ? 'Note: Requests should not require funds - this may be a contract issue.' : ''}`);
 			} else {
 				setFeedback(err?.message || "Transaction failed. Please try again.");
 			}
@@ -254,8 +253,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 	const getSubmitButtonText = () => {
 		switch (paymentType) {
-			case "request_help":
-				return "Ask for Help";
+			case "request_task":
+				return "Create Task";
 			case "request_money":
 				return "Request Payment";
 			case "send_money":
@@ -265,8 +264,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 	const getDescriptionPlaceholder = () => {
 		switch (paymentType) {
-			case "request_help":
-				return "e.g., Help me move furniture, Pick me up from airport...";
+			case "request_task":
+				return "e.g., Review my code, Design a logo, Write documentation...";
 			case "request_money":
 				return "e.g., Dinner we split last night, Concert ticket...";
 			case "send_money":
@@ -425,15 +424,15 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						color={
 							formData.proofType === "zktls"
 								? colors.primary[700]
-								: formData.proofType === "none"
-								? colors.status?.error || colors.primary[600]
+								: formData.proofType === "soft"
+								? colors.status?.warning || colors.primary[600]
 								: "#666"
 						}
 					/>
 					<Text
 						style={[
 							styles.proofChipText,
-							formData.proofType === "none" && styles.proofChipTextDisabled,
+							formData.proofType === "soft" && styles.proofChipTextDisabled,
 							formData.proofType === "zktls" && { color: colors.primary[700] },
 						]}
 					>
@@ -490,6 +489,42 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					</View>
 				)}
 			</View>
+
+			{/* Endpoint Input for zkTLS/Hybrid */}
+			{paymentType === "request_task" && (formData.proofType === "zktls" || formData.proofType === "hybrid") && (
+				<View className="w-full mb-10">
+					<Text className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 text-center">
+						Verification Endpoint
+					</Text>
+					<TextInput
+						className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-base text-gray-900 dark:text-gray-100 text-center"
+						value={endpoint}
+						onChangeText={setEndpoint}
+						placeholder="e.g., GitHub PR URL, Google Doc link, Zoom meeting..."
+						placeholderTextColor={colors.text.tertiary}
+						editable={!loading}
+						autoCapitalize="none"
+					/>
+				</View>
+			)}
+
+			{/* Review Window for Hybrid */}
+			{paymentType === "request_task" && formData.proofType === "hybrid" && (
+				<View className="w-full mb-10">
+					<Text className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 text-center">
+						Review Window (hours)
+					</Text>
+					<TextInput
+						className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-base text-gray-900 dark:text-gray-100 text-center"
+						value={reviewWindow.toString()}
+						onChangeText={(text) => setReviewWindow(parseInt(text) || 24)}
+						placeholder="24"
+						placeholderTextColor={colors.text.tertiary}
+						keyboardType="numeric"
+						editable={!loading}
+					/>
+				</View>
+			)}
 
 			{/* Description Input */}
 			<View style={styles.descriptionSection}>

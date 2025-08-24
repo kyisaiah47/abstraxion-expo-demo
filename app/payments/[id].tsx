@@ -56,7 +56,7 @@ export default function PaymentDetailScreen() {
 			if (proofType === "text") proofData.data = proofText;
 			if (proofType === "photo") proofData.data = proofPhoto;
 			// zkTLS can be extended here
-			await submitProof(address, payment.id, proofData);
+			await submitProof(payment.id, proofType, JSON.stringify(proofData), address);
 			Alert.alert("Success", "Proof submitted!");
 			refetch();
 		} catch (e: any) {
@@ -69,7 +69,7 @@ export default function PaymentDetailScreen() {
 	const handleApprove = async () => {
 		if (!payment) return;
 		try {
-			await approvePayment(payment.id);
+			await approvePayment(payment.id, address);
 			Alert.alert("Payment Approved");
 			refetch();
 		} catch (e: any) {
@@ -80,7 +80,7 @@ export default function PaymentDetailScreen() {
 	const handleReject = async () => {
 		if (!payment) return;
 		try {
-			await rejectPayment(payment.id);
+			await rejectPayment(payment.id, address);
 			Alert.alert("Payment Rejected");
 			refetch();
 		} catch (e: any) {

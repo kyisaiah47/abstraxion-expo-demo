@@ -222,11 +222,14 @@ export class ZKTLSService {
 			};
 
 			// Submit proof to contract (this would be a new contract message type)
+			const fullProof = JSON.stringify({
+				completionProof,
+				tlsProof: proof,
+				deliveryUrl
+			});
 			const message = CONTRACT_MESSAGES.SUBMIT_ZKTLS_PROOF(
 				jobId,
-				JSON.stringify(completionProof),
-				JSON.stringify(proof),
-				deliveryUrl
+				fullProof
 			);
 
 			console.log("📤 Sending zkTLS proof to contract...");

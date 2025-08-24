@@ -20,7 +20,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 export default function CreateScreen() {
 	const { colors } = useTheme();
-	const [activeTab, setActiveTab] = useState<PaymentType>("request_help");
+	const [activeTab, setActiveTab] = useState<PaymentType>("request_task");
 	const [showQRModal, setShowQRModal] = useState(false);
 	const [requestCode, setRequestCode] = useState("");
 
@@ -43,8 +43,8 @@ export default function CreateScreen() {
 		// Show success message based on payment type
 		const getSuccessMessage = () => {
 			switch (payload.type) {
-				case "request_help":
-					return "Help Request Sent! 🙏";
+				case "request_task":
+					return "Task Request Sent! 🙏";
 				case "request_money":
 					return "Payment Request Sent! 💳";
 				case "send_money":

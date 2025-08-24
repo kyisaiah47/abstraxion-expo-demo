@@ -143,8 +143,8 @@ export class UserService {
 
 		const msg = {
 			update_user_profile: {
-				display_name: updates.displayName || null,
-				profile_picture: updates.profilePicture || null,
+				display_name: updates.display_name || null,
+				profile_picture: updates.profile_picture || null,
 			},
 		};
 
@@ -170,7 +170,7 @@ export class UserService {
 
 			// Filter out current user
 			const users = res.users || [];
-			return users.filter((user: User) => user.walletAddress !== walletAddress);
+			return users.filter((user: User) => user.wallet_address !== walletAddress);
 		} catch (error) {
 			console.error("Error searching users:", error);
 			return [];

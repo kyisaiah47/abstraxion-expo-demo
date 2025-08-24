@@ -1,7 +1,8 @@
 // ProofPay Core Types
 export type ProofStatus = "Proof Confirmed" | "Awaiting Proof" | "Payment Sent";
-export type PaymentType = "request_help" | "request_money" | "send_money";
-export type ProofType = "none" | "text" | "photo" | "zktls";
+export type PaymentType = "request_task" | "request_money" | "send_money";
+export type ProofType = "soft" | "zktls" | "hybrid";
+export type TaskStatus = "pending" | "proof_submitted" | "pending_release" | "released" | "disputed" | "refunded";
 export type FriendshipStatus = "pending" | "accepted" | "declined";
 
 export interface Payment {
@@ -36,7 +37,53 @@ export interface TaskFormData {
 	description: string;
 	reward: number;
 	deadline?: string;
-	proofType?: "text" | "photo" | "zktls";
+	proofType: ProofType;
+	endpoint?: string; // For zktls/hybrid tasks
+	reviewWindow?: number; // Hours for hybrid tasks, default 24
+}
+
+export interface Task {
+	id: string;
+	creator: string; // wallet address
+	worker?: string; // wallet address
+	amount: number;
+	description: string;
+	proofType: ProofType;
+	status: TaskStatus;
+	endpoint?: string;
+	reviewWindow?: number;
+	createdAt: Date;
+	submittedAt?: Date;
+	releasedAt?: Date;
+	disputedAt?: Date;
+	proofHash?: string;
+	evidenceUrl?: string;
+}
+
+export interface DisputeData {
+	taskId: string;
+	reason: string;
+	evidenceUrl?: string;
+	evidenceHash?: string;
+	createdAt: Date;
+}
+
+export type NotificationType = 
+	| "task_created" 
+	| "proof_submitted" 
+	| "pending_release_started"
+	| "task_released"
+	| "task_disputed"
+	| "task_refunded";
+
+export interface Notification {
+	id: string;
+	type: NotificationType;
+	title: string;
+	message: string;
+	taskId?: string;
+	createdAt: Date;
+	read: boolean;
 }
 
 // New Social System Types

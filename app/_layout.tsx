@@ -29,11 +29,11 @@ global.Buffer = Buffer;
 SplashScreen.preventAutoHideAsync();
 
 const treasuryConfig = {
-	contracts: [process.env.EXPO_PUBLIC_CONTRACT_ADDRESS],
-	treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS,
+	contracts: [process.env.EXPO_PUBLIC_CONTRACT_ADDRESS].filter(Boolean) as string[],
+	treasury: process.env.EXPO_PUBLIC_TREASURY_CONTRACT_ADDRESS || "",
 	gasPrice: "0.001uxion",
-	rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT,
-	restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT,
+	rpcUrl: process.env.EXPO_PUBLIC_RPC_ENDPOINT || "",
+	restUrl: process.env.EXPO_PUBLIC_REST_ENDPOINT || "",
 	callbackUrl: "proofpay://",
 	// Force Abstraxion to use our app's scheme
 	redirectUri: "proofpay://",

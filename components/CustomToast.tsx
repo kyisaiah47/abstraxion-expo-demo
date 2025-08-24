@@ -6,8 +6,8 @@ export default function CustomToast({
 	text2,
 	...props
 }: {
-	text1: any;
-	text2: any;
+	text1?: any;
+	text2?: any;
 	[key: string]: any;
 }) {
 	return (
