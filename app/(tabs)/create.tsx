@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
 	content: {
 		flex: 1,
 		paddingHorizontal: DesignSystem.layout.containerPadding,
-		paddingTop: DesignSystem.spacing.xl,
+		paddingTop: DesignSystem.spacing["4xl"], // Increased top margin
 		gap: DesignSystem.spacing["2xl"], // More space between sections
 		justifyContent: "space-between",
 	},

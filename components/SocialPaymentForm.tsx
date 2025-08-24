@@ -17,6 +17,9 @@ import {
 import {
 	useSocialOperations,
 	useUserByUsername,
+	useUserFriends,
+	useSearchUsers,
+	useUserProfile,
 } from "@/hooks/useSocialContract";
 import { formatXionAmount } from "@/lib/socialContract";
 
@@ -64,6 +67,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const [loading, setLoading] = useState(false);
 	const [feedback, setFeedback] = useState<string | null>(null);
 	const [showProofDropdown, setShowProofDropdown] = useState(false);
+	const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
+	const [debouncedRecipient, setDebouncedRecipient] = useState("");
 
 	// Wallet and contract hooks
 	const { data: account, isConnected } = useAbstraxionAccount();
@@ -75,11 +80,24 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		loading: userLoading,
 		refetch: refetchUser,
 	} = useUserByUsername(recipient);
+	
+	// Friend suggestions
+	const { user: currentUser } = useUserProfile(account?.bech32Address ?? "");
+	const { friends } = useUserFriends(currentUser?.username ?? "");
+	const { users: searchResults } = useSearchUsers(debouncedRecipient);
 
 	// Update form type when prop changes
 	useEffect(() => {
 		setFormData((prev) => ({ ...prev, type: paymentType }));
 	}, [paymentType]);
+
+	// Debounce recipient input for search
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedRecipient(recipient);
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [recipient]);
 
 	// Validate recipient username existence
 	useEffect(() => {
@@ -87,6 +105,12 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			refetchUser();
 		}
 	}, [recipient, refetchUser]);
+
+	// Show friend suggestions when typing
+	useEffect(() => {
+		const shouldShow = recipient.length > 0 && !user && !userLoading;
+		setShowFriendSuggestions(shouldShow);
+	}, [recipient, user, userLoading]);
 
 	const handleSubmit = async () => {
 		if (!isConnected || !account?.bech32Address || !signingClient) {
@@ -168,6 +192,27 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		);
 	};
 
+	const getSuggestions = () => {
+		if (!showFriendSuggestions || recipient.length === 0) return [];
+		
+		const friendSuggestions = friends?.filter(friend => 
+			friend.username.toLowerCase().includes(recipient.toLowerCase()) ||
+			(friend.display_name && friend.display_name.toLowerCase().includes(recipient.toLowerCase()))
+		) || [];
+		
+		const searchSuggestions = searchResults?.filter(user => 
+			user.username.toLowerCase().includes(recipient.toLowerCase()) ||
+			(user.display_name && user.display_name.toLowerCase().includes(recipient.toLowerCase()))
+		) || [];
+		
+		const combined = [...friendSuggestions, ...searchSuggestions];
+		const unique = combined.filter((user, index, arr) => 
+			arr.findIndex(u => u.username === user.username) === index
+		);
+		
+		return unique.slice(0, 5); // Limit to 5 suggestions
+	};
+
 	const isSubmitDisabled =
 		!recipient ||
 		!user ||
@@ -180,26 +225,64 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		<View style={styles.container}>
 			{/* Recipient Username Input */}
 			<View style={styles.userSection}>
-				<TextInput
-					style={styles.userDisplayText}
-					value={recipient}
-					onChangeText={setRecipient}
-					placeholder="Recipient username"
-					placeholderTextColor="#999"
-					autoCapitalize="none"
-					autoCorrect={false}
-					editable={!loading}
-				/>
-				{userLoading && (
-					<Text style={{ color: "#666", marginTop: 4 }}>
-						Checking username...
-					</Text>
-				)}
-				{recipient && !userLoading && !user && (
-					<Text style={{ color: "#ff6b6b", marginTop: 4 }}>User not found</Text>
-				)}
-				{recipient && !userLoading && user && (
-					<Text style={{ color: "#4caf50", marginTop: 4 }}>User found</Text>
+				<View style={styles.inputContainer}>
+					<TextInput
+						style={[styles.userDisplayText, user && styles.userDisplayTextValid]}
+						value={recipient}
+						onChangeText={setRecipient}
+						placeholder="@username"
+						placeholderTextColor="#999"
+						autoCapitalize="none"
+						autoCorrect={false}
+						editable={!loading}
+						onFocus={() => setShowFriendSuggestions(recipient.length > 0 && !user)}
+					/>
+					{userLoading && (
+						<View style={styles.loadingIndicator}>
+							<Text style={styles.statusText}>Checking...</Text>
+						</View>
+					)}
+					{recipient && !userLoading && !user && !showFriendSuggestions && (
+						<Text style={styles.statusTextError}>User not found</Text>
+					)}
+					{recipient && !userLoading && user && (
+						<View style={styles.userFoundIndicator}>
+							<Text style={styles.statusTextSuccess}>✓ {user.display_name || user.username}</Text>
+						</View>
+					)}
+				</View>
+				
+				{/* Friend Suggestions Dropdown */}
+				{showFriendSuggestions && getSuggestions().length > 0 && (
+					<View style={styles.suggestionsContainer}>
+						{getSuggestions().map((suggestion) => (
+							<Pressable
+								key={suggestion.username}
+								style={styles.suggestionItem}
+								onPress={() => {
+									setRecipient(suggestion.username);
+									setShowFriendSuggestions(false);
+								}}
+							>
+								<View style={styles.suggestionAvatar}>
+									<Text style={styles.suggestionAvatarText}>
+										{(suggestion.display_name || suggestion.username).charAt(0).toUpperCase()}
+									</Text>
+								</View>
+								<View style={styles.suggestionInfo}>
+									<Text style={styles.suggestionName}>
+										{suggestion.display_name || suggestion.username}
+									</Text>
+									<Text style={styles.suggestionUsername}>@{suggestion.username}</Text>
+								</View>
+								{friends?.some(f => f.username === suggestion.username) && (
+									<View style={styles.friendBadge}>
+										<Text style={styles.friendBadgeText}>Friend</Text>
+									</View>
+								)}
+							</Pressable>
+						))}
+					</View>
 				)}
 			</View>
 
@@ -361,6 +444,14 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		marginBottom: 40,
 		width: "100%",
+		position: "relative",
+		zIndex: 1000,
+	},
+
+	inputContainer: {
+		width: "100%",
+		alignItems: "center",
+		position: "relative",
 	},
 
 	userDisplayText: {
@@ -368,6 +459,116 @@ const styles = StyleSheet.create({
 		fontWeight: "500",
 		color: "#999",
 		textAlign: "center",
+	},
+
+	userDisplayTextValid: {
+		color: "#4caf50",
+	},
+
+	loadingIndicator: {
+		marginTop: 8,
+		alignItems: "center",
+	},
+
+	statusText: {
+		fontSize: 14,
+		color: "#666",
+		fontStyle: "italic",
+	},
+
+	statusTextError: {
+		fontSize: 14,
+		color: "#ff6b6b",
+		marginTop: 8,
+		textAlign: "center",
+	},
+
+	statusTextSuccess: {
+		fontSize: 14,
+		color: "#4caf50",
+		fontWeight: "500",
+	},
+
+	userFoundIndicator: {
+		marginTop: 8,
+		alignItems: "center",
+		backgroundColor: "#f0f9f0",
+		borderRadius: 8,
+		paddingVertical: 6,
+		paddingHorizontal: 12,
+	},
+
+	// Friend Suggestions
+	suggestionsContainer: {
+		position: "absolute",
+		top: 60,
+		left: 0,
+		right: 0,
+		backgroundColor: "#fff",
+		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: "#e0e0e0",
+		shadowColor: "#000",
+		shadowOpacity: 0.1,
+		shadowRadius: 12,
+		shadowOffset: { width: 0, height: 4 },
+		elevation: 8,
+		maxHeight: 200,
+		zIndex: 1001,
+	},
+
+	suggestionItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: "#f0f0f0",
+	},
+
+	suggestionAvatar: {
+		width: 36,
+		height: 36,
+		borderRadius: 18,
+		backgroundColor: "#007AFF",
+		alignItems: "center",
+		justifyContent: "center",
+		marginRight: 12,
+	},
+
+	suggestionAvatarText: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: "#fff",
+	},
+
+	suggestionInfo: {
+		flex: 1,
+	},
+
+	suggestionName: {
+		fontSize: 16,
+		fontWeight: "500",
+		color: "#333",
+	},
+
+	suggestionUsername: {
+		fontSize: 14,
+		color: "#666",
+		marginTop: 2,
+	},
+
+	friendBadge: {
+		backgroundColor: "#e3f2fd",
+		borderRadius: 6,
+		paddingVertical: 2,
+		paddingHorizontal: 6,
+	},
+
+	friendBadgeText: {
+		fontSize: 10,
+		color: "#1976d2",
+		fontWeight: "500",
 	},
 
 	// Amount Display
@@ -399,7 +600,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		position: "relative",
-		zIndex: 1000,
+		zIndex: 999,
 	},
 
 	proofChipButton: {
@@ -408,12 +609,17 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		backgroundColor: "#fff",
 		borderRadius: 20,
-		paddingVertical: 10,
-		paddingHorizontal: 16,
+		paddingVertical: 12,
+		paddingHorizontal: 18,
 		borderWidth: 1,
 		borderColor: "#e0e0e0",
-		gap: 6,
+		gap: 8,
 		alignSelf: "center",
+		shadowColor: "#000",
+		shadowOpacity: 0.05,
+		shadowRadius: 6,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 2,
 	},
 
 	proofChipText: {
@@ -481,22 +687,34 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: "#333",
 		textAlign: "center",
-		minHeight: 60,
+		minHeight: 80,
+		shadowColor: "#000",
+		shadowOpacity: 0.05,
+		shadowRadius: 8,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 2,
 	},
 
 	// Action Button
 	actionButton: {
-		backgroundColor: "#333",
+		backgroundColor: "#007AFF",
 		borderRadius: 24,
-		paddingVertical: 20,
+		paddingVertical: 18,
 		paddingHorizontal: 40,
 		width: "100%",
 		alignItems: "center",
 		marginBottom: 40,
+		shadowColor: "#007AFF",
+		shadowOpacity: 0.3,
+		shadowRadius: 10,
+		shadowOffset: { width: 0, height: 4 },
+		elevation: 6,
 	},
 
 	actionButtonDisabled: {
 		backgroundColor: "#ccc",
+		shadowOpacity: 0,
+		elevation: 0,
 	},
 
 	actionButtonText: {
