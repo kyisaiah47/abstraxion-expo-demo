@@ -54,7 +54,7 @@ export default function EditProfileScreen() {
 				setDisplayName(user?.display_name || "");
 				setUsername(user?.username || "");
 			} catch (error) {
-				console.error("Error loading user:", error);
+				
 				Toast.show({
 					type: 'error',
 					text1: 'Error',
@@ -108,7 +108,7 @@ export default function EditProfileScreen() {
 			});
 			router.back();
 		} catch (error) {
-			console.error("Error updating profile:", error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',

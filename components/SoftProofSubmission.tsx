@@ -43,7 +43,7 @@ export default function SoftProofSubmission({ task, onSubmit }: SoftProofSubmiss
 				setImageUri(result.assets[0].uri);
 			}
 		} catch (error) {
-			console.error('Error picking image:', error);
+			
 			Alert.alert('Error', 'Failed to pick image. Please try again.');
 		}
 	};
@@ -77,7 +77,7 @@ export default function SoftProofSubmission({ task, onSubmit }: SoftProofSubmiss
 
 			Alert.alert('Success', 'Proof submitted successfully! Waiting for manual approval.');
 		} catch (error) {
-			console.error('Error submitting proof:', error);
+			
 			Alert.alert('Error', 'Failed to submit proof. Please try again.');
 		} finally {
 			setLoading(false);

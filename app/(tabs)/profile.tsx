@@ -68,12 +68,12 @@ export default function ProfileScreen() {
 	const confirmLogout = async () => {
 		setShowLogoutModal(false);
 		try {
-			console.log("Attempting to logout...");
+			
 			await logout();
-			console.log("Logout successful");
+			
 			router.replace("/");
 		} catch (error) {
-			console.error("Logout failed:", error);
+			
 			Toast.show({
 				type: "error",
 				text1: "Error",
@@ -95,7 +95,7 @@ export default function ProfileScreen() {
 				.or(`payer.eq.${user.walletAddress},worker.eq.${user.walletAddress}`);
 
 			if (tasksError) {
-				console.error("Error fetching tasks:", tasksError);
+				
 				return;
 			}
 
@@ -126,7 +126,7 @@ export default function ProfileScreen() {
 				.single();
 
 			if (userError || !userData) {
-				console.log("User not found in database");
+				
 				return;
 			}
 
@@ -140,7 +140,7 @@ export default function ProfileScreen() {
 				setUnreadCount(count || 0);
 			}
 		} catch (error) {
-			console.error("Error fetching user stats:", error);
+			
 		}
 	};
 
@@ -153,7 +153,7 @@ export default function ProfileScreen() {
 				const user = await UserService.getCurrentUser();
 				setCurrentUser(user);
 			} catch (error) {
-				console.error("Error loading user:", error);
+				
 			}
 		};
 		loadUserData();

@@ -58,7 +58,7 @@ export default function JobDetailsScreen() {
 				.single();
 
 			if (error || !data) {
-				console.error('Error fetching task:', error);
+				
 				return;
 			}
 
@@ -77,7 +77,7 @@ export default function JobDetailsScreen() {
 				review_window_secs: data.review_window_secs,
 			});
 		} catch (error) {
-			console.error('Error in fetchTaskDetails:', error);
+			
 		} finally {
 			setLoading(false);
 		}
@@ -95,7 +95,7 @@ export default function JobDetailsScreen() {
 				});
 
 			if (error) {
-				console.error('Error submitting dispute:', error);
+				
 				throw error;
 			}
 
@@ -106,7 +106,7 @@ export default function JobDetailsScreen() {
 				.eq('id', disputeData.taskId);
 
 			if (updateError) {
-				console.error('Error updating task status:', updateError);
+				
 			}
 
 			Toast.show({

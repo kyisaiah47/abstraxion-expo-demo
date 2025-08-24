@@ -54,7 +54,7 @@ export default function RecentActivityScreen() {
 				.single();
 
 			if (userError || !userData) {
-				console.log('User not found in database');
+				
 				return;
 			}
 
@@ -67,7 +67,7 @@ export default function RecentActivityScreen() {
 				.limit(50);
 
 			if (error) {
-				console.error('Error fetching notifications:', error);
+				
 				return;
 			}
 
@@ -83,7 +83,7 @@ export default function RecentActivityScreen() {
 
 			setNotifications(mappedNotifications);
 		} catch (error) {
-			console.error('Error in fetchNotifications:', error);
+			
 		} finally {
 			setLoading(false);
 		}
@@ -97,7 +97,7 @@ export default function RecentActivityScreen() {
 				.eq('id', notificationId);
 
 			if (error) {
-				console.error('Error marking notification as read:', error);
+				
 				return;
 			}
 
@@ -110,7 +110,7 @@ export default function RecentActivityScreen() {
 				)
 			);
 		} catch (error) {
-			console.error('Error in handleMarkAsRead:', error);
+			
 		}
 	};
 
@@ -130,7 +130,7 @@ export default function RecentActivityScreen() {
 			await supabase.auth.signOut();
 			router.replace("/");
 		} catch (error) {
-			console.error('Logout error:', error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',

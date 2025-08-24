@@ -43,7 +43,7 @@ export async function uploadFile(
       });
 
     if (error) {
-      console.error('Upload error:', error);
+      
       return null;
     }
 
@@ -57,7 +57,7 @@ export async function uploadFile(
       url: publicUrl
     };
   } catch (error) {
-    console.error('Upload failed:', error);
+    
     return null;
   }
 }
@@ -71,7 +71,7 @@ export async function generateFileHash(uri: string): Promise<string> {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   } catch (error) {
-    console.error('Hash generation failed:', error);
+    
     return `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }
@@ -90,13 +90,13 @@ export async function createSignedUploadUrl(
       });
 
     if (error) {
-      console.error('Failed to create signed upload URL:', error);
+      
       return null;
     }
 
     return data.signedUrl;
   } catch (error) {
-    console.error('Exception creating signed upload URL:', error);
+    
     return null;
   }
 }
@@ -113,13 +113,13 @@ export async function createSignedDownloadUrl(
       .createSignedUrl(filePath, expiresIn);
 
     if (error) {
-      console.error('Failed to create signed download URL:', error);
+      
       return null;
     }
 
     return data.signedUrl;
   } catch (error) {
-    console.error('Exception creating signed download URL:', error);
+    
     return null;
   }
 }
@@ -136,7 +136,7 @@ export async function uploadFileSecure(
     // Create signed upload URL
     const signedUrl = await createSignedUploadUrl(filePath, bucket);
     if (!signedUrl) {
-      console.error('Failed to get signed upload URL');
+      
       return null;
     }
 
@@ -154,7 +154,7 @@ export async function uploadFileSecure(
     });
 
     if (!uploadResponse.ok) {
-      console.error('Upload failed:', uploadResponse.statusText);
+      
       return null;
     }
 
@@ -169,7 +169,7 @@ export async function uploadFileSecure(
       publicUrl,
     };
   } catch (error) {
-    console.error('Secure upload failed:', error);
+    
     return null;
   }
 }
@@ -183,7 +183,7 @@ export async function getSecureDownloadUrl(
   try {
     return await createSignedDownloadUrl(filePath, bucket, expiresIn);
   } catch (error) {
-    console.error('Failed to get secure download URL:', error);
+    
     return null;
   }
 }
@@ -199,13 +199,13 @@ export async function deleteFile(
       .remove([filePath]);
 
     if (error) {
-      console.error('Failed to delete file:', error);
+      
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Exception deleting file:', error);
+    
     return false;
   }
 }
@@ -234,7 +234,7 @@ export async function uploadAvatar(
       .eq('id', userId);
 
     if (error) {
-      console.error('Failed to update user avatar:', error);
+      
       // Clean up uploaded file
       await deleteFile(result.path, AVATARS_BUCKET);
       return null;
@@ -242,7 +242,7 @@ export async function uploadAvatar(
 
     return result.publicUrl;
   } catch (error) {
-    console.error('Avatar upload failed:', error);
+    
     return null;
   }
 }
@@ -268,7 +268,7 @@ export async function uploadEvidence(
       url: result.publicUrl,
     };
   } catch (error) {
-    console.error('Evidence upload failed:', error);
+    
     return null;
   }
 }
@@ -295,7 +295,7 @@ export async function uploadDisputeEvidence(
       url: result.publicUrl,
     };
   } catch (error) {
-    console.error('Dispute evidence upload failed:', error);
+    
     return null;
   }
 }
@@ -316,7 +316,7 @@ export async function signInWithWallet(
       .single();
 
     if (userError && userError.code !== 'PGRST116') {
-      console.error('Failed to fetch user:', userError);
+      
       return { user: null, session: null, error: userError };
     }
 
@@ -332,7 +332,7 @@ export async function signInWithWallet(
         .single();
 
       if (createError) {
-        console.error('Failed to create user:', createError);
+        
         return { user: null, session: null, error: createError };
       }
       user = newUser;
@@ -373,7 +373,7 @@ export async function signInWithWallet(
     };
 
   } catch (error) {
-    console.error('Wallet sign-in failed:', error);
+    
     return { user: null, session: null, error };
   }
 }
@@ -412,7 +412,7 @@ async function createCustomJWT(userId: string, walletAddress: string): Promise<s
 
     return `${encodedHeader}.${encodedPayload}.${signature}`;
   } catch (error) {
-    console.error('Failed to create custom JWT:', error);
+    
     return `fallback_token_${userId}_${Date.now()}`;
   }
 }
@@ -422,7 +422,7 @@ export async function signOutWallet(): Promise<void> {
   try {
     await supabase.auth.signOut();
   } catch (error) {
-    console.error('Sign out failed:', error);
+    
   }
 }
 
@@ -432,7 +432,7 @@ export async function getCurrentWalletUser(): Promise<any | null> {
     const { data: { user } } = await supabase.auth.getUser();
     return user;
   } catch (error) {
-    console.error('Failed to get current user:', error);
+    
     return null;
   }
 }
@@ -456,13 +456,13 @@ export async function updateUserProfile(
       .eq('id', userId);
 
     if (error) {
-      console.error('Failed to update user profile:', error);
+      
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Exception updating user profile:', error);
+    
     return false;
   }
 }
@@ -476,10 +476,10 @@ export async function verifyWalletSignature(
   try {
     // TODO: Implement actual signature verification with XION/Cosmos SDK
     // For now, just return true as placeholder
-    console.log('Verifying signature for:', walletAddress);
+    
     return true;
   } catch (error) {
-    console.error('Signature verification failed:', error);
+    
     return false;
   }
 }

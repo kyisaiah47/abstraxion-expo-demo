@@ -76,7 +76,7 @@ export default function ZkTLSProofView({ task, onVerified }: ZkTLSProofViewProps
 			);
 
 		} catch (error) {
-			console.error('Verification failed:', error);
+			
 			setVerificationStatus('failed');
 			Alert.alert('Verification Failed', 'Unable to verify task completion. Please try again.');
 		}

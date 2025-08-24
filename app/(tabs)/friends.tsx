@@ -40,8 +40,8 @@ export default function FriendsScreen() {
 	// Get current user profile to get their username
 	const { user: currentUser } = useUserProfile(address);
 	const username = currentUser?.username || "";
-	console.log("👤 Current user data:", currentUser);
-	console.log("📝 Username for queries:", username);
+	
+	
 	
 	const {
 		friends,
@@ -49,7 +49,7 @@ export default function FriendsScreen() {
 		error: friendsError,
 		refetch: refetchFriends,
 	} = useUserFriends(username);
-	console.log("👥 Friends data:", friends, "loading:", friendsLoading, "error:", friendsError);
+	
 	
 	const {
 		requests: pendingRequests,
@@ -57,7 +57,7 @@ export default function FriendsScreen() {
 		error: requestsError,
 		refetch: refetchRequests,
 	} = usePendingFriendRequests(username);
-	console.log("📨 Pending requests data:", pendingRequests, "loading:", requestsLoading, "error:", requestsError);
+	
 	console.log("📨 Pending requests detailed:", JSON.stringify(pendingRequests, null, 2));
 	// Get signing client for operations
 	const {
@@ -122,15 +122,15 @@ export default function FriendsScreen() {
 	};
 
 	const handleSendFriendRequest = async (toUsername: string) => {
-		console.log("🚀 Sending friend request...");
-		console.log("  - toUsername:", toUsername);
-		console.log("  - address:", address);
-		console.log("  - signingClient:", signingClient);
-		console.log("  - data object:", data);
+		
+		
+		
+		
+		
 
 		try {
 			await sendFriendRequest(toUsername, address);
-			console.log("✅ Friend request sent successfully!");
+			
 
 			// Add to sent requests to update UI
 			setSentRequests((prev) => new Set([...prev, toUsername]));
@@ -142,7 +142,7 @@ export default function FriendsScreen() {
 				position: 'bottom',
 			});
 		} catch (error) {
-			console.error("❌ Friend request failed:", error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -156,11 +156,11 @@ export default function FriendsScreen() {
 		requestUsername: string,
 		response: "accepted" | "declined"
 	) => {
-		console.log("📨 Responding to friend request...");
-		console.log("  - requestUsername:", requestUsername);
-		console.log("  - response:", response);
-		console.log("  - address:", address);
-		console.log("  - signingClient:", signingClient);
+		
+		
+		
+		
+		
 
 		try {
 			if (response === "accepted") {
@@ -181,7 +181,7 @@ export default function FriendsScreen() {
 			}
 			await handleRefresh();
 		} catch (error) {
-			console.error("❌ Friend request response failed:", error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',

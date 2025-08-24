@@ -132,7 +132,7 @@ export default function ZKTLSDemoScreen() {
 
 		try {
 			setIsGeneratingProof(true);
-			console.log("🚀 Starting zkTLS proof generation for job:", demoJob.id);
+			
 
 			const result = await zkTLSService.generateWebsiteDeliveryProof(
 				deliveryUrl.trim(),
@@ -158,7 +158,7 @@ export default function ZKTLSDemoScreen() {
 				throw new Error(result.error || "Failed to generate proof");
 			}
 		} catch (error) {
-			console.error("❌ Failed to generate website proof:", error);
+			
 			Alert.alert(
 				"Proof Generation Failed",
 				error instanceof Error ? error.message : "Unknown error occurred"

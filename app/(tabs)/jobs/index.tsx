@@ -61,7 +61,7 @@ export default function JobsScreen() {
 				.order('created_at', { ascending: false });
 
 			if (error) {
-				console.error('Error fetching tasks:', error);
+				
 				return;
 			}
 
@@ -80,7 +80,7 @@ export default function JobsScreen() {
 
 			setTasks(mappedTasks);
 		} catch (error) {
-			console.error('Error in fetchTasks:', error);
+			
 		} finally {
 			setLoading(false);
 		}
@@ -200,7 +200,7 @@ export default function JobsScreen() {
 			await supabase.auth.signOut();
 			router.replace("/");
 		} catch (error) {
-			console.error('Logout error:', error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',

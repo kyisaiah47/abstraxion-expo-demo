@@ -107,7 +107,7 @@ export default function HelpCenterScreen() {
 				});
 			}
 		} catch (error) {
-			console.error('Error opening email:', error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -132,7 +132,7 @@ export default function HelpCenterScreen() {
 				});
 			}
 		} catch (error) {
-			console.error('Error opening Discord:', error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -157,7 +157,7 @@ export default function HelpCenterScreen() {
 				});
 			}
 		} catch (error) {
-			console.error('Error opening docs:', error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',

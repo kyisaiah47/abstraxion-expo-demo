@@ -111,8 +111,8 @@ export function useUserProfile(address: string) {
 				}
 			}
 		} catch (e: any) {
-			console.error("❌ Error in useUserProfile:", e.message);
-			console.error("❌ Full error:", e);
+			
+			
 			setError(e.message);
 			setUser(null);
 		} finally {
@@ -202,7 +202,7 @@ export function useIsUsernameAvailable(username: string) {
 			const result = await contract.isUsernameAvailable(username);
 			setAvailable(result.available ?? null);
 		} catch (e: any) {
-			console.error("Error checking username availability:", e.message);
+			
 			setError(e.message);
 			setAvailable(null);
 		} finally {
@@ -221,21 +221,21 @@ export function useUserFriends(username: string) {
 
 	const fetch = useCallback(async () => {
 		if (!username || username.trim() === "") {
-			console.log("❌ No username provided to useUserFriends");
+			
 			setFriends([]);
 			setLoading(false);
 			return;
 		}
 
-		console.log("👥 Fetching friends for username:", username);
+		
 		setLoading(true);
 		setError(null);
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			console.log("🔗 Calling contract.getUserFriends...");
+			
 			const result = await contract.getUserFriends(username);
-			console.log("📋 getUserFriends result:", JSON.stringify(result, null, 2));
+			
 			
 			// The result contains an array of usernames, not user objects
 			// We need to fetch the actual user data for each username
@@ -249,15 +249,15 @@ export function useUserFriends(username: string) {
 						users.push(userResult.user);
 					}
 				} catch (userError) {
-					console.warn("Failed to fetch user data for:", friendUsername, userError);
+					
 				}
 			}
 			
 			setFriends(users);
-			console.log("👥 Set friends to (converted to users):", users);
+			
 		} catch (e: any) {
-			console.error("❌ Error in useUserFriends:", e.message);
-			console.error("❌ Full error:", e);
+			
+			
 			setError(e.message);
 			setFriends([]);
 		} finally {
@@ -280,21 +280,21 @@ export function usePendingFriendRequests(username: string) {
 
 	const fetch = useCallback(async () => {
 		if (!username || username.trim() === "") {
-			console.log("❌ No username provided to usePendingFriendRequests");
+			
 			setRequests([]);
 			setLoading(false);
 			return;
 		}
 
-		console.log("📨 Fetching pending requests for username:", username);
+		
 		setLoading(true);
 		setError(null);
 		try {
 			const client = await getReadClient();
 			const contract = new SocialPaymentContract(client);
-			console.log("🔗 Calling contract.getPendingRequests...");
+			
 			const result = await contract.getPendingRequests(username);
-			console.log("📋 getPendingRequests result:", JSON.stringify(result, null, 2));
+			
 			
 			// The result contains request objects with from_username, not user objects
 			// We need to fetch the actual user data for each from_username
@@ -308,15 +308,15 @@ export function usePendingFriendRequests(username: string) {
 						users.push(userResult.user);
 					}
 				} catch (userError) {
-					console.warn("Failed to fetch user data for:", request.from_username, userError);
+					
 				}
 			}
 			
 			setRequests(users);
-			console.log("📨 Set requests to (converted to users):", users);
+			
 		} catch (e: any) {
-			console.error("❌ Error in usePendingFriendRequests:", e.message);
-			console.error("❌ Full error:", e);
+			
+			
 			setError(e.message);
 			setRequests([]);
 		} finally {
@@ -343,7 +343,7 @@ export function useUsernameCheck() {
 			const result = await contract.isUsernameAvailable(username);
 			return result.available;
 		} catch (error) {
-			console.error("Error checking username:", error);
+			
 			return false;
 		} finally {
 			setIsChecking(false);
@@ -368,7 +368,7 @@ export function useCurrentUser(walletAddress: string) {
 			const result = await contract.getUserByWallet(walletAddress);
 			setUser(result.user || null);
 		} catch (error) {
-			console.error("Error fetching current user:", error);
+			
 			setUser(null);
 		} finally {
 			setLoading(false);
@@ -507,17 +507,17 @@ export function useSocialOperations(signingClient: any) {
 				throw new Error("Signing client not available");
 			}
 
-			console.log("🔗 Executing acceptFriendRequest with:");
-			console.log("  - requesterUsername:", requesterUsername);
-			console.log("  - senderAddress:", senderAddress);
-			console.log("  - CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
+			
+			
+			
+			
 			
 			const message = {
 				accept_friend_request: {
 					from_username: requesterUsername,
 				},
 			};
-			console.log("  - message:", JSON.stringify(message, null, 2));
+			
 
 			setLoading(true);
 			setError(null);
@@ -633,9 +633,9 @@ export function useSocialOperations(signingClient: any) {
 			setLoading(true);
 			setError(null);
 			try {
-				console.log("🔧 TRANSACTION DEBUG:");
-				console.log("  - senderAddress:", senderAddress);
-				console.log("  - CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
+				
+				
+				
 				console.log("  - message:", JSON.stringify({
 					create_help_request: {
 						to_username: toUsername,
@@ -644,8 +644,8 @@ export function useSocialOperations(signingClient: any) {
 						proof_type: "None",
 					},
 				}, null, 2));
-				console.log("  - funds:", [{ denom: "uxion", amount }]);
-				console.log("  - signingClient type:", typeof signingClient);
+				
+				
 				
 				const result = await signingClient.execute(
 					senderAddress,
@@ -663,7 +663,7 @@ export function useSocialOperations(signingClient: any) {
 					[{ denom: "uxion", amount }] // Send the actual funds for escrow
 				);
 				
-				console.log("✅ Transaction successful:", result);
+				
 				return result;
 			} catch (e: any) {
 				setError(e.message);
@@ -811,7 +811,7 @@ export function useSocialOperations(signingClient: any) {
 			const result = await contract.isUsernameAvailable(username);
 			return result.available;
 		} catch (error) {
-			console.error("Error checking username availability:", error);
+			
 			return false;
 		}
 	}, []);

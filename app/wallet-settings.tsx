@@ -60,7 +60,7 @@ export default function WalletSettingsScreen() {
 				setWalletInfo(null);
 			}
 		} catch (error) {
-			console.error("Error loading wallet info:", error);
+			
 			setWalletInfo(null);
 		} finally {
 			setLoading(false);
@@ -87,7 +87,7 @@ export default function WalletSettingsScreen() {
 					title: 'My Wallet Address',
 				});
 			} catch (error) {
-				console.error('Error sharing address:', error);
+				
 			}
 		}
 	};
@@ -108,7 +108,7 @@ export default function WalletSettingsScreen() {
 			});
 			router.replace("/");
 		} catch (error) {
-			console.error("Error disconnecting wallet:", error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',

@@ -91,7 +91,7 @@ export class ZKTLSService {
 		expectedContent?: string
 	): Promise<WebsiteVerificationResult> {
 		try {
-			console.log("🔗 Generating website delivery proof for:", deliveryUrl);
+			
 
 			// Create website verification configuration
 			const config: WebsiteVerificationConfig = {
@@ -126,7 +126,7 @@ export class ZKTLSService {
 
 			// Generate verification URL for user
 			const verificationUrl = await proofRequest.getRequestUrl();
-			console.log("📱 Verification URL generated:", verificationUrl);
+			
 
 			// For now, return the verification URL - user needs to complete the proof
 			// In a real implementation, you'd handle the proof completion callback
@@ -139,7 +139,7 @@ export class ZKTLSService {
 				},
 			};
 		} catch (error) {
-			console.error("❌ Failed to generate website delivery proof:", error);
+			
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "Unknown error",
@@ -156,7 +156,7 @@ export class ZKTLSService {
 		error?: string;
 	}> {
 		try {
-			console.log("🔍 Verifying website delivery proof...");
+			
 
 			// Verify the proof cryptographically
 			const isValid = await verifyProof(proof);
@@ -170,14 +170,14 @@ export class ZKTLSService {
 
 			// Extract and validate the proof data
 			const extractedData = JSON.parse(proof.claimData.parameters);
-			console.log("✅ Proof verified! Extracted data:", extractedData);
+			
 
 			return {
 				isValid: true,
 				extractedData,
 			};
 		} catch (error) {
-			console.error("❌ Proof verification failed:", error);
+			
 			return {
 				isValid: false,
 				error: error instanceof Error ? error.message : "Verification failed",
@@ -200,7 +200,7 @@ export class ZKTLSService {
 		error?: string;
 	}> {
 		try {
-			console.log("📄 Submitting delivery proof to contract for job:", jobId);
+			
 
 			// Verify the proof first
 			const verification = await this.verifyWebsiteDeliveryProof(proof);
@@ -232,7 +232,7 @@ export class ZKTLSService {
 				fullProof
 			);
 
-			console.log("📤 Sending zkTLS proof to contract...");
+			
 
 			const result = await contractClient.execute(
 				userAddress,
@@ -252,7 +252,7 @@ export class ZKTLSService {
 				transactionHash: result.transactionHash,
 			};
 		} catch (error) {
-			console.error("❌ Failed to submit proof to contract:", error);
+			
 			return {
 				success: false,
 				error:
@@ -275,7 +275,7 @@ export class ZKTLSService {
 		error?: string;
 	}> {
 		try {
-			console.log("🗄️ Storing proof in RUM contract...");
+			
 
 			// RUM contract instantiation message
 			const rumInstantiateMsg = {
@@ -297,7 +297,7 @@ export class ZKTLSService {
 			);
 
 			const rumContractAddress = instantiateResult.contractAddress;
-			console.log("📍 RUM contract deployed at:", rumContractAddress);
+			
 
 			// Store the proof in RUM
 			const storeMessage = {
@@ -329,14 +329,14 @@ export class ZKTLSService {
 				"Store website delivery proof"
 			);
 
-			console.log("✅ Proof stored in RUM successfully!");
+			
 
 			return {
 				success: true,
 				transactionHash: storeResult.transactionHash,
 			};
 		} catch (error) {
-			console.error("❌ Failed to store proof in RUM:", error);
+			
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "RUM storage failed",
@@ -361,7 +361,7 @@ export class ZKTLSService {
 		verificationUrl?: string;
 	}> {
 		try {
-			console.log("🚀 Starting complete job verification workflow...");
+			
 
 			// Step 1: Generate website delivery proof
 			const proofResult = await this.generateWebsiteDeliveryProof(
@@ -384,7 +384,7 @@ export class ZKTLSService {
 				proofId: proofResult.proof?.identifier,
 			};
 		} catch (error) {
-			console.error("❌ Complete job verification workflow failed:", error);
+			
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "Workflow failed",
@@ -437,14 +437,14 @@ export class ZKTLSService {
 				);
 			}
 
-			console.log("🎉 Job automatically completed with zkTLS proof!");
+			
 
 			return {
 				success: true,
 				transactionHash: submissionResult.transactionHash,
 			};
 		} catch (error) {
-			console.error("❌ Failed to handle completed proof:", error);
+			
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "Proof handling failed",

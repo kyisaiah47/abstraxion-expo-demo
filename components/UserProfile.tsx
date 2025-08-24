@@ -72,7 +72,7 @@ export default function UserProfile({
 				await uploadAvatar(result.assets[0].uri);
 			}
 		} catch (error) {
-			console.error("Error picking image:", error);
+			
 			Alert.alert("Error", "Failed to pick image. Please try again.");
 		}
 	};
@@ -95,7 +95,7 @@ export default function UserProfile({
 				throw new Error("Upload failed");
 			}
 		} catch (error) {
-			console.error("Avatar upload failed:", error);
+			
 			Alert.alert("Error", "Failed to upload avatar. Please try again.");
 		} finally {
 			setUploading(false);

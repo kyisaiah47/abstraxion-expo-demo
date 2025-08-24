@@ -43,7 +43,7 @@ export class UserService {
 			return res.available;
 		} catch (error) {
 			// If contract throws error, assume username is available
-			console.error("Error checking username availability:", error);
+			
 			return true;
 		}
 	}
@@ -109,7 +109,7 @@ export class UserService {
 
 			return userResult?.user || null;
 		} catch (error) {
-			console.error("Error fetching current user:", error);
+			
 			return null;
 		}
 	}
@@ -133,7 +133,7 @@ export class UserService {
 
 			return userResult?.user || null;
 		} catch (error) {
-			console.error("Error fetching user by wallet:", error);
+			
 			return null;
 		}
 	}
@@ -172,7 +172,7 @@ export class UserService {
 			const users = res.users || [];
 			return users.filter((user: User) => user.wallet_address !== walletAddress);
 		} catch (error) {
-			console.error("Error searching users:", error);
+			
 			return [];
 		}
 	}
@@ -256,7 +256,7 @@ export class UserService {
 
 			return friends.filter((friend): friend is User => !!friend);
 		} catch (error) {
-			console.error("Error fetching friends:", error);
+			
 			return [];
 		}
 	}
@@ -302,7 +302,7 @@ export class UserService {
 					!!req && !!req.fromUserData
 			);
 		} catch (error) {
-			console.error("Error fetching pending friend requests:", error);
+			
 			return [];
 		}
 	}

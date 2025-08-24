@@ -57,9 +57,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         };
 
         setUser(userData);
-        console.log('✅ User signed in with wallet auth:', walletAddress.slice(0, 8) + '...');
+        // User signed in successfully
       } else {
-        console.error('Failed to sign in with wallet:', authResult?.error);
+        // Failed to sign in with wallet
         Toast.show({
           type: 'error',
           text1: 'Sign In Failed',
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
       }
     } catch (error) {
-      console.error('Error loading user with wallet auth:', error);
+      // Error loading user with wallet auth
       Toast.show({
         type: 'error',
         text1: 'Connection Error',
@@ -92,9 +92,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await signOutWallet();
       setUser(null);
-      console.log('✅ User signed out');
+      // User signed out
     } catch (error) {
-      console.error('Error signing out:', error);
+      // Error signing out
       Toast.show({
         type: 'error',
         text1: 'Sign Out Error',
@@ -118,10 +118,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             profilePicture: currentUser.user_metadata?.profile_picture,
           };
           setUser(userData);
-          console.log('✅ Restored user session:', currentUser.wallet_address.slice(0, 8) + '...');
+          // Restored user session
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        // Error checking session
       } finally {
         setIsLoading(false);
       }

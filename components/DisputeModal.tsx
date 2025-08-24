@@ -54,7 +54,7 @@ export default function DisputeModal({
 				setEvidenceUri(result.assets[0].uri);
 			}
 		} catch (error) {
-			console.error('Error picking image:', error);
+			
 			Alert.alert('Error', 'Failed to pick image. Please try again.');
 		}
 	};
@@ -82,7 +82,7 @@ export default function DisputeModal({
 			setEvidenceUri(null);
 			onClose();
 		} catch (error) {
-			console.error('Error submitting dispute:', error);
+			
 			Alert.alert('Error', 'Failed to submit dispute. Please try again.');
 		} finally {
 			setLoading(false);

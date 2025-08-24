@@ -85,7 +85,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           setIsDarkMode(JSON.parse(stored));
         }
       } catch (error) {
-        console.error("Error loading theme:", error);
+        
       }
     };
     loadTheme();
@@ -97,7 +97,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setIsDarkMode(newValue);
       await AsyncStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(newValue));
     } catch (error) {
-      console.error("Error saving theme:", error);
+      
     }
   };
 

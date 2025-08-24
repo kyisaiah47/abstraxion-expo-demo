@@ -125,7 +125,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	}, [recipient, user, userLoading]);
 
 	const handleSubmit = async () => {
-		console.log("🚀 SUBMIT DEBUG - Starting submission...");
+		
 		console.log("📋 Form Data:", {
 			paymentType,
 			recipient,
@@ -133,7 +133,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			description: formData.description,
 			proofType: formData.proofType
 		});
-		console.log("👤 User Info:", { user, userLoading });
+		
 		console.log("🔗 Wallet Info:", { 
 			isConnected, 
 			address: account?.bech32Address, 
@@ -141,16 +141,16 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		});
 		
 		// DEBUG: Check current user registration
-		console.log("🔍 DEBUG - Checking user registration...");
+		
 		if (currentUser) {
-			console.log("✅ Current user found:", currentUser);
+			
 		} else {
-			console.log("❌ Current user not found - this might be the issue!");
-			console.log("📱 Account address:", account?.bech32Address);
+			
+			
 			
 			// Try to manually query for the user
 			try {
-				console.log("🔍 Attempting manual user lookup...");
+				
 				const client = await import("@cosmjs/cosmwasm-stargate").then(m => m.CosmWasmClient.connect(
 					process.env.EXPO_PUBLIC_RPC_ENDPOINT || "https://rpc.xion-testnet-2.burnt.com:443"
 				));
@@ -158,14 +158,14 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					process.env.EXPO_PUBLIC_CONTRACT_ADDRESS || "xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy",
 					{ get_user_by_wallet: { wallet_address: account?.bech32Address } }
 				);
-				console.log("🔍 Manual lookup result:", result);
+				
 			} catch (lookupError: any) {
-				console.log("❌ Manual lookup failed:", lookupError.message);
+				
 			}
 		}
 
 		if (!isConnected || !account?.bech32Address || !signingClient) {
-			console.log("❌ Wallet not connected");
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Wallet Not Connected',
@@ -175,7 +175,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			return;
 		}
 		if (!recipient || !/^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
-			console.log("❌ Invalid recipient:", recipient);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -185,7 +185,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			return;
 		}
 		if (userLoading) {
-			console.log("⏳ User still loading");
+			
 			Toast.show({
 				type: 'info',
 				text1: 'Checking recipient',
@@ -195,7 +195,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			return;
 		}
 		if (!user) {
-			console.log("❌ User not found");
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -205,7 +205,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			return;
 		}
 		if (formData.amount <= 0) {
-			console.log("❌ Invalid amount:", formData.amount);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -215,7 +215,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			return;
 		}
 		if (!formData.description.trim()) {
-			console.log("❌ No description");
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -225,7 +225,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			return;
 		}
 
-		console.log("✅ All validations passed, proceeding...");
+		
 		setLoading(true);
 		setFeedback(null);
 		
@@ -237,45 +237,45 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				payment_type: paymentType,
 				proof_type: formData.proofType,
 			};
-			console.log("📦 Final payload:", payload);
+			
 			console.log("💰 Formatted amount:", formatXionAmount(formData.amount));
 
 			if (paymentType === "send_money") {
-				console.log("💸 Calling sendDirectPayment...");
+				
 				await sendDirectPayment(
 					payload.to_username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-				console.log("✅ sendDirectPayment completed");
+				
 			} else if (paymentType === "request_money") {
-				console.log("💳 Calling createPaymentRequest...");
+				
 				await createPaymentRequest(
 					payload.to_username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-				console.log("✅ createPaymentRequest completed");
+				
 			} else if (paymentType === "request_task") {
-				console.log("🙏 Calling createTaskRequest...");
+				
 				await createHelpRequest(
 					payload.to_username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-				console.log("✅ createTaskRequest completed");
+				
 			}
 			
-			console.log("🎉 Transaction submitted successfully!");
+			
 			setFeedback("Transaction submitted successfully!");
 			onSubmit(formData);
 		} catch (err: any) {
-			console.error("💥 Transaction failed:", err);
-			console.error("💥 Error message:", err?.message);
-			console.error("💥 Full error:", err);
+			
+			
+			
 			
 			// Check if it's a contract method not found error
 			if (err?.message?.includes("Invalid type") || err?.message?.includes("unknown request")) {
@@ -287,7 +287,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			}
 		} finally {
 			setLoading(false);
-			console.log("🏁 Submit process finished");
+			
 		}
 	};
 

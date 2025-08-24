@@ -63,7 +63,7 @@ export default function AddressChip({
 			});
 			onCopy?.();
 		} catch (error) {
-			console.error("Failed to copy address:", error);
+			
 			Toast.show({
 				type: 'error',
 				text1: 'Error',

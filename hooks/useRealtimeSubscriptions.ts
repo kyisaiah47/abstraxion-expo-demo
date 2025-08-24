@@ -46,7 +46,7 @@ export const useRealtimeSubscriptions = (callbacks: RealtimeSubscriptionCallback
           filter: `or(payer.eq.${user.walletAddress},worker.eq.${user.walletAddress})`,
         },
         (payload: TaskRealtimePayload) => {
-          console.log('Task updated:', payload);
+          
           callbacks.onTaskUpdate?.(payload);
         }
       );
@@ -60,7 +60,7 @@ export const useRealtimeSubscriptions = (callbacks: RealtimeSubscriptionCallback
           filter: `or(payer.eq.${user.walletAddress},worker.eq.${user.walletAddress})`,
         },
         (payload: TaskRealtimePayload) => {
-          console.log('Task created:', payload);
+          
           callbacks.onTaskInsert?.(payload);
         }
       );
@@ -77,7 +77,7 @@ export const useRealtimeSubscriptions = (callbacks: RealtimeSubscriptionCallback
           filter: `user_id.eq.${user.id}`, // Assumes user has an ID
         },
         (payload: NotificationRealtimePayload) => {
-          console.log('New notification:', payload);
+          
           callbacks.onNotificationInsert?.(payload);
         }
       );
@@ -93,7 +93,7 @@ export const useRealtimeSubscriptions = (callbacks: RealtimeSubscriptionCallback
           table: 'activity_feed',
         },
         (payload: RealtimePostgresChangesPayload<any>) => {
-          console.log('New activity:', payload);
+          
           callbacks.onActivityFeedInsert?.(payload);
         }
       );
@@ -101,11 +101,11 @@ export const useRealtimeSubscriptions = (callbacks: RealtimeSubscriptionCallback
 
     // Subscribe to the channel
     channel.subscribe((status) => {
-      console.log('Realtime subscription status:', status);
+      
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Realtime subscriptions active');
+        
       } else if (status === 'CHANNEL_ERROR') {
-        console.error('❌ Realtime subscription error');
+        
       }
     });
 
