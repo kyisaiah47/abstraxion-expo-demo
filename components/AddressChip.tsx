@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { useTheme } from "@/contexts/ThemeContext";
 import * as Clipboard from "expo-clipboard";
+import Toast from "react-native-toast-message";
 
 interface AddressChipProps {
 	address: string;
@@ -54,11 +55,21 @@ export default function AddressChip({
 	const handleCopy = async () => {
 		try {
 			await Clipboard.setStringAsync(address);
-			// TODO: Replace with proper toast component
-			Alert.alert("Copied!", "Address copied to clipboard");
+			Toast.show({
+				type: 'success',
+				text1: 'Copied!',
+				text2: 'Address copied to clipboard',
+				position: 'bottom',
+			});
 			onCopy?.();
 		} catch (error) {
 			console.error("Failed to copy address:", error);
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Failed to copy address',
+				position: 'bottom',
+			});
 		}
 	};
 
@@ -126,6 +137,7 @@ const createStyles = (colors: any) =>
 			borderWidth: 1,
 			borderColor: colors.border.primary,
 			width: "100%",
+			...DesignSystem.shadows.sm,
 		},
 
 		addressChipLarge: {

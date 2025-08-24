@@ -6,10 +6,10 @@ import {
 	ScrollView,
 	TextInput,
 	Pressable,
-	Alert,
 	RefreshControl,
 	ActivityIndicator,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -133,13 +133,20 @@ export default function FriendsScreen() {
 			// Add to sent requests to update UI
 			setSentRequests((prev) => new Set([...prev, toUsername]));
 
-			Alert.alert("Success", "Friend request sent!");
+			Toast.show({
+				type: 'success',
+				text1: 'Success',
+				text2: 'Friend request sent!',
+				position: 'bottom',
+			});
 		} catch (error) {
 			console.error("❌ Friend request failed:", error);
-			Alert.alert(
-				"Error",
-				error instanceof Error ? error.message : "Failed to send friend request"
-			);
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: error instanceof Error ? error.message : 'Failed to send friend request',
+				position: 'bottom',
+			});
 		}
 	};
 
@@ -156,17 +163,29 @@ export default function FriendsScreen() {
 		try {
 			if (response === "accepted") {
 				await acceptFriendRequest(requestUsername, address);
-				Alert.alert("Success", "Friend request accepted!");
+				Toast.show({
+					type: 'success',
+					text1: 'Success',
+					text2: 'Friend request accepted!',
+					position: 'bottom',
+				});
 			} else {
-				Alert.alert("Declined", "Friend request declined.");
+				Toast.show({
+					type: 'info',
+					text1: 'Declined',
+					text2: 'Friend request declined.',
+					position: 'bottom',
+				});
 			}
 			await handleRefresh();
 		} catch (error) {
 			console.error("❌ Friend request response failed:", error);
-			Alert.alert(
-				"Error",
-				error instanceof Error ? error.message : "Failed to respond to request"
-			);
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: error instanceof Error ? error.message : 'Failed to respond to request',
+				position: 'bottom',
+			});
 		}
 	};
 
@@ -274,12 +293,12 @@ export default function FriendsScreen() {
 
 	const handleRemoveFriend = async (friend: User) => {
 		// TODO: Implement contract call to remove friend if available
-		Alert.alert(
-			"Removed",
-			`Friend ${
-				friend.display_name || friend.username
-			} removed (not implemented)`
-		);
+		Toast.show({
+			type: 'info',
+			text1: 'Removed',
+			text2: `Friend ${friend.display_name || friend.username} removed (not implemented)`,
+			position: 'bottom',
+		});
 		setShowRemoveModal({ open: false });
 		await handleRefresh();
 	};
@@ -323,7 +342,12 @@ export default function FriendsScreen() {
 			await logout();
 			router.replace("/");
 		} catch {
-			Alert.alert("Error", "Failed to sign out. Please try again.");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Failed to sign out. Please try again.',
+				position: 'bottom',
+			});
 		}
 	};
 

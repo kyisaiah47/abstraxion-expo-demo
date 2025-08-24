@@ -112,7 +112,12 @@ export default function WalletSettingsScreen() {
 							router.replace("/");
 						} catch (error) {
 							console.error("Error disconnecting wallet:", error);
-							Alert.alert("Error", "Failed to disconnect wallet");
+							Toast.show({
+								type: 'error',
+								text1: 'Error',
+								text2: 'Failed to disconnect wallet',
+								position: 'bottom',
+							});
 						}
 					},
 				},
@@ -157,14 +162,24 @@ export default function WalletSettingsScreen() {
 			title: "Transaction History",
 			subtitle: "View transaction history",
 			icon: "list-outline" as const,
-			action: () => Alert.alert("Coming Soon", "Transaction history will be available soon!"),
+			action: () => Toast.show({
+				type: 'info',
+				text1: 'Coming Soon',
+				text2: 'Transaction history will be available soon!',
+				position: 'bottom',
+			}),
 		},
 		{
 			id: "export-keys",
 			title: "Export Private Keys",
 			subtitle: "Export wallet private keys",
 			icon: "key-outline" as const,
-			action: () => Alert.alert("Security", "Private key export is handled by your wallet provider for security reasons."),
+			action: () => Toast.show({
+				type: 'info',
+				text1: 'Security',
+				text2: 'Private key export is handled by your wallet provider for security reasons.',
+				position: 'bottom',
+			}),
 		},
 	];
 

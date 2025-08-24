@@ -4,7 +4,6 @@ import {
 	Text,
 	StyleSheet,
 	Pressable,
-	Alert,
 	KeyboardAvoidingView,
 	Platform,
 	ScrollView,
@@ -25,6 +24,7 @@ import {
 	useAbstraxionAccount,
 	useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
+import Toast from "react-native-toast-message";
 
 export default function EditProfileScreen() {
 	const [displayName, setDisplayName] = useState("");
@@ -55,7 +55,12 @@ export default function EditProfileScreen() {
 				setUsername(user?.username || "");
 			} catch (error) {
 				console.error("Error loading user:", error);
-				Alert.alert("Error", "Failed to load profile data");
+				Toast.show({
+					type: 'error',
+					text1: 'Error',
+					text2: 'Failed to load profile data',
+					position: 'bottom',
+				});
 			}
 		};
 		loadUserData();
@@ -64,30 +69,52 @@ export default function EditProfileScreen() {
 
 	const handleSave = async () => {
 		if (!displayName.trim() || !username.trim()) {
-			Alert.alert("Error", "Please fill in all fields");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Please fill in all fields',
+				position: 'bottom',
+			});
 			return;
 		}
 
 		if (username !== currentUser?.username && !isUsernameAvailable) {
-			Alert.alert("Error", "Username is not available");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Username is not available',
+				position: 'bottom',
+			});
 			return;
 		}
 
 		if (!account?.bech32Address) {
-			Alert.alert("Error", "Wallet not connected");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Wallet not connected',
+				position: 'bottom',
+			});
 			return;
 		}
 
 		try {
 			await updateUser(username, displayName, account.bech32Address);
-			Alert.alert(
-				"Success", 
-				"Profile updated successfully!", 
-				[{ text: "OK", onPress: () => router.back() }]
-			);
+			Toast.show({
+				type: 'success',
+				text1: 'Success',
+				text2: 'Profile updated successfully!',
+				position: 'bottom',
+			});
+			router.back();
 		} catch (error) {
 			console.error("Error updating profile:", error);
-			Alert.alert("Error", "Failed to update profile. Please try again.");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Failed to update profile. Please try again.',
+				position: 'bottom',
+			});
 		}
 	};
 

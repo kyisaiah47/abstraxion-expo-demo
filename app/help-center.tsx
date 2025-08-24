@@ -109,7 +109,12 @@ export default function HelpCenterScreen() {
 			}
 		} catch (error) {
 			console.error('Error opening email:', error);
-			Alert.alert("Error", "Could not open email app");
+			Toast.show({
+				type: 'error',
+				text1: 'Error',
+				text2: 'Could not open email app',
+				position: 'bottom',
+			});
 		}
 	};
 
