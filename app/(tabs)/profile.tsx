@@ -164,11 +164,7 @@ export default function ProfileScreen() {
 					title: "Edit Profile",
 					subtitle: "Update your name and username",
 					icon: "create-outline" as const,
-					action: () =>
-						Alert.alert(
-							"Coming Soon",
-							"Profile editing will be available soon!"
-						),
+					action: () => router.push("/edit-profile"),
 				},
 				{
 					id: "wallet-settings",

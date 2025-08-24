@@ -772,10 +772,56 @@ export function useSocialOperations(signingClient: any) {
 		[signingClient]
 	);
 
+	// Update user
+	const updateUser = useCallback(
+		async (username: string, displayName: string, senderAddress: string) => {
+			if (!signingClient) {
+				throw new Error("Signing client not available");
+			}
+
+			setLoading(true);
+			setError(null);
+			try {
+				return await signingClient.execute(
+					senderAddress,
+					CONTRACT_ADDRESS,
+					{
+						update_user: {
+							username,
+							display_name: displayName,
+						},
+					},
+					"auto"
+				);
+			} catch (e: any) {
+				setError(e.message);
+				throw e;
+			} finally {
+				setLoading(false);
+			}
+		},
+		[signingClient]
+	);
+
+	// Check username availability
+	const checkUsernameAvailability = useCallback(async (username: string) => {
+		try {
+			const client = await getReadClient();
+			const contract = new SocialPaymentContract(client);
+			const result = await contract.isUsernameAvailable(username);
+			return result.available;
+		} catch (error) {
+			console.error("Error checking username availability:", error);
+			return false;
+		}
+	}, []);
+
 	return {
 		loading,
 		error,
 		registerUser,
+		updateUser,
+		checkUsernameAvailability,
 		sendFriendRequest,
 		acceptFriendRequest,
 		sendDirectPayment,
