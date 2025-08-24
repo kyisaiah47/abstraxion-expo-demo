@@ -26,6 +26,7 @@ import { supabase } from "@/lib/supabase";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { TaskStatus } from "@/types/proofpay";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
+import { getTaskCountdownText } from "@/utils/countdown";
 
 type TabType = 'active' | 'pending' | 'completed';
 
@@ -367,6 +368,25 @@ export default function JobsScreen() {
 												{formatTimeAgo(item.created_at)}
 											</Text>
 										</View>
+										{(() => {
+											const taskForCountdown = {
+												...item,
+												createdAt: new Date(item.created_at),
+											};
+											const countdownText = getTaskCountdownText(taskForCountdown);
+											return countdownText ? (
+												<View style={styles.countdownChip}>
+													<Ionicons 
+														name="hourglass-outline" 
+														size={12} 
+														color={colors.status?.warning || "#D97706"} 
+													/>
+													<Text style={[styles.countdownText, { color: colors.status?.warning || "#D97706" }]}>
+														{countdownText}
+													</Text>
+												</View>
+											) : null;
+										})()}
 									</View>
 									
 									<View style={styles.proofTypeBadge}>
@@ -519,6 +539,20 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 	},
 	proofTypeText: {
+		fontSize: 11,
+		fontWeight: '600',
+	},
+	countdownChip: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		backgroundColor: 'rgba(217, 119, 6, 0.15)',
+		paddingHorizontal: DesignSystem.spacing.sm,
+		paddingVertical: 4,
+		borderRadius: 12,
+		gap: 4,
+		marginTop: 4,
+	},
+	countdownText: {
 		fontSize: 11,
 		fontWeight: '600',
 	},

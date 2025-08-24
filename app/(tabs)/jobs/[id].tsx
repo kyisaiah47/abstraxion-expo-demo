@@ -20,6 +20,7 @@ import { supabase } from "@/lib/supabase";
 import { TaskStatus, DisputeData } from "@/types/proofpay";
 import DisputeModal from "@/components/DisputeModal";
 import Toast from "react-native-toast-message";
+import ProofGallery from "@/components/ProofGallery";
 
 interface TaskDetails {
 	id: string;
@@ -185,6 +186,56 @@ export default function JobDetailsScreen() {
 		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
 
+	const getProofEvidence = () => {
+		if (!task) return [];
+
+		const mockEvidence = [];
+
+		// Add different types of proof evidence based on task status and proof type
+		if (task.status === 'proof_submitted' || task.status === 'pending_release' || task.status === 'released') {
+			if (task.proof_type === 'zktls' || task.proof_type === 'hybrid') {
+				mockEvidence.push({
+					type: 'zktls_receipt' as const,
+					title: 'zkTLS Verification',
+					content: `zktls_proof_${task.id}_${Date.now()}`,
+					timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+					verified: true
+				});
+			}
+
+			// Add completion screenshot for visual proof
+			mockEvidence.push({
+				type: 'image' as const,
+				title: 'Task Completion Screenshot',
+				content: 'https://via.placeholder.com/400x300/4F46E5/FFFFFF?text=Task+Completed',
+				timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+				verified: false
+			});
+
+			// Add completion description
+			mockEvidence.push({
+				type: 'text' as const,
+				title: 'Completion Details',
+				content: 'Task completed successfully. All requirements met including quality standards and deadline adherence. Worker provided detailed documentation and follow-up instructions.',
+				timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+				verified: false
+			});
+
+			// Add external verification link
+			if (task.proof_type === 'hybrid') {
+				mockEvidence.push({
+					type: 'link' as const,
+					title: 'External Verification',
+					content: 'https://github.com/example/repo/commit/abc123',
+					timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+					verified: true
+				});
+			}
+		}
+
+		return mockEvidence;
+	};
+
 	useEffect(() => {
 		fetchTaskDetails();
 	}, [id]);
@@ -319,6 +370,9 @@ export default function JobDetailsScreen() {
 									</View>
 								)}
 							</View>
+
+							{/* Proof Evidence */}
+							<ProofGallery evidence={getProofEvidence()} />
 						</View>
 					</ScrollView>
 
