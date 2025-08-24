@@ -67,16 +67,7 @@ export default function UsernameSetupScreen() {
 		displayName.trim().length > 0;
 
 	const handleRegisterUsername = async () => {
-		console.log("🚀 Starting registration process...");
-		console.log("📊 Initial state:");
-		console.log("  - signingClient:", !!signingClient);
-		console.log("  - account?.bech32Address:", account?.bech32Address);
-		console.log("  - isValid:", isValid);
-		console.log("  - username:", username);
-
-		// Add this check!
 		if (!signingClient) {
-			console.log("❌ Signing client not ready");
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -87,9 +78,6 @@ export default function UsernameSetupScreen() {
 		}
 
 		if (!account?.bech32Address || !isValid) {
-			console.log("❌ Invalid state for registration");
-			console.log("  - account?.bech32Address:", account?.bech32Address);
-			console.log("  - isValid:", isValid);
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -99,10 +87,7 @@ export default function UsernameSetupScreen() {
 			return;
 		}
 
-		console.log("✅ All checks passed, proceeding with registration...");
-		console.log("🔗 Calling registerUser with:");
-		console.log("  - username:", username);
-		console.log("  - wallet:", account.bech32Address);
+		// All checks passed, proceeding with registration
 
 		try {
 			const result = await registerUser(
@@ -110,24 +95,15 @@ export default function UsernameSetupScreen() {
 				displayName,
 				account.bech32Address
 			);
-			console.log("✅ Registration successful!");
-			console.log("📋 Registration result:", result);
-			console.log("🏠 Navigating to main app...");
 			router.replace("/(tabs)/activity");
 		} catch (error) {
-			console.error("❌ Registration error occurred:");
 			const errorMsg = error instanceof Error ? error.message : String(error);
-			console.error("  - Error message:", errorMsg);
-			console.error("  - Full error:", error);
-			if (error instanceof Error) {
-				console.error("  - Error stack:", error.stack);
-			}
 
 			// Check if it's the "already registered" error
 			if (errorMsg && errorMsg.includes("already registered")) {
-				console.log(
-					"🎯 This is the 'already registered' error - wallet exists in contract"
-				);
+				// User already registered, redirect to main app
+				router.replace("/(tabs)/activity");
+				return;
 			}
 
 			Toast.show({

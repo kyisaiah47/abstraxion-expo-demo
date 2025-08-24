@@ -1,19 +1,20 @@
 import { Link, Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { StyleSheet, View, Text } from 'react-native';
+import { useTheme } from '@/contexts/ThemeContext';
+import { DesignSystem } from '@/constants/DesignSystem';
 
 export default function NotFoundScreen() {
+  const { colors } = useTheme();
+
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">This screen doesn't exist.</ThemedText>
+      <View style={[styles.container, { backgroundColor: colors.surface.primary }]}>
+        <Text style={[styles.title, { color: colors.text.primary }]}>This screen doesn&apos;t exist.</Text>
         <Link href="/" style={styles.link}>
-          <ThemedText type="link">Go to home screen!</ThemedText>
+          <Text style={[styles.linkText, { color: colors.accent?.primary || colors.primary[700] }]}>Go to home screen!</Text>
         </Link>
-      </ThemedView>
+      </View>
     </>
   );
 }
@@ -23,10 +24,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: DesignSystem.spacing.xl,
+  },
+  title: {
+    ...DesignSystem.typography.h2,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: DesignSystem.spacing.lg,
   },
   link: {
-    marginTop: 15,
-    paddingVertical: 15,
+    marginTop: DesignSystem.spacing.lg,
+    paddingVertical: DesignSystem.spacing.md,
+    paddingHorizontal: DesignSystem.spacing.lg,
+    borderRadius: DesignSystem.radius.md,
+  },
+  linkText: {
+    ...DesignSystem.typography.bodyMedium,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

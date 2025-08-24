@@ -14,9 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
 
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useTheme } from "@/contexts/ThemeContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { useTheme, ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { useTaskSubscriptions, useNotificationSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import Toast from "react-native-toast-message";

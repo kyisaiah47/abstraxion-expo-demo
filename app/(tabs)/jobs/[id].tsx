@@ -7,10 +7,9 @@ import {
 	ScrollView,
 	TouchableOpacity,
 	Platform,
-	Alert,
 	ActivityIndicator,
 } from "react-native";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/context/AuthContext";
@@ -262,7 +261,7 @@ export default function JobDetailsScreen() {
 					<Ionicons name="alert-circle-outline" size={48} color={colors.text.tertiary} />
 					<Text style={[styles.emptyText, { color: colors.text.primary }]}>Task not found</Text>
 					<Text style={[styles.emptySubtext, { color: colors.text.secondary }]}>
-						This task may have been removed or doesn't exist
+						This task may have been removed or doesn&apos;t exist
 					</Text>
 				</View>
 			</SafeAreaView>

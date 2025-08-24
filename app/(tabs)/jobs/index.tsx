@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	View,
 	Text,
 	FlatList,
 	StyleSheet,
-	TouchableOpacity,
 	ActivityIndicator,
 	RefreshControl,
 	SafeAreaView,
@@ -13,12 +12,7 @@ import {
 import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import {
-	useAbstraxionAccount,
-	useAbstraxionSigningClient,
-} from "@burnt-labs/abstraxion-react-native";
-import { ContractService, type Job } from "../../../lib/contractService";
-import { TREASURY_CONFIG } from "../../../constants/contracts";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
