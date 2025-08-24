@@ -7,6 +7,7 @@ import {
 	Pressable,
 	Alert,
 	ActivityIndicator,
+	ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { PaymentFormData, PaymentType, ProofType } from "@/types/proofpay";
@@ -32,24 +33,28 @@ interface SocialPaymentFormProps {
 const PROOF_TYPE_OPTIONS = [
 	{
 		id: "soft" as ProofType,
-		label: "Soft Proof (manual approval)",
+		label: "Soft Proof",
+		sublabel: "(manual approval)",
 		icon: "document-text-outline",
 		description: "📝 Manual review and approval",
 		disabled: false,
 	},
 	{
 		id: "zktls" as ProofType,
-		label: "zkTLS Proof (instant auto-release)",
+		label: "zkTLS Proof",
+		sublabel: "(instant auto-release)",
 		icon: "shield-checkmark-outline", 
 		description: "🔒 Instant verification & release",
 		disabled: false,
 	},
 	{
 		id: "hybrid" as ProofType,
-		label: "Hybrid (zkTLS + 24h review) — Recommended",
+		label: "Hybrid",
+		sublabel: "(zkTLS + 24h review)",
 		icon: "time-outline",
 		description: "⏳ Auto-verify + dispute window",
 		disabled: false,
+		recommended: true,
 	},
 ];
 
@@ -312,7 +317,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const styles = createStyles(colors);
 
 	return (
-		<View style={styles.container}>
+		<ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
 			{/* Recipient Username Input */}
 			<View style={styles.userSection}>
 				{user ? (
@@ -490,17 +495,22 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				)}
 			</View>
 
-			{/* Endpoint Input for zkTLS/Hybrid */}
-			{paymentType === "request_task" && (formData.proofType === "zktls" || formData.proofType === "hybrid") && (
-				<View className="w-full mb-10">
-					<Text className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 text-center">
-						Verification Endpoint
-					</Text>
+			{/* Simple proof type info */}
+			{paymentType === "request_task" && (
+				<Text style={styles.proofTypeHint}>
+					{getSelectedProofType().sublabel}
+				</Text>
+			)}
+
+			{/* Endpoint Input for zkTLS only */}
+			{paymentType === "request_task" && formData.proofType === "zktls" && (
+				<View style={styles.compactInputSection}>
+					<Text style={styles.compactInputLabel}>Verification Endpoint</Text>
 					<TextInput
-						className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-base text-gray-900 dark:text-gray-100 text-center"
+						style={styles.compactTextInput}
 						value={endpoint}
 						onChangeText={setEndpoint}
-						placeholder="e.g., GitHub PR URL, Google Doc link, Zoom meeting..."
+						placeholder="GitHub PR, Google Doc, etc..."
 						placeholderTextColor={colors.text.tertiary}
 						editable={!loading}
 						autoCapitalize="none"
@@ -508,21 +518,33 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				</View>
 			)}
 
-			{/* Review Window for Hybrid */}
+			{/* Hybrid fields - endpoint and review window on same line */}
 			{paymentType === "request_task" && formData.proofType === "hybrid" && (
-				<View className="w-full mb-10">
-					<Text className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 text-center">
-						Review Window (hours)
-					</Text>
-					<TextInput
-						className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 text-base text-gray-900 dark:text-gray-100 text-center"
-						value={reviewWindow.toString()}
-						onChangeText={(text) => setReviewWindow(parseInt(text) || 24)}
-						placeholder="24"
-						placeholderTextColor={colors.text.tertiary}
-						keyboardType="numeric"
-						editable={!loading}
-					/>
+				<View style={styles.hybridFieldsRow}>
+					<View style={styles.hybridFieldContainer}>
+						<Text style={styles.compactInputLabel}>Verification Endpoint</Text>
+						<TextInput
+							style={styles.compactTextInput}
+							value={endpoint}
+							onChangeText={setEndpoint}
+							placeholder="GitHub PR, Google Doc, etc..."
+							placeholderTextColor={colors.text.tertiary}
+							editable={!loading}
+							autoCapitalize="none"
+						/>
+					</View>
+					<View style={styles.hybridFieldContainerSmall}>
+						<Text style={styles.compactInputLabel}>Review Hours</Text>
+						<TextInput
+							style={[styles.compactTextInput, styles.numericInput]}
+							value={reviewWindow.toString()}
+							onChangeText={(text) => setReviewWindow(parseInt(text) || 24)}
+							placeholder="24"
+							placeholderTextColor={colors.text.tertiary}
+							keyboardType="numeric"
+							editable={!loading}
+						/>
+					</View>
 				</View>
 			)}
 
@@ -569,7 +591,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					{feedback}
 				</Text>
 			)}
-		</View>
+		</ScrollView>
 	);
 }
 
@@ -577,10 +599,13 @@ const createStyles = (colors: any) => StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: colors.surface.primary,
+	},
+
+	scrollContent: {
 		paddingHorizontal: 20,
-		alignItems: "center",
-		justifyContent: "flex-start",
 		paddingTop: 40,
+		paddingBottom: 20,
+		alignItems: "center",
 	},
 
 	// User Selection Section - Centered
@@ -785,7 +810,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 
 	// Proof Section - Small chip style
 	proofSection: {
-		marginBottom: 40,
+		marginBottom: 4,
 		alignItems: "center",
 		justifyContent: "center",
 		position: "relative",
@@ -824,7 +849,9 @@ const createStyles = (colors: any) => StyleSheet.create({
 	// Dropdown Menu Styles
 	dropdownMenu: {
 		position: "absolute",
-		top: 42,
+		top: 52,
+		left: -20,
+		right: -20,
 		backgroundColor: colors.surface.elevated,
 		borderRadius: 12,
 		paddingVertical: 8,
@@ -835,7 +862,9 @@ const createStyles = (colors: any) => StyleSheet.create({
 		shadowRadius: 8,
 		shadowOffset: { width: 0, height: 2 },
 		elevation: 4,
-		minWidth: 150,
+		minWidth: 200,
+		maxWidth: 300,
+		alignSelf: "center",
 		zIndex: 1001,
 	},
 
@@ -859,6 +888,75 @@ const createStyles = (colors: any) => StyleSheet.create({
 
 	dropdownMenuItemTextDisabled: {
 		color: colors.status?.error || colors.primary[600],
+	},
+
+	recommendedBadge: {
+		fontSize: 9,
+		fontWeight: "700",
+		color: colors.primary[700],
+		backgroundColor: colors.primary[100],
+		paddingHorizontal: 6,
+		paddingVertical: 2,
+		borderRadius: 8,
+		marginLeft: 6,
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+	},
+
+	// Simple proof type hint
+	proofTypeHint: {
+		fontSize: 12,
+		color: colors.text.tertiary,
+		textAlign: "center",
+		marginTop: 0,
+		marginBottom: 32,
+		fontStyle: "italic",
+	},
+
+	// Compact Input Sections
+	compactInputSection: {
+		width: "100%",
+		marginBottom: 20,
+	},
+
+	compactInputLabel: {
+		fontSize: 12,
+		fontWeight: "500",
+		color: colors.text.secondary,
+		marginBottom: 6,
+	},
+
+	compactTextInput: {
+		backgroundColor: colors.surface.secondary,
+		borderRadius: 8,
+		paddingVertical: 10,
+		paddingHorizontal: 12,
+		borderWidth: 1,
+		borderColor: colors.border.secondary,
+		fontSize: 14,
+		color: colors.text.primary,
+		width: "100%",
+	},
+
+	numericInput: {
+		maxWidth: 100,
+		textAlign: "center",
+	},
+
+	// Hybrid fields on same line
+	hybridFieldsRow: {
+		flexDirection: "row",
+		width: "100%",
+		marginBottom: 20,
+		gap: 12,
+	},
+
+	hybridFieldContainer: {
+		flex: 2,
+	},
+
+	hybridFieldContainerSmall: {
+		flex: 1,
 	},
 
 	// Description Section
