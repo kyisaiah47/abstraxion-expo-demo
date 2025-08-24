@@ -372,11 +372,11 @@ WHERE status IN ('pending', 'proof_submitted', 'released'); -- Hide disputes/ref
 CREATE OR REPLACE FUNCTION upsert_task_from_event(
     p_task_id TEXT,
     p_payer TEXT,
-    p_worker TEXT DEFAULT NULL,
     p_amount NUMERIC,
-    p_denom TEXT DEFAULT 'uxion',
     p_proof_type TEXT,
     p_status TEXT,
+    p_worker TEXT DEFAULT NULL,
+    p_denom TEXT DEFAULT 'uxion',
     p_description TEXT DEFAULT NULL,
     p_endpoint TEXT DEFAULT NULL,
     p_deadline_ts TIMESTAMPTZ DEFAULT NULL,

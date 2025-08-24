@@ -31,6 +31,47 @@ export class SupabaseService {
 
   // ===== TASK OPERATIONS =====
 
+  async upsertTaskFromEvent(
+    taskId: string,
+    payer: string,
+    amount: number,
+    proofType: ProofType,
+    status: TaskStatus,
+    worker?: string,
+    denom?: string,
+    description?: string,
+    endpoint?: string,
+    deadlineTs?: string,
+    reviewWindowSecs?: number
+  ): Promise<boolean> {
+    try {
+      const { error } = await this.client.rpc('upsert_task_from_event', {
+        p_task_id: taskId,
+        p_payer: payer,
+        p_amount: amount,
+        p_proof_type: proofType,
+        p_status: status,
+        p_worker: worker,
+        p_denom: denom || 'uxion',
+        p_description: description,
+        p_endpoint: endpoint,
+        p_deadline_ts: deadlineTs,
+        p_review_window_secs: reviewWindowSecs || 86400
+      });
+
+      if (error) {
+        logger.error('Failed to upsert task from event', { taskId, error: error.message });
+        return false;
+      }
+
+      logger.info('Task upserted from event successfully', { taskId });
+      return true;
+    } catch (error) {
+      logger.error('Exception during task upsert from event', { taskId, error });
+      return false;
+    }
+  }
+
   async upsertTask(taskData: Partial<TaskRecord>): Promise<TaskRecord | null> {
     try {
       const { data, error } = await this.client
@@ -130,6 +171,50 @@ export class SupabaseService {
   }
 
   // ===== NOTIFICATION OPERATIONS =====
+
+  async createNotificationFromEvent(
+    walletAddress: string,
+    type: NotificationType,
+    taskId: string,
+    title: string,
+    message: string,
+    payload: Record<string, any>
+  ): Promise<boolean> {
+    try {
+      const { error } = await this.client.rpc('create_notification', {
+        p_wallet_address: walletAddress,
+        p_type: type,
+        p_task_id: taskId,
+        p_title: title,
+        p_message: message,
+        p_payload: payload
+      });
+
+      if (error) {
+        logger.error('Failed to create notification from event', { 
+          taskId, 
+          type,
+          walletAddress: walletAddress.slice(0, 8) + '...',
+          error: error.message 
+        });
+        return false;
+      }
+
+      logger.info('Notification created from event successfully', { 
+        taskId,
+        type,
+        walletAddress: walletAddress.slice(0, 8) + '...'
+      });
+      return true;
+    } catch (error) {
+      logger.error('Exception during notification creation from event', { 
+        taskId, 
+        type,
+        error 
+      });
+      return false;
+    }
+  }
 
   async createNotification(notification: NotificationRecord): Promise<NotificationRecord | null> {
     try {

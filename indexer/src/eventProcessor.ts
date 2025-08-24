@@ -108,26 +108,30 @@ export class EventProcessor {
     const data = event.data as TaskCreatedEvent;
     
     try {
-      // Create task record
-      const taskRecord: Partial<TaskRecord> = {
-        id: data.task_id,
-        payer: data.payer,
-        worker: data.worker,
-        amount: parseFloat(data.amount),
-        denom: data.denom,
-        proof_type: data.proof_type,
-        status: TaskStatus.PENDING,
-        description: data.description,
-        endpoint: data.endpoint,
-        review_window_secs: data.review_window_secs,
-        deadline_ts: data.deadline_ts,
-        created_at: event.timestamp.toISOString(),
-        updated_at: event.timestamp.toISOString()
-      };
+      // Create task record using SQL function
+      const success = await this.supabaseService.upsertTaskFromEvent(
+        data.task_id,
+        data.payer,
+        parseFloat(data.amount),
+        data.proof_type,
+        TaskStatus.PENDING,
+        data.worker,
+        data.denom,
+        data.description,
+        data.endpoint,
+        data.deadline_ts,
+        data.review_window_secs
+      );
 
-      const task = await this.supabaseService.upsertTask(taskRecord);
-      if (!task) {
+      if (!success) {
         logger.error('Failed to create task record', { taskId: data.task_id });
+        return false;
+      }
+
+      // Get the created task for notifications
+      const task = await this.supabaseService.getTask(data.task_id);
+      if (!task) {
+        logger.error('Failed to retrieve created task', { taskId: data.task_id });
         return false;
       }
 
@@ -161,18 +165,37 @@ export class EventProcessor {
     const data = event.data as ProofSubmittedEvent;
     
     try {
-      // Update task record
-      const updateData: Partial<TaskRecord> = {
-        id: data.task_id,
-        status: TaskStatus.PROOF_SUBMITTED,
-        evidence_hash: data.proof_hash,
-        zk_proof_hash: data.zk_proof_hash,
-        updated_at: event.timestamp.toISOString()
-      };
+      // Get existing task first
+      const existingTask = await this.supabaseService.getTask(data.task_id);
+      if (!existingTask) {
+        logger.error('Task not found for proof submission', { taskId: data.task_id });
+        return false;
+      }
 
-      const task = await this.supabaseService.upsertTask(updateData);
-      if (!task) {
+      // Update task record using SQL function
+      const success = await this.supabaseService.upsertTaskFromEvent(
+        data.task_id,
+        existingTask.payer,
+        existingTask.amount,
+        existingTask.proof_type,
+        TaskStatus.PROOF_SUBMITTED,
+        data.worker,
+        existingTask.denom,
+        existingTask.description,
+        existingTask.endpoint,
+        existingTask.deadline_ts,
+        existingTask.review_window_secs
+      );
+
+      if (!success) {
         logger.error('Failed to update task for proof submission', { taskId: data.task_id });
+        return false;
+      }
+
+      // Get updated task
+      const task = await this.supabaseService.getTask(data.task_id);
+      if (!task) {
+        logger.error('Failed to retrieve updated task', { taskId: data.task_id });
         return false;
       }
 
@@ -203,18 +226,37 @@ export class EventProcessor {
     const data = event.data as TaskPendingReleaseEvent;
     
     try {
-      // Update task record
-      const updateData: Partial<TaskRecord> = {
-        id: data.task_id,
-        status: TaskStatus.PENDING_RELEASE,
-        verified_at: data.verified_at,
-        pending_release_expires_at: data.expires_at,
-        updated_at: event.timestamp.toISOString()
-      };
+      // Get existing task first
+      const existingTask = await this.supabaseService.getTask(data.task_id);
+      if (!existingTask) {
+        logger.error('Task not found for pending release', { taskId: data.task_id });
+        return false;
+      }
 
-      const task = await this.supabaseService.upsertTask(updateData);
-      if (!task) {
+      // Update task record using SQL function
+      const success = await this.supabaseService.upsertTaskFromEvent(
+        data.task_id,
+        existingTask.payer,
+        existingTask.amount,
+        existingTask.proof_type,
+        TaskStatus.PENDING_RELEASE,
+        existingTask.worker,
+        existingTask.denom,
+        existingTask.description,
+        existingTask.endpoint,
+        existingTask.deadline_ts,
+        existingTask.review_window_secs
+      );
+
+      if (!success) {
         logger.error('Failed to update task for pending release', { taskId: data.task_id });
+        return false;
+      }
+
+      // Get updated task
+      const task = await this.supabaseService.getTask(data.task_id);
+      if (!task) {
+        logger.error('Failed to retrieve updated task', { taskId: data.task_id });
         return false;
       }
 
@@ -233,16 +275,37 @@ export class EventProcessor {
     const data = event.data as TaskReleasedEvent;
     
     try {
-      // Update task record
-      const updateData: Partial<TaskRecord> = {
-        id: data.task_id,
-        status: TaskStatus.RELEASED,
-        updated_at: event.timestamp.toISOString()
-      };
+      // Get existing task first
+      const existingTask = await this.supabaseService.getTask(data.task_id);
+      if (!existingTask) {
+        logger.error('Task not found for release', { taskId: data.task_id });
+        return false;
+      }
 
-      const task = await this.supabaseService.upsertTask(updateData);
-      if (!task) {
+      // Update task record using SQL function
+      const success = await this.supabaseService.upsertTaskFromEvent(
+        data.task_id,
+        existingTask.payer,
+        existingTask.amount,
+        existingTask.proof_type,
+        TaskStatus.RELEASED,
+        data.worker,
+        existingTask.denom,
+        existingTask.description,
+        existingTask.endpoint,
+        existingTask.deadline_ts,
+        existingTask.review_window_secs
+      );
+
+      if (!success) {
         logger.error('Failed to update task for release', { taskId: data.task_id });
+        return false;
+      }
+
+      // Get updated task
+      const task = await this.supabaseService.getTask(data.task_id);
+      if (!task) {
+        logger.error('Failed to retrieve updated task', { taskId: data.task_id });
         return false;
       }
 
@@ -272,16 +335,37 @@ export class EventProcessor {
     const data = event.data as TaskDisputedEvent;
     
     try {
-      // Update task record
-      const updateData: Partial<TaskRecord> = {
-        id: data.task_id,
-        status: TaskStatus.DISPUTED,
-        updated_at: event.timestamp.toISOString()
-      };
+      // Get existing task first
+      const existingTask = await this.supabaseService.getTask(data.task_id);
+      if (!existingTask) {
+        logger.error('Task not found for dispute', { taskId: data.task_id });
+        return false;
+      }
 
-      const task = await this.supabaseService.upsertTask(updateData);
-      if (!task) {
+      // Update task record using SQL function
+      const success = await this.supabaseService.upsertTaskFromEvent(
+        data.task_id,
+        existingTask.payer,
+        existingTask.amount,
+        existingTask.proof_type,
+        TaskStatus.DISPUTED,
+        existingTask.worker,
+        existingTask.denom,
+        existingTask.description,
+        existingTask.endpoint,
+        existingTask.deadline_ts,
+        existingTask.review_window_secs
+      );
+
+      if (!success) {
         logger.error('Failed to update task for dispute', { taskId: data.task_id });
+        return false;
+      }
+
+      // Get updated task
+      const task = await this.supabaseService.getTask(data.task_id);
+      if (!task) {
+        logger.error('Failed to retrieve updated task', { taskId: data.task_id });
         return false;
       }
 
@@ -310,16 +394,37 @@ export class EventProcessor {
     const data = event.data as TaskRefundedEvent;
     
     try {
-      // Update task record
-      const updateData: Partial<TaskRecord> = {
-        id: data.task_id,
-        status: TaskStatus.REFUNDED,
-        updated_at: event.timestamp.toISOString()
-      };
+      // Get existing task first
+      const existingTask = await this.supabaseService.getTask(data.task_id);
+      if (!existingTask) {
+        logger.error('Task not found for refund', { taskId: data.task_id });
+        return false;
+      }
 
-      const task = await this.supabaseService.upsertTask(updateData);
-      if (!task) {
+      // Update task record using SQL function
+      const success = await this.supabaseService.upsertTaskFromEvent(
+        data.task_id,
+        data.payer,
+        parseFloat(data.amount),
+        existingTask.proof_type,
+        TaskStatus.REFUNDED,
+        existingTask.worker,
+        existingTask.denom,
+        existingTask.description,
+        existingTask.endpoint,
+        existingTask.deadline_ts,
+        existingTask.review_window_secs
+      );
+
+      if (!success) {
         logger.error('Failed to update task for refund', { taskId: data.task_id });
+        return false;
+      }
+
+      // Get updated task
+      const task = await this.supabaseService.getTask(data.task_id);
+      if (!task) {
+        logger.error('Failed to retrieve updated task', { taskId: data.task_id });
         return false;
       }
 

@@ -17,6 +17,8 @@ import { AbstraxionProvider } from "@burnt-labs/abstraxion-react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { useTaskSubscriptions, useNotificationSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import Toast from "react-native-toast-message";
 
 import { Buffer } from "buffer";
@@ -40,6 +42,14 @@ const treasuryConfig = {
 	// Alternative: use a custom domain if deep links don't work
 	// redirectUri: "https://your-domain.com/auth-callback"
 };
+
+function RealtimeWrapper() {
+	// Initialize realtime subscriptions
+	useTaskSubscriptions();
+	useNotificationSubscriptions();
+	
+	return <NavigationWrapper />;
+}
 
 function NavigationWrapper() {
 	const { isDarkMode } = useTheme();
@@ -88,7 +98,9 @@ export default function RootLayout() {
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<ThemeProvider>
 					<AbstraxionProvider config={treasuryConfig}>
-						<NavigationWrapper />
+						<AuthProvider>
+							<RealtimeWrapper />
+						</AuthProvider>
 					</AbstraxionProvider>
 					<Toast
 						config={{
