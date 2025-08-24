@@ -63,6 +63,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		description: "",
 		proofType: "none",
 	});
+	const [amountText, setAmountText] = useState("");
 	const [recipient, setRecipient] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [feedback, setFeedback] = useState<string | null>(null);
@@ -214,6 +215,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			// Check if it's a contract method not found error
 			if (err?.message?.includes("Invalid type") || err?.message?.includes("unknown request")) {
 				setFeedback("Payment features are currently in development. Smart contract methods not yet deployed.");
+			} else if (err?.message?.includes("Insufficient funds")) {
+				setFeedback(`Insufficient funds. You need ${formData.amount} XION + gas fees. ${paymentType === 'request_help' || paymentType === 'request_money' ? 'Note: Requests should not require funds - this may be a contract issue.' : ''}`);
 			} else {
 				setFeedback(err?.message || "Transaction failed. Please try again.");
 			}
@@ -365,11 +368,11 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 			{/* Amount Display */}
 			<View style={styles.amountSection}>
-				<Text style={styles.currencySymbol}>$</Text>
 				<TextInput
 					style={styles.amountInput}
-					value={formData.amount > 0 ? formData.amount.toString() : ""}
+					value={amountText}
 					onChangeText={(text) => {
+						setAmountText(text);
 						const amount = parseFloat(text) || 0;
 						setFormData((prev) => ({ ...prev, amount }));
 					}}
@@ -378,6 +381,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					keyboardType="numeric"
 					editable={!loading}
 				/>
+				<Text style={styles.currencySymbol}>XION</Text>
 			</View>
 
 			{/* Proof Type Chip Dropdown */}
@@ -652,47 +656,42 @@ const styles = StyleSheet.create({
 	selectedUserChip: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "#fff",
-		borderRadius: 25,
-		paddingVertical: 8,
-		paddingHorizontal: 16,
-		gap: 10,
+		backgroundColor: "#f8f8f8",
+		borderRadius: 16,
+		paddingVertical: 4,
+		paddingHorizontal: 12,
+		gap: 6,
 		borderWidth: 1,
-		borderColor: "#e0e0e0",
-		shadowColor: "#000",
-		shadowOpacity: 0.05,
-		shadowRadius: 8,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 2,
+		borderColor: "#e8e8e8",
+		alignSelf: "center",
 	},
 
 	chipAvatar: {
-		width: 28,
-		height: 28,
-		borderRadius: 14,
-		backgroundColor: "#333",
+		width: 20,
+		height: 20,
+		borderRadius: 10,
+		backgroundColor: "#666",
 		alignItems: "center",
 		justifyContent: "center",
 	},
 
 	chipAvatarText: {
-		fontSize: 12,
+		fontSize: 10,
 		fontWeight: "600",
 		color: "#fff",
 	},
 
 	chipUsername: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: "#333",
-		flex: 1,
+		fontSize: 14,
+		fontWeight: "400",
+		color: "#666",
 	},
 
 	chipRemoveButton: {
-		width: 24,
-		height: 24,
-		borderRadius: 12,
-		backgroundColor: "#f5f5f5",
+		width: 18,
+		height: 18,
+		borderRadius: 9,
+		backgroundColor: "#ddd",
 		alignItems: "center",
 		justifyContent: "center",
 	},
@@ -703,7 +702,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginBottom: 40,
-		gap: 0,
+		gap: 12,
 	},
 
 	currencySymbol: {
