@@ -177,7 +177,7 @@ export default function ZkTLSProofView({ task, onVerified }: ZkTLSProofViewProps
 				
 				{verificationStatus === 'idle' && (
 					<Text className="text-gray-600 dark:text-gray-400 text-center">
-						Click verify when you've completed the task
+						Click verify when you&apos;ve completed the task
 					</Text>
 				)}
 				

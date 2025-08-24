@@ -5,11 +5,54 @@ import {
 	XION_DENOM,
 	TREASURY_CONFIG,
 } from "../constants/contracts";
-import {
-	TreasuryService,
-	TreasuryExecuteResult,
-	TreasuryStatus,
-} from "./treasuryOfficial";
+
+// Treasury types (previously from treasuryOfficial)
+export interface TreasuryExecuteResult {
+	success: boolean;
+	transactionHash?: string;
+	error?: string;
+}
+
+export interface TreasuryStatus {
+	balance: string;
+	isActive: boolean;
+}
+
+// Minimal TreasuryService stub (previously from treasuryOfficial)
+export class TreasuryService {
+	constructor(account: any, client: any, treasuryAddress: string, contractAddress: string) {
+		// Minimal stub implementation
+	}
+
+	async getTreasuryStatus(): Promise<TreasuryStatus & { isConnected: boolean; canSponsorGas: boolean }> {
+		return {
+			balance: "0",
+			isActive: false,
+			isConnected: false,
+			canSponsorGas: false
+		};
+	}
+
+	async executeJobAcceptance(): Promise<TreasuryExecuteResult> {
+		return { success: false, error: "Treasury service not implemented" };
+	}
+
+	async executeProofSubmission(): Promise<TreasuryExecuteResult> {
+		return { success: false, error: "Treasury service not implemented" };
+	}
+
+	async executeProofAcceptance(): Promise<TreasuryExecuteResult> {
+		return { success: false, error: "Treasury service not implemented" };
+	}
+
+	async executeProofRejection(): Promise<TreasuryExecuteResult> {
+		return { success: false, error: "Treasury service not implemented" };
+	}
+
+	async executeJobCancellation(): Promise<TreasuryExecuteResult> {
+		return { success: false, error: "Treasury service not implemented" };
+	}
+}
 
 // Job types for contract service
 export enum JobStatus {

@@ -2,7 +2,7 @@
 > proofpay-indexer@1.0.0 dev
 > tsx watch src/index.ts
 
-15:28:29 [32minfo[39m Starting ProofPay Indexer {
+17:03:47 [32minfo[39m Starting ProofPay Indexer {
   "service": "proofpay-indexer",
   "module": "main",
   "nodeEnv": "development",
@@ -13,376 +13,2997 @@
     "ONESIGNAL_APP_ID": "ff05bf9f..."
   }
 }
-15:28:29 [32minfo[39m Supabase client initialized {
+17:03:47 [32minfo[39m Supabase client initialized {
   "service": "proofpay-indexer",
   "module": "supabase"
 }
-15:28:29 [32minfo[39m OneSignal client initialized {
+17:03:47 [32minfo[39m OneSignal client initialized {
   "service": "proofpay-indexer",
   "module": "notifications",
   "appId": "ff05bf9f..."
 }
-15:28:29 [32minfo[39m Event processor initialized {
+17:03:47 [32minfo[39m Event processor initialized {
   "service": "proofpay-indexer",
   "module": "eventProcessor"
 }
-15:28:29 [32minfo[39m Blockchain listener initialized {
+17:03:47 [32minfo[39m Blockchain listener initialized {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "rpcUrl": "wss://rpc.xion-testnet-2.burnt.com/websocket",
   "contractAddress": "xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy"
 }
-15:28:29 [32minfo[39m OneSignal client initialized {
+17:03:47 [32minfo[39m OneSignal client initialized {
   "service": "proofpay-indexer",
   "module": "notifications",
   "appId": "ff05bf9f..."
 }
-15:28:29 [32minfo[39m Timer worker initialized {
+17:03:47 [32minfo[39m Timer worker initialized {
   "service": "proofpay-indexer",
   "module": "timerWorker"
 }
-15:28:29 [32minfo[39m ProofPay Indexer initialized {
+17:03:47 [32minfo[39m ProofPay Indexer initialized {
   "service": "proofpay-indexer",
   "module": "main",
   "nodeEnv": "development",
   "port": 3001
 }
-15:28:29 [32minfo[39m Starting ProofPay Indexer services... {
+17:03:47 [32minfo[39m Starting ProofPay Indexer services... {
   "service": "proofpay-indexer",
   "module": "main"
 }
-(node:4707) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:26877) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-15:28:29 [32minfo[39m Supabase connection test successful {
+17:03:47 [32minfo[39m Supabase connection test successful {
   "service": "proofpay-indexer",
   "module": "supabase"
 }
-15:28:29 [32minfo[39m ✅ Supabase connection established {
+17:03:47 [32minfo[39m ✅ Supabase connection established {
   "service": "proofpay-indexer",
   "module": "main"
 }
-15:28:29 [32minfo[39m Event handler registered {
+17:03:47 [32minfo[39m Event handler registered {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "totalHandlers": 1
 }
-15:28:29 [32minfo[39m Connecting to XION WebSocket... {
+17:03:47 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:28:29 [32minfo[39m Subscribed to new blocks {
+17:03:47 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:28:29 [31merror[39m Event stream error {
+17:03:47 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:28:29 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:03:47 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:28:29 [32minfo[39m Successfully connected to XION WebSocket {
+17:03:47 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
-15:28:29 [32minfo[39m ✅ XION blockchain connection established {
+17:03:47 [32minfo[39m ✅ XION blockchain connection established {
   "service": "proofpay-indexer",
   "module": "main"
 }
-15:28:29 [32minfo[39m Timer worker started - checking for expired tasks every minute {
+17:03:47 [32minfo[39m Timer worker started - checking for expired tasks every minute {
   "service": "proofpay-indexer",
   "module": "timerWorker"
 }
-15:28:29 [32minfo[39m ✅ Timer worker started {
+17:03:47 [32minfo[39m ✅ Timer worker started {
   "service": "proofpay-indexer",
   "module": "main"
 }
-15:28:29 [32minfo[39m 🚀 ProofPay Indexer fully operational {
+17:03:47 [32minfo[39m 🚀 ProofPay Indexer fully operational {
   "service": "proofpay-indexer",
   "module": "main"
 }
-15:28:29 [32minfo[39m ✅ Health check server running on port 3001 {
+17:03:47 [32minfo[39m ✅ Health check server running on port 3001 {
   "service": "proofpay-indexer",
   "module": "main"
 }
-15:28:29 [32minfo[39m Supabase connection test successful {
+17:03:48 [32minfo[39m Supabase connection test successful {
   "service": "proofpay-indexer",
   "module": "supabase"
 }
-15:28:34 [32minfo[39m Connecting to XION WebSocket... {
+17:03:52 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:28:34 [32minfo[39m Subscribed to new blocks {
+17:03:52 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:28:34 [31merror[39m Event stream error {
+17:03:52 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:28:34 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:03:52 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:28:34 [32minfo[39m Successfully connected to XION WebSocket {
+17:03:52 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
-15:28:39 [32minfo[39m Connecting to XION WebSocket... {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
-}
-15:28:39 [32minfo[39m Subscribed to new blocks {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "query": "tm.event='NewBlock'"
-}
-15:28:39 [31merror[39m Event stream error {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "error": {}
-}
-15:28:39 [32minfo[39m Scheduling reconnection attempt 1/10 {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "delay": "5000ms"
-}
-15:28:39 [32minfo[39m Successfully connected to XION WebSocket {
-  "service": "proofpay-indexer",
-  "module": "blockchain"
-}
-15:28:39 [32minfo[39m Supabase connection test successful {
+17:03:56 [32minfo[39m Supabase connection test successful {
   "service": "proofpay-indexer",
   "module": "supabase"
 }
-15:28:44 [32minfo[39m Connecting to XION WebSocket... {
+17:03:57 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:28:44 [32minfo[39m Subscribed to new blocks {
+17:03:57 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:28:44 [31merror[39m Event stream error {
+17:03:57 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:28:44 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:03:57 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:28:44 [32minfo[39m Successfully connected to XION WebSocket {
+17:03:57 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
-15:28:49 [32minfo[39m Connecting to XION WebSocket... {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
-}
-15:28:49 [32minfo[39m Subscribed to new blocks {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "query": "tm.event='NewBlock'"
-}
-15:28:49 [31merror[39m Event stream error {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "error": {}
-}
-15:28:49 [32minfo[39m Scheduling reconnection attempt 1/10 {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "delay": "5000ms"
-}
-15:28:49 [32minfo[39m Successfully connected to XION WebSocket {
-  "service": "proofpay-indexer",
-  "module": "blockchain"
-}
-15:28:54 [32minfo[39m Connecting to XION WebSocket... {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
-}
-15:28:54 [32minfo[39m Subscribed to new blocks {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "query": "tm.event='NewBlock'"
-}
-15:28:54 [31merror[39m Event stream error {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "error": {}
-}
-15:28:54 [32minfo[39m Scheduling reconnection attempt 1/10 {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "delay": "5000ms"
-}
-15:28:54 [32minfo[39m Successfully connected to XION WebSocket {
-  "service": "proofpay-indexer",
-  "module": "blockchain"
-}
-15:28:59 [32minfo[39m Connecting to XION WebSocket... {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
-}
-15:28:59 [32minfo[39m Subscribed to new blocks {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "query": "tm.event='NewBlock'"
-}
-15:28:59 [31merror[39m Event stream error {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "error": {}
-}
-15:28:59 [32minfo[39m Scheduling reconnection attempt 1/10 {
-  "service": "proofpay-indexer",
-  "module": "blockchain",
-  "delay": "5000ms"
-}
-15:28:59 [32minfo[39m Successfully connected to XION WebSocket {
-  "service": "proofpay-indexer",
-  "module": "blockchain"
-}
-15:29:00 [32minfo[39m Starting expired tasks processing {
+17:04:00 [32minfo[39m Starting expired tasks processing {
   "service": "proofpay-indexer",
   "module": "timerWorker"
 }
-15:29:04 [32minfo[39m Connecting to XION WebSocket... {
+17:04:02 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:29:04 [32minfo[39m Subscribed to new blocks {
+17:04:02 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:29:04 [31merror[39m Event stream error {
+17:04:02 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:29:04 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:04:02 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:29:04 [32minfo[39m Successfully connected to XION WebSocket {
+17:04:02 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
-15:29:09 [32minfo[39m Connecting to XION WebSocket... {
+17:04:07 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:29:09 [32minfo[39m Subscribed to new blocks {
+17:04:07 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:29:09 [31merror[39m Event stream error {
+17:04:07 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:29:09 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:04:07 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:29:09 [32minfo[39m Successfully connected to XION WebSocket {
+17:04:07 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
-15:29:14 [32minfo[39m Connecting to XION WebSocket... {
+17:04:12 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:29:14 [32minfo[39m Subscribed to new blocks {
+17:04:12 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:29:14 [31merror[39m Event stream error {
+17:04:12 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:29:14 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:04:12 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:29:14 [32minfo[39m Successfully connected to XION WebSocket {
+17:04:12 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
-15:29:19 [32minfo[39m Connecting to XION WebSocket... {
+17:04:17 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:29:19 [32minfo[39m Subscribed to new blocks {
+17:04:17 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:29:19 [31merror[39m Event stream error {
+17:04:17 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:29:19 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:04:17 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:29:19 [32minfo[39m Successfully connected to XION WebSocket {
+17:04:17 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
-15:29:24 [32minfo[39m Connecting to XION WebSocket... {
+17:04:22 [32minfo[39m Connecting to XION WebSocket... {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
 }
-15:29:24 [32minfo[39m Subscribed to new blocks {
+17:04:22 [32minfo[39m Subscribed to new blocks {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "query": "tm.event='NewBlock'"
 }
-15:29:24 [31merror[39m Event stream error {
+17:04:22 [31merror[39m Event stream error {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "error": {}
 }
-15:29:24 [32minfo[39m Scheduling reconnection attempt 1/10 {
+17:04:22 [32minfo[39m Scheduling reconnection attempt 1/10 {
   "service": "proofpay-indexer",
   "module": "blockchain",
   "delay": "5000ms"
 }
-15:29:24 [32minfo[39m Successfully connected to XION WebSocket {
+17:04:22 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:04:27 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:04:27 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:04:27 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:04:27 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:04:27 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:04:32 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:04:32 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:04:32 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:04:32 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:04:32 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:04:37 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:04:37 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:04:37 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:04:37 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:04:37 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:04:42 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:04:42 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:04:42 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:04:42 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:04:42 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:04:47 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:04:47 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:04:47 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:04:47 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:04:47 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:04:52 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:04:52 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:04:52 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:04:52 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:04:52 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:04:57 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:04:57 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:04:57 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:04:57 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:04:57 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:05:02 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:02 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:02 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:02 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:02 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:07 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:07 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:07 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:07 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:07 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:12 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:12 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:12 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:12 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:12 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:17 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:17 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:17 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:17 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:17 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+5:05:20 PM [tsx] Return key Restarting...
+17:05:20 [32minfo[39m Received SIGTERM, initiating graceful shutdown {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:20 [32minfo[39m Shutting down ProofPay Indexer... {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:20 [32minfo[39m Timer worker stopped {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:05:20 [32minfo[39m Timer worker stopped {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:20 [32minfo[39m Disconnected from XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:20 [32minfo[39m Blockchain connection closed {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:20 [32minfo[39m ProofPay Indexer shutdown complete {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+c17:05:21 [32minfo[39m Starting ProofPay Indexer {
+  "service": "proofpay-indexer",
+  "module": "main",
+  "nodeEnv": "development",
+  "config": {
+    "XION_RPC_WS": "wss://rpc.xion-testnet-2.burnt.com/websocket",
+    "CONTRACT_ADDRESS": "xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy",
+    "SUPABASE_URL": "https://mchiibkcxzejravsckzc.supabase.co",
+    "ONESIGNAL_APP_ID": "ff05bf9f..."
+  }
+}
+17:05:21 [32minfo[39m Supabase client initialized {
+  "service": "proofpay-indexer",
+  "module": "supabase"
+}
+17:05:21 [32minfo[39m OneSignal client initialized {
+  "service": "proofpay-indexer",
+  "module": "notifications",
+  "appId": "ff05bf9f..."
+}
+17:05:21 [32minfo[39m Event processor initialized {
+  "service": "proofpay-indexer",
+  "module": "eventProcessor"
+}
+17:05:21 [32minfo[39m Blockchain listener initialized {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "rpcUrl": "wss://rpc.xion-testnet-2.burnt.com/websocket",
+  "contractAddress": "xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy"
+}
+17:05:21 [32minfo[39m OneSignal client initialized {
+  "service": "proofpay-indexer",
+  "module": "notifications",
+  "appId": "ff05bf9f..."
+}
+17:05:21 [32minfo[39m Timer worker initialized {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:05:21 [32minfo[39m ProofPay Indexer initialized {
+  "service": "proofpay-indexer",
+  "module": "main",
+  "nodeEnv": "development",
+  "port": 3001
+}
+17:05:21 [32minfo[39m Starting ProofPay Indexer services... {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+(node:27176) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+17:05:21 [32minfo[39m Supabase connection test successful {
+  "service": "proofpay-indexer",
+  "module": "supabase"
+}
+17:05:21 [32minfo[39m ✅ Supabase connection established {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:21 [32minfo[39m Event handler registered {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "totalHandlers": 1
+}
+17:05:21 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:21 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:21 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:21 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:21 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:21 [32minfo[39m ✅ XION blockchain connection established {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:21 [32minfo[39m Timer worker started - checking for expired tasks every minute {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:05:21 [32minfo[39m ✅ Timer worker started {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:21 [32minfo[39m 🚀 ProofPay Indexer fully operational {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:21 [32minfo[39m ✅ Health check server running on port 3001 {
+  "service": "proofpay-indexer",
+  "module": "main"
+}
+17:05:26 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:26 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:26 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:26 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:26 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:31 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:31 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:31 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:31 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:31 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:36 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:36 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:36 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:36 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:36 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:41 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:41 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:41 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:41 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:41 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:46 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:46 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:46 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:46 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:46 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:51 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:51 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:51 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:51 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:51 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:05:56 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:05:56 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:05:56 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:05:56 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:05:56 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:06:01 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:01 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:01 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:01 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:01 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:06 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:06 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:06 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:06 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:06 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:11 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:11 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:11 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:11 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:11 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:16 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:16 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:16 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:16 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:16 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:21 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:21 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:21 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:21 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:21 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:26 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:26 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:26 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:26 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:26 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:31 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:31 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:31 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:31 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:31 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:36 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:36 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:36 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:36 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:36 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:41 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:41 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:41 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:41 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:41 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:46 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:46 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:46 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:46 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:46 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:51 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:51 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:51 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:51 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:51 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:06:56 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:06:56 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:06:56 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:06:56 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:06:56 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:07:01 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:01 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:01 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:01 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:01 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:06 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:06 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:06 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:06 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:06 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:11 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:11 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:11 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:11 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:11 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:16 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:16 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:16 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:16 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:16 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:21 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:21 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:21 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:21 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:21 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:26 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:26 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:26 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:26 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:26 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:31 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:31 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:31 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:31 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:31 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:36 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:36 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:36 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:36 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:36 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:41 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:41 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:41 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:41 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:41 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:46 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:46 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:46 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:46 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:46 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:51 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:51 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:51 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:51 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:51 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:07:56 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:07:56 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:07:56 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:07:56 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:07:56 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:08:01 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:01 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:01 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:01 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:01 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:06 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:06 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:06 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:06 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:06 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:11 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:11 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:11 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:11 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:11 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:16 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:16 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:16 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:16 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:16 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:21 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:21 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:21 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:21 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:21 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:26 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:26 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:26 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:26 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:26 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:31 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:31 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:31 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:31 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:31 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:36 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:36 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:36 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:36 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:36 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:41 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:41 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:41 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:41 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:41 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:46 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:46 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:46 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:46 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:46 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:51 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:51 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:51 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:51 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:51 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:08:56 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:08:56 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:08:56 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:08:56 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:08:56 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:09:01 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:01 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:01 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:01 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:01 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:06 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:06 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:06 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:06 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:06 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:11 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:11 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:11 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:11 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:11 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:16 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:16 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:16 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:16 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:16 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:21 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:21 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:21 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:21 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:21 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:26 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:26 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:26 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:26 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:26 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:31 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:31 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:31 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:31 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:31 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:36 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:36 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:36 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:36 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:36 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:41 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:41 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:41 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:41 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:41 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:46 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:46 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:46 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:46 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:46 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:51 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:51 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:51 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:51 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:51 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:09:56 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:09:56 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:09:56 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:09:56 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:09:56 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:10:01 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:01 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:01 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:01 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:01 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:06 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:06 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:06 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:06 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:06 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:11 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:11 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:11 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:11 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:11 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:16 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:16 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:16 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:16 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:16 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:21 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:21 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:21 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:21 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:21 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:26 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:26 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:26 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:26 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:26 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:31 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:31 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:31 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:31 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:31 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:36 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:36 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:36 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:36 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:36 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:41 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:41 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:41 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:41 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:41 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:46 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:46 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:46 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:46 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:46 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:51 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:51 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:51 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:51 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:51 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:10:56 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:10:56 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:10:56 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:10:56 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:10:56 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:11:01 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:01 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:01 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:01 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:01 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:06 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:06 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:06 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:06 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:06 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:11 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:11 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:11 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:11 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:11 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:16 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:16 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:16 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:16 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:16 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:21 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:21 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:21 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:21 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:21 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:26 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:26 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:26 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:26 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:26 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:31 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:31 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:31 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:31 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:31 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:36 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:36 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:36 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:36 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:36 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:41 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:41 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:41 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:41 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:41 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:46 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:46 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:46 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:46 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:46 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:51 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:51 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:51 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:51 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:51 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:11:56 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:11:56 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:11:56 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:11:56 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:11:56 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:12:01 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:01 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:01 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:01 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:01 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:06 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:06 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:06 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:06 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:06 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:11 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:11 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:11 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:11 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:11 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:16 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:16 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:16 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:16 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:16 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:22 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:22 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:22 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:22 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:22 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:27 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:27 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:27 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:27 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:27 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:32 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:32 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:32 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:32 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:32 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:37 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:37 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:37 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:37 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:37 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:42 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:42 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:42 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:42 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:42 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:47 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:47 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:47 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:47 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:47 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:52 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:52 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:52 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:52 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:52 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:12:57 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:12:57 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:12:57 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:12:57 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:12:57 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:13:00 [32minfo[39m Starting expired tasks processing {
+  "service": "proofpay-indexer",
+  "module": "timerWorker"
+}
+17:13:02 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:13:02 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:13:02 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:13:02 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:13:02 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:13:07 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:13:07 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:13:07 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:13:07 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:13:07 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:13:12 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:13:12 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:13:12 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:13:12 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:13:12 [32minfo[39m Successfully connected to XION WebSocket {
+  "service": "proofpay-indexer",
+  "module": "blockchain"
+}
+17:13:17 [32minfo[39m Connecting to XION WebSocket... {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "url": "wss://rpc.xion-testnet-2.burnt.com/websocket"
+}
+17:13:17 [32minfo[39m Subscribed to new blocks {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "query": "tm.event='NewBlock'"
+}
+17:13:17 [31merror[39m Event stream error {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "error": {}
+}
+17:13:17 [32minfo[39m Scheduling reconnection attempt 1/10 {
+  "service": "proofpay-indexer",
+  "module": "blockchain",
+  "delay": "5000ms"
+}
+17:13:17 [32minfo[39m Successfully connected to XION WebSocket {
   "service": "proofpay-indexer",
   "module": "blockchain"
 }
