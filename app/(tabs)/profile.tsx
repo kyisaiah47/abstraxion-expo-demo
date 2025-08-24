@@ -24,6 +24,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import Toast from "react-native-toast-message";
+import ZkTLSSelectionModal from "@/components/ZkTLSSelectionModal";
 
 interface MenuItem {
 	id: string;
@@ -42,6 +43,7 @@ export default function ProfileScreen() {
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [unreadCount, setUnreadCount] = useState(0);
+	const [showZkTLSModal, setShowZkTLSModal] = useState(false);
 	const [userStats, setUserStats] = useState({
 		totalTasks: 0,
 		completedTasks: 0,
@@ -180,6 +182,13 @@ export default function ProfileScreen() {
 		{
 			title: "Verification",
 			items: [
+				{
+					id: "zkTLS-providers",
+					title: "Available zkTLS Providers",
+					subtitle: "Browse verification methods",
+					icon: "shield-checkmark-outline" as const,
+					action: () => setShowZkTLSModal(true),
+				},
 				{
 					id: "zkTLS-demo",
 					title: "zkTLS Verification",
@@ -402,6 +411,16 @@ export default function ProfileScreen() {
 				{/* Bottom Spacer */}
 				<View style={styles.bottomSpacer} />
 			</ScrollView>
+
+			<ZkTLSSelectionModal
+				visible={showZkTLSModal}
+				onClose={() => setShowZkTLSModal(false)}
+				title="zkTLS Verification Providers"
+				subtitle="Explore all available verification methods"
+				mode="browse"
+				showCategories={true}
+				showStatus={true}
+			/>
 		</SafeAreaView>
 	);
 }

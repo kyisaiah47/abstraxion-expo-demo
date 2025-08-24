@@ -24,6 +24,8 @@ import {
 } from "@/hooks/useSocialContract";
 import { formatXionAmount } from "@/lib/socialContract";
 import { useTheme } from "@/contexts/ThemeContext";
+import ZkTLSSelectionModal from "./ZkTLSSelectionModal";
+import { ZKTLS_OPTIONS } from "@/constants/zkTLSOptions";
 
 interface SocialPaymentFormProps {
 	paymentType: PaymentType;
@@ -58,50 +60,6 @@ const PROOF_TYPE_OPTIONS = [
 	},
 ];
 
-const ZKTLS_OPTIONS = [
-	{
-		id: "github-pr",
-		label: "GitHub PR",
-		description: "Verify pull request was merged",
-		icon: "logo-github",
-		baseEndpoint: "https://api.github.com",
-	},
-	{
-		id: "google-doc",
-		label: "Google Doc",
-		description: "Verify document was edited",
-		icon: "document-text",
-		baseEndpoint: "https://docs.googleapis.com",
-	},
-	{
-		id: "twitter",
-		label: "Twitter Post",
-		description: "Verify tweet was published",
-		icon: "logo-twitter",
-		baseEndpoint: "https://api.twitter.com",
-	},
-	{
-		id: "website",
-		label: "Website Update",
-		description: "Verify webpage content changed",
-		icon: "globe",
-		baseEndpoint: "",
-	},
-	{
-		id: "api",
-		label: "API Response",
-		description: "Verify API returned specific data",
-		icon: "server",
-		baseEndpoint: "",
-	},
-	{
-		id: "custom",
-		label: "Custom Endpoint",
-		description: "Provide your own verification URL",
-		icon: "settings",
-		baseEndpoint: "",
-	},
-];
 
 export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const { paymentType, onSubmit } = props;
@@ -121,7 +79,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const [debouncedRecipient, setDebouncedRecipient] = useState("");
 	const [endpoint, setEndpoint] = useState("");
 	const [reviewWindow, setReviewWindow] = useState(24);
-	const [showZkTLSDropdown, setShowZkTLSDropdown] = useState(false);
+	const [showZkTLSModal, setShowZkTLSModal] = useState(false);
 	const [selectedZkTLSOption, setSelectedZkTLSOption] = useState("custom");
 
 	// Wallet and contract hooks
@@ -560,63 +518,51 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			</View>
 
 			{/* Simple proof type info */}
-			{paymentType === "request_task" && (
-				<Text style={styles.proofTypeHint}>
-					{getSelectedProofType().sublabel}
-				</Text>
-			)}
+			<Text style={styles.proofTypeHint}>
+				{getSelectedProofType().sublabel}
+			</Text>
 
-			{/* zkTLS Options Dropdown - Level 2 */}
+			{/* zkTLS and Review Window Row */}
 			{paymentType === "request_task" && (formData.proofType === "zktls" || formData.proofType === "hybrid") && (
-				<View style={styles.zkTLSSection}>
-					<Pressable
-						style={styles.zkTLSChipButton}
-						onPress={() => setShowZkTLSDropdown(!showZkTLSDropdown)}
-						disabled={loading}
-					>
-						<Ionicons
-							name={getSelectedZkTLSOption().icon as any}
-							size={16}
-							color={colors.primary[700]}
-						/>
-						<Text style={[styles.zkTLSChipText, { color: colors.primary[700] }]}>
-							{getSelectedZkTLSOption().label}
-						</Text>
-						<Ionicons
-							name={showZkTLSDropdown ? "chevron-up" : "chevron-down"}
-							size={16}
-							color={colors.text.secondary}
-						/>
-					</Pressable>
+				<View style={styles.zkTLSReviewRow}>
+					{/* zkTLS Options - Navigate to selection */}
+					<View style={styles.zkTLSSection}>
+						<Pressable
+							style={styles.zkTLSChipButton}
+							onPress={() => setShowZkTLSModal(true)}
+							disabled={loading}
+						>
+							<Ionicons
+								name={getSelectedZkTLSOption().icon as any}
+								size={16}
+								color={colors.primary[700]}
+							/>
+							<Text style={[styles.zkTLSChipText, { color: colors.primary[700] }]}>
+								{getSelectedZkTLSOption().label}
+							</Text>
+							<Ionicons
+								name="chevron-forward"
+								size={16}
+								color={colors.text.secondary}
+							/>
+						</Pressable>
+					</View>
 
-					{/* zkTLS Dropdown Menu */}
-					{showZkTLSDropdown && (
-						<View style={styles.zkTLSDropdownMenu}>
-							{ZKTLS_OPTIONS.map((option) => (
-								<Pressable
-									key={option.id}
-									style={styles.zkTLSDropdownMenuItem}
-									onPress={() => {
-										setSelectedZkTLSOption(option.id);
-										setShowZkTLSDropdown(false);
-									}}
-									disabled={loading}
-								>
-									<Ionicons
-										name={option.icon as any}
-										size={16}
-										color={colors.primary[700]}
-									/>
-									<View style={styles.zkTLSOptionText}>
-										<Text style={styles.zkTLSOptionLabel}>
-											{option.label}
-										</Text>
-										<Text style={styles.zkTLSOptionDescription}>
-											{option.description}
-										</Text>
-									</View>
-								</Pressable>
-							))}
+					{/* Review Window - only for hybrid */}
+					{formData.proofType === "hybrid" && (
+						<View style={styles.reviewWindowSection}>
+							<View style={[styles.compactTextInput, styles.hoursInputWrapper]}>
+								<TextInput
+									style={styles.hoursTextInput}
+									value={reviewWindow.toString()}
+									onChangeText={(text) => setReviewWindow(parseInt(text) || 24)}
+									placeholder="24"
+									placeholderTextColor={colors.text.tertiary}
+									keyboardType="numeric"
+									editable={!loading}
+								/>
+								<Text style={styles.hoursLabel}>Hrs</Text>
+							</View>
 						</View>
 					)}
 				</View>
@@ -636,22 +582,6 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						placeholderTextColor={colors.text.tertiary}
 						editable={!loading}
 						autoCapitalize="none"
-					/>
-				</View>
-			)}
-
-			{/* Review Window - only for hybrid */}
-			{paymentType === "request_task" && formData.proofType === "hybrid" && (
-				<View style={styles.compactInputSection}>
-					<Text style={styles.compactInputLabel}>Review Window (Hours)</Text>
-					<TextInput
-						style={[styles.compactTextInput, styles.numericInput]}
-						value={reviewWindow.toString()}
-						onChangeText={(text) => setReviewWindow(parseInt(text) || 24)}
-						placeholder="24"
-						placeholderTextColor={colors.text.tertiary}
-						keyboardType="numeric"
-						editable={!loading}
 					/>
 				</View>
 			)}
@@ -699,6 +629,14 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					{feedback}
 				</Text>
 			)}
+			
+			{/* zkTLS Selection Modal */}
+			<ZkTLSSelectionModal
+				visible={showZkTLSModal}
+				selectedOption={selectedZkTLSOption}
+				onSelect={setSelectedZkTLSOption}
+				onClose={() => setShowZkTLSModal(false)}
+			/>
 		</ScrollView>
 	);
 }
@@ -947,7 +885,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 	proofChipText: {
 		fontSize: 14,
 		fontWeight: "500",
-		color: colors.text.secondary,
+		color: colors.text.primary,
 	},
 
 	proofChipTextDisabled: {
@@ -1025,6 +963,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 	compactInputSection: {
 		width: "100%",
 		marginBottom: 20,
+		alignItems: "center",
 	},
 
 	compactInputLabel: {
@@ -1032,6 +971,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 		fontWeight: "500",
 		color: colors.text.secondary,
 		marginBottom: 6,
+		textAlign: "center",
 	},
 
 	compactTextInput: {
@@ -1049,6 +989,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 	numericInput: {
 		maxWidth: 100,
 		textAlign: "center",
+		alignSelf: "center",
 	},
 
 	// Hybrid fields on same line
@@ -1254,9 +1195,48 @@ const createStyles = (colors: any) => StyleSheet.create({
 		color: colors.text.secondary,
 	},
 
+	// zkTLS and Review Window Row
+	zkTLSReviewRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: 16,
+		marginBottom: 16,
+		paddingHorizontal: 20,
+	},
+
 	// zkTLS Dropdown Styles
 	zkTLSSection: {
-		marginBottom: 16,
+		flex: 1,
+		alignItems: "stretch",
+		position: "relative",
+	},
+
+	reviewWindowSection: {
+		alignItems: "center",
+		width: 80,
+	},
+
+	hoursInputWrapper: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 8,
+		width: 80,
+	},
+
+	hoursTextInput: {
+		flex: 1,
+		fontSize: 14,
+		color: colors.text.primary,
+		textAlign: "center",
+		padding: 0,
+	},
+
+	hoursLabel: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: colors.text.secondary,
 	},
 
 	zkTLSChipButton: {
@@ -1277,47 +1257,4 @@ const createStyles = (colors: any) => StyleSheet.create({
 		flex: 1,
 	},
 
-	zkTLSDropdownMenu: {
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 16,
-		marginTop: 12,
-		shadowColor: "#000",
-		shadowOpacity: 0.12,
-		shadowRadius: 12,
-		shadowOffset: { width: 0, height: 4 },
-		elevation: 6,
-		borderWidth: 1,
-		borderColor: colors.border.secondary,
-		minWidth: 280,
-	},
-
-	zkTLSDropdownMenuItem: {
-		flexDirection: "row",
-		alignItems: "flex-start",
-		paddingVertical: 16,
-		paddingHorizontal: 20,
-		gap: 14,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border.tertiary,
-		minHeight: 72,
-	},
-
-	zkTLSOptionText: {
-		flex: 1,
-		paddingRight: 8,
-	},
-
-	zkTLSOptionLabel: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: colors.text.primary,
-		marginBottom: 4,
-		lineHeight: 20,
-	},
-
-	zkTLSOptionDescription: {
-		fontSize: 14,
-		color: colors.text.secondary,
-		lineHeight: 18,
-	},
 });
