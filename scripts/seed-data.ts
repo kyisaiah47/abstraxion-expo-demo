@@ -108,7 +108,7 @@ async function uploadAvatar(userId: string, username: string): Promise<string | 
     const filePath = `avatars/${fileName}`;
 
     const { data, error } = await supabase.storage
-      .from('proofpay-files')
+      .from('avatars')
       .upload(filePath, avatarBuffer, {
         contentType: 'image/svg+xml',
         upsert: false
@@ -120,7 +120,7 @@ async function uploadAvatar(userId: string, username: string): Promise<string | 
     }
 
     const { data: { publicUrl } } = supabase.storage
-      .from('proofpay-files')
+      .from('avatars')
       .getPublicUrl(filePath);
 
     return publicUrl;

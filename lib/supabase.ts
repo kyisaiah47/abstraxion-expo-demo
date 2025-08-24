@@ -14,8 +14,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Storage bucket for avatars and evidence files
-export const STORAGE_BUCKET = 'proofpay-files';
+// Storage buckets (created by SQL migration)
+export const AVATARS_BUCKET = 'avatars';
+export const PROOFS_BUCKET = 'proofs';
+export const DISPUTES_BUCKET = 'disputes';
+
+// Default bucket for backwards compatibility
+export const STORAGE_BUCKET = PROOFS_BUCKET;
 
 // Upload file to Supabase Storage
 export async function uploadFile(
@@ -212,9 +217,9 @@ export async function uploadAvatar(
 ): Promise<string | null> {
   try {
     const fileName = `avatar-${userId}-${Date.now()}.${file.name.split('.').pop()}`;
-    const filePath = `avatars/${fileName}`;
+    const filePath = `${fileName}`; // Avatars bucket doesn't need subfolder
 
-    const result = await uploadFileSecure(file, STORAGE_BUCKET);
+    const result = await uploadFileSecure(file, AVATARS_BUCKET);
     if (!result) {
       return null;
     }
@@ -231,7 +236,7 @@ export async function uploadAvatar(
     if (error) {
       console.error('Failed to update user avatar:', error);
       // Clean up uploaded file
-      await deleteFile(result.path);
+      await deleteFile(result.path, AVATARS_BUCKET);
       return null;
     }
 
@@ -250,9 +255,9 @@ export async function uploadEvidence(
   try {
     const fileHash = await generateFileHash(file.uri);
     const fileName = `evidence-${taskId}-${Date.now()}.${file.name.split('.').pop()}`;
-    const filePath = `evidence/${fileName}`;
+    const filePath = `${fileName}`; // Proofs bucket structure
 
-    const result = await uploadFileSecure(file, STORAGE_BUCKET);
+    const result = await uploadFileSecure(file, PROOFS_BUCKET);
     if (!result) {
       return null;
     }
@@ -264,6 +269,33 @@ export async function uploadEvidence(
     };
   } catch (error) {
     console.error('Evidence upload failed:', error);
+    return null;
+  }
+}
+
+// Upload dispute attachment file
+export async function uploadDisputeEvidence(
+  file: { uri: string; name: string; type: string },
+  taskId: string,
+  disputerId: string
+): Promise<{ path: string; hash: string; url: string } | null> {
+  try {
+    const fileHash = await generateFileHash(file.uri);
+    const fileName = `dispute-${taskId}-${disputerId}-${Date.now()}.${file.name.split('.').pop()}`;
+    const filePath = `${fileName}`;
+
+    const result = await uploadFileSecure(file, DISPUTES_BUCKET);
+    if (!result) {
+      return null;
+    }
+
+    return {
+      path: result.path,
+      hash: fileHash,
+      url: result.publicUrl,
+    };
+  } catch (error) {
+    console.error('Dispute evidence upload failed:', error);
     return null;
   }
 }

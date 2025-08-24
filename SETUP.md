@@ -82,8 +82,10 @@ cd mock-verifier && npm install && cd ..
 
 3. **Configure Storage**
    - Supabase Dashboard → Storage
-   - Verify `proofpay-files` bucket exists
-   - Set bucket to public if needed for avatars
+   - Verify these buckets exist (created by SQL migration):
+     - `avatars` (public) - User profile pictures
+     - `proofs` (private) - Task evidence files
+     - `disputes` (private) - Dispute attachment files
 
 ### 3. OneSignal Setup (Optional)
 
