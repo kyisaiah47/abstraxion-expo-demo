@@ -227,7 +227,7 @@ export default function ProfileScreen() {
 					title: "Help Center",
 					subtitle: "Get help and support",
 					icon: "help-circle-outline" as const,
-					action: () => Alert.alert("Help", "Support system coming soon!"),
+					action: () => router.push("/help-center"),
 				},
 			],
 		},
