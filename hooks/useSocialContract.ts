@@ -564,7 +564,9 @@ export function useSocialOperations(signingClient: any) {
 							proof_type: "None",
 						},
 					},
-					"auto"
+					"auto",
+					undefined,
+					[{ denom: "uxion", amount }] // Send the actual funds
 				);
 			} catch (e: any) {
 				setError(e.message);
@@ -602,7 +604,9 @@ export function useSocialOperations(signingClient: any) {
 							proof_type: "None",
 						},
 					},
-					"auto"
+					"auto",
+					undefined,
+					[{ denom: "uxion", amount }] // Send the actual funds for escrow
 				);
 			} catch (e: any) {
 				setError(e.message);
@@ -629,7 +633,21 @@ export function useSocialOperations(signingClient: any) {
 			setLoading(true);
 			setError(null);
 			try {
-				return await signingClient.execute(
+				console.log("🔧 TRANSACTION DEBUG:");
+				console.log("  - senderAddress:", senderAddress);
+				console.log("  - CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
+				console.log("  - message:", JSON.stringify({
+					create_help_request: {
+						to_username: toUsername,
+						amount: { denom: "uxion", amount },
+						description,
+						proof_type: "None",
+					},
+				}, null, 2));
+				console.log("  - funds:", [{ denom: "uxion", amount }]);
+				console.log("  - signingClient type:", typeof signingClient);
+				
+				const result = await signingClient.execute(
 					senderAddress,
 					CONTRACT_ADDRESS,
 					{
@@ -640,8 +658,13 @@ export function useSocialOperations(signingClient: any) {
 							proof_type: "None",
 						},
 					},
-					"auto"
+					"auto",
+					undefined,
+					[{ denom: "uxion", amount }] // Send the actual funds for escrow
 				);
+				
+				console.log("✅ Transaction successful:", result);
+				return result;
 			} catch (e: any) {
 				setError(e.message);
 				throw e;

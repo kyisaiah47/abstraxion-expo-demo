@@ -128,6 +128,30 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			address: account?.bech32Address, 
 			hasSigningClient: !!signingClient 
 		});
+		
+		// DEBUG: Check current user registration
+		console.log("🔍 DEBUG - Checking user registration...");
+		if (currentUser) {
+			console.log("✅ Current user found:", currentUser);
+		} else {
+			console.log("❌ Current user not found - this might be the issue!");
+			console.log("📱 Account address:", account?.bech32Address);
+			
+			// Try to manually query for the user
+			try {
+				console.log("🔍 Attempting manual user lookup...");
+				const client = await import("@cosmjs/cosmwasm-stargate").then(m => m.CosmWasmClient.connect(
+					process.env.EXPO_PUBLIC_RPC_ENDPOINT || "https://rpc.xion-testnet-2.burnt.com:443"
+				));
+				const result = await client.queryContractSmart(
+					process.env.EXPO_PUBLIC_CONTRACT_ADDRESS || "xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy",
+					{ get_user_by_wallet: { wallet_address: account?.bech32Address } }
+				);
+				console.log("🔍 Manual lookup result:", result);
+			} catch (lookupError: any) {
+				console.log("❌ Manual lookup failed:", lookupError.message);
+			}
+		}
 
 		if (!isConnected || !account?.bech32Address || !signingClient) {
 			console.log("❌ Wallet not connected");
