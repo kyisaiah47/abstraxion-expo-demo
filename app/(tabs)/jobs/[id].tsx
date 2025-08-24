@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
 	View,
 	Text,
@@ -7,320 +7,510 @@ import {
 	ScrollView,
 	TouchableOpacity,
 	Platform,
+	Alert,
+	ActivityIndicator,
 } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import SlideToUnlock from "react-native-slide-to-unlock";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { DesignSystem } from "@/constants/DesignSystem";
+import { supabase } from "@/lib/supabase";
+import { TaskStatus, DisputeData } from "@/types/proofpay";
+import DisputeModal from "@/components/DisputeModal";
+import Toast from "react-native-toast-message";
 
-const jobs = {
-	"1": {
-		title: "Design landing page",
-		description: "Create a modern, responsive landing page for Acme Inc.",
-		budget: "$400",
-		due: "Aug 9",
-		clientName: "David Smith",
-		clientAvatar: "D",
-		tags: ["Remote", "3 days", "Fixed-price"],
-		amountUxiom: "400000",
-		clientAddress: "xion1client...",
-	},
-	"2": {
-		title: "Build mobile prototype",
-		description: "Develop a high-fidelity mobile UI for ZenFlow.",
-		budget: "$700",
-		due: "Aug 11",
-		clientName: "Emily Zhao",
-		clientAvatar: "E",
-		tags: ["Mobile", "5 days", "Milestone"],
-		amountUxiom: "700000",
-		clientAddress: "xion1client...",
-	},
-};
+interface TaskDetails {
+	id: string;
+	payer: string;
+	worker: string;
+	amount: number;
+	denom: string;
+	description: string;
+	status: TaskStatus;
+	created_at: string;
+	deadline_ts?: string;
+	proof_type: 'soft' | 'zktls' | 'hybrid';
+	pending_release_expires_at?: string;
+	review_window_secs?: number;
+}
 
 export default function JobDetailsScreen() {
 	const { id } = useLocalSearchParams();
+	const { user } = useAuth();
+	const { colors } = useTheme();
 	const insets = useSafeAreaInsets();
-	const job = jobs[id as keyof typeof jobs];
 	const router = useRouter();
 
-	// Replace this with your wallet/contract logic
+	const [task, setTask] = useState<TaskDetails | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [showDisputeModal, setShowDisputeModal] = useState(false);
 
-	const handleAcceptTask = () => {
-		// Pass job ID to proof submission page
-		router.push(`/jobs/${id}/proof-submission`);
+	const fetchTaskDetails = async () => {
+		if (!id || typeof id !== 'string') return;
+
+		try {
+			const { data, error } = await supabase
+				.from('tasks')
+				.select('*')
+				.eq('id', id)
+				.single();
+
+			if (error || !data) {
+				console.error('Error fetching task:', error);
+				return;
+			}
+
+			setTask({
+				id: data.id,
+				payer: data.payer,
+				worker: data.worker,
+				amount: parseFloat(data.amount) / 1000000,
+				denom: data.denom,
+				description: data.description || '',
+				status: data.status,
+				created_at: data.created_at,
+				deadline_ts: data.deadline_ts,
+				proof_type: data.proof_type,
+				pending_release_expires_at: data.pending_release_expires_at,
+				review_window_secs: data.review_window_secs,
+			});
+		} catch (error) {
+			console.error('Error in fetchTaskDetails:', error);
+		} finally {
+			setLoading(false);
+		}
 	};
 
-	if (!job) {
+	const handleSubmitDispute = async (disputeData: DisputeData) => {
+		try {
+			const { error } = await supabase
+				.from('disputes')
+				.insert({
+					task_id: disputeData.taskId,
+					reason: disputeData.reason,
+					evidence_url: disputeData.evidenceUrl,
+					evidence_hash: disputeData.evidenceHash,
+				});
+
+			if (error) {
+				console.error('Error submitting dispute:', error);
+				throw error;
+			}
+
+			// Update task status to disputed
+			const { error: updateError } = await supabase
+				.from('tasks')
+				.update({ status: 'disputed' })
+				.eq('id', disputeData.taskId);
+
+			if (updateError) {
+				console.error('Error updating task status:', updateError);
+			}
+
+			Toast.show({
+				type: 'success',
+				text1: 'Dispute Submitted',
+				text2: 'Your dispute has been submitted for review',
+				position: 'bottom',
+			});
+
+			// Refresh task details
+			fetchTaskDetails();
+		} catch (error) {
+			throw error;
+		}
+	};
+
+	const canDispute = () => {
+		return task?.status === 'pending_release' && user?.walletAddress === task.payer;
+	};
+
+	const getTimeRemaining = () => {
+		if (!task?.pending_release_expires_at) return null;
+		
+		const now = new Date();
+		const expires = new Date(task.pending_release_expires_at);
+		const diff = expires.getTime() - now.getTime();
+		
+		if (diff <= 0) return 'Expired';
+		
+		const hours = Math.floor(diff / (1000 * 60 * 60));
+		const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+		
+		if (hours > 0) return `${hours}h ${minutes}m remaining`;
+		return `${minutes}m remaining`;
+	};
+
+	const getStatusColor = (status: TaskStatus) => {
+		switch (status) {
+			case 'pending':
+				return colors.status?.info || '#2563EB';
+			case 'proof_submitted':
+				return colors.status?.warning || '#D97706';
+			case 'pending_release':
+				return '#FF6B35';
+			case 'released':
+				return colors.status?.success || '#059669';
+			case 'disputed':
+				return colors.status?.error || '#DC2626';
+			case 'refunded':
+				return colors.text.secondary;
+			default:
+				return colors.text.secondary;
+		}
+	};
+
+	const getStatusText = (status: TaskStatus) => {
+		switch (status) {
+			case 'pending':
+				return 'Pending';
+			case 'proof_submitted':
+				return 'Proof Submitted';
+			case 'pending_release':
+				return 'Pending Release';
+			case 'released':
+				return 'Released';
+			case 'disputed':
+				return 'Disputed';
+			case 'refunded':
+				return 'Refunded';
+			default:
+				return status;
+		}
+	};
+
+	const truncateAddress = (address: string) => {
+		return `${address.slice(0, 6)}...${address.slice(-4)}`;
+	};
+
+	useEffect(() => {
+		fetchTaskDetails();
+	}, [id]);
+
+	if (loading) {
 		return (
-			<SafeAreaView style={styles.safeArea}>
-				<Stack.Screen options={{ title: "Job Not Found" }} />
+			<SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface.primary }]}>
+				<Stack.Screen options={{ title: "Task Details" }} />
 				<View style={styles.centerEmpty}>
-					<Text style={{ color: "#6B7280" }}>Job not found.</Text>
+					<ActivityIndicator size="large" color={colors.accent?.primary || '#2563EB'} />
+					<Text style={[styles.loadingText, { color: colors.text.secondary }]}>
+						Loading task details...
+					</Text>
+				</View>
+			</SafeAreaView>
+		);
+	}
+
+	if (!task) {
+		return (
+			<SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface.primary }]}>
+				<Stack.Screen options={{ title: "Task Not Found" }} />
+				<View style={styles.centerEmpty}>
+					<Ionicons name="alert-circle-outline" size={48} color={colors.text.tertiary} />
+					<Text style={[styles.emptyText, { color: colors.text.primary }]}>Task not found</Text>
+					<Text style={[styles.emptySubtext, { color: colors.text.secondary }]}>
+						This task may have been removed or doesn't exist
+					</Text>
 				</View>
 			</SafeAreaView>
 		);
 	}
 
 	return (
-		<SafeAreaView style={[styles.safeArea, { paddingBottom: insets.bottom }]}>
-			<Stack.Screen options={{ title: "Job Details" }} />
-			<View style={styles.flex1}>
-				<ScrollView
-					contentContainerStyle={styles.scrollContent}
-					bounces={false}
-				>
-					<View style={styles.header}>
-						<Text
-							numberOfLines={2}
-							style={styles.title}
-						>
-							{job.title}
-						</Text>
-						<View style={styles.tagsRow}>
-							{job.tags.map((tag) => (
-								<View
-									key={tag}
-									style={styles.chip}
-								>
-									<Text style={styles.chipText}>{tag}</Text>
-								</View>
-							))}
-						</View>
-						<Text style={styles.desc}>{job.description}</Text>
-					</View>
-					<View style={styles.infoCard}>
-						<View style={styles.payoutDueRow}>
-							<View>
-								<Text style={styles.infoLabel}>Payout</Text>
-								<Text style={styles.payout}>{job.budget}</Text>
-							</View>
-							<View style={{ alignItems: "flex-end" }}>
-								<Text style={styles.infoLabel}>Due</Text>
-								<Text style={styles.due}>{job.due}</Text>
-							</View>
-						</View>
-						<View style={styles.clientRow}>
-							<View style={styles.avatar}>
-								<Text style={styles.avatarText}>{job.clientAvatar}</Text>
-							</View>
-							<Text style={styles.clientName}>{job.clientName}</Text>
-						</View>
-					</View>
-				</ScrollView>
-				{/* <View style={styles.slideToUnlock}>
-					<SlideToUnlock
-						containerStyle={styles.slider}
-						thumbStyle={styles.sliderThumb}
-						text="Slide to accept task"
-						textStyle={styles.sliderText}
-						animationType="spring"
-						ThumbIconComponent={() => (
-							<View style={styles.thumbIcon}>
-								<Text style={styles.thumbIconText}>→</Text>
-							</View>
-						)}
-						onUnlock={handleAcceptTask}
-					/>
-				</View> */}
-				<View
-					style={[
-						styles.footer,
-						{
-							paddingBottom: insets.bottom + (Platform.OS === "ios" ? 12 : 20),
-							backgroundColor: "#F4F4F5",
-							position: "absolute",
-							left: 0,
-							right: 0,
-							bottom: 0,
-							shadowColor: "#000",
-							shadowOffset: { width: 0, height: -3 },
-							shadowOpacity: 0.06,
-							shadowRadius: 8,
-							elevation: 10,
-						},
-					]}
-				>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={handleAcceptTask}
-						activeOpacity={0.85}
+		<>
+			<SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface.primary, paddingBottom: insets.bottom }]}>
+				<Stack.Screen options={{ title: "Task Details" }} />
+				<View style={styles.flex1}>
+					<ScrollView
+						contentContainerStyle={styles.scrollContent}
+						bounces={false}
+						style={{ backgroundColor: colors.surface.primary }}
 					>
-						<Text style={styles.buttonText}>ACCEPT TASK</Text>
-					</TouchableOpacity>
+						{/* Status Header */}
+						<View style={[styles.statusHeader, { backgroundColor: colors.surface.secondary }]}>
+							<View style={[styles.statusBadge, { backgroundColor: getStatusColor(task.status) + '20' }]}>
+								<Ionicons 
+									name={task.status === 'released' ? 'checkmark-circle' : 
+										  task.status === 'pending_release' ? 'hourglass' :
+										  task.status === 'disputed' ? 'alert-circle' : 'time'} 
+									size={16} 
+									color={getStatusColor(task.status)} 
+								/>
+								<Text style={[styles.statusText, { color: getStatusColor(task.status) }]}>
+									{getStatusText(task.status)}
+								</Text>
+							</View>
+							{task.status === 'pending_release' && (
+								<Text style={[styles.timeRemaining, { color: colors.text.secondary }]}>
+									{getTimeRemaining()}
+								</Text>
+							)}
+						</View>
+
+						{/* Task Details */}
+						<View style={[styles.infoCard, { backgroundColor: colors.surface.primary, borderColor: colors.border.primary }]}>
+							<Text style={[styles.title, { color: colors.text.primary }]} numberOfLines={3}>
+								{task.description}
+							</Text>
+							
+							<View style={styles.payoutRow}>
+								<View>
+									<Text style={[styles.infoLabel, { color: colors.text.tertiary }]}>Amount</Text>
+									<Text style={[styles.payout, { color: colors.status?.success || '#059669' }]}>
+										${task.amount.toFixed(2)} {task.denom.replace('u', '').toUpperCase()}
+									</Text>
+								</View>
+								<View style={{ alignItems: 'flex-end' }}>
+									<Text style={[styles.infoLabel, { color: colors.text.tertiary }]}>Proof Type</Text>
+									<Text style={[styles.proofType, { color: colors.text.primary }]}>
+										{task.proof_type.toUpperCase()}
+									</Text>
+								</View>
+							</View>
+
+							{/* Participants */}
+							<View style={styles.participantsSection}>
+								<Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Participants</Text>
+								
+								<View style={styles.participantRow}>
+									<View style={styles.participantInfo}>
+										<Ionicons name="person" size={16} color={colors.text.tertiary} />
+										<View style={styles.participantText}>
+											<Text style={[styles.participantLabel, { color: colors.text.secondary }]}>Payer</Text>
+											<Text style={[styles.participantAddress, { color: colors.text.primary }]}>
+												{user?.walletAddress === task.payer ? 'You' : truncateAddress(task.payer)}
+											</Text>
+										</View>
+									</View>
+								</View>
+
+								{task.worker && (
+									<View style={styles.participantRow}>
+										<View style={styles.participantInfo}>
+											<Ionicons name="hammer" size={16} color={colors.text.tertiary} />
+											<View style={styles.participantText}>
+												<Text style={[styles.participantLabel, { color: colors.text.secondary }]}>Worker</Text>
+												<Text style={[styles.participantAddress, { color: colors.text.primary }]}>
+													{user?.walletAddress === task.worker ? 'You' : truncateAddress(task.worker)}
+												</Text>
+											</View>
+										</View>
+									</View>
+								)}
+							</View>
+
+							{/* Timeline */}
+							<View style={styles.timelineSection}>
+								<Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Timeline</Text>
+								<View style={styles.timelineItem}>
+									<Ionicons name="add-circle" size={16} color={colors.status?.success || '#059669'} />
+									<Text style={[styles.timelineText, { color: colors.text.secondary }]}>
+										Created {new Date(task.created_at).toLocaleDateString()}
+									</Text>
+								</View>
+								{task.deadline_ts && (
+									<View style={styles.timelineItem}>
+										<Ionicons name="calendar" size={16} color={colors.status?.warning || '#D97706'} />
+										<Text style={[styles.timelineText, { color: colors.text.secondary }]}>
+											Due {new Date(task.deadline_ts).toLocaleDateString()}
+										</Text>
+									</View>
+								)}
+							</View>
+						</View>
+					</ScrollView>
+
+					{/* Action Footer */}
+					{canDispute() && (
+						<View style={[styles.footer, { 
+							backgroundColor: colors.surface.primary, 
+							borderTopColor: colors.border.primary,
+							paddingBottom: insets.bottom + (Platform.OS === "ios" ? 12 : 20),
+						}]}>
+							<TouchableOpacity
+								style={[styles.disputeButton, { backgroundColor: colors.status?.error || '#DC2626' }]}
+								onPress={() => setShowDisputeModal(true)}
+								activeOpacity={0.8}
+							>
+								<Ionicons name="alert-circle" size={20} color="white" />
+								<Text style={styles.disputeButtonText}>Dispute Task</Text>
+							</TouchableOpacity>
+							
+							<Text style={[styles.disputeWarning, { color: colors.text.tertiary }]}>
+								Only dispute if you have legitimate concerns about the proof quality
+							</Text>
+						</View>
+					)}
 				</View>
-			</View>
-		</SafeAreaView>
+			</SafeAreaView>
+
+			{/* Dispute Modal */}
+			<DisputeModal
+				visible={showDisputeModal}
+				taskId={task.id}
+				onClose={() => setShowDisputeModal(false)}
+				onSubmit={handleSubmitDispute}
+			/>
+		</>
 	);
 }
 
 const styles = StyleSheet.create({
-	safeArea: { flex: 1, backgroundColor: "#F4F4F5" },
-	flex1: { flex: 1 },
+	safeArea: { 
+		flex: 1,
+	},
+	flex1: { 
+		flex: 1,
+	},
 	scrollContent: {
-		padding: 24,
-		paddingBottom: 36,
-	},
-	header: {
-		marginBottom: 14,
-	},
-	title: {
-		fontSize: 22,
-		fontWeight: "700",
-		color: "#1E293B",
-		marginBottom: 6,
-	},
-	tagsRow: {
-		flexDirection: "row",
-		gap: 8,
-		marginBottom: 10,
-		flexWrap: "wrap",
-	},
-	chip: {
-		backgroundColor: "#E0E7FF",
-		paddingHorizontal: 10,
-		paddingVertical: 4,
-		borderRadius: 999,
-		marginRight: 5,
-		marginBottom: 4,
-	},
-	chipText: {
-		fontSize: 12,
-		color: "#4338CA",
-		fontWeight: "500",
-	},
-	desc: {
-		fontSize: 15,
-		color: "#64748B",
-		marginBottom: 14,
-	},
-	infoCard: {
-		backgroundColor: "#fff",
-		borderRadius: 16,
-		padding: 20,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.06,
-		shadowRadius: 8,
-		elevation: 2,
-		marginBottom: 12,
-	},
-	payoutDueRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		marginBottom: 18,
-	},
-	infoLabel: {
-		fontSize: 13,
-		color: "#A1A1AA",
-		marginBottom: 2,
-	},
-	payout: {
-		fontSize: 18,
-		fontWeight: "700",
-		color: "#22c55e",
-	},
-	due: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#6366F1",
-	},
-	clientRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginTop: 2,
-	},
-	avatar: {
-		width: 36,
-		height: 36,
-		borderRadius: 18,
-		backgroundColor: "#EDE9FE",
-		alignItems: "center",
-		justifyContent: "center",
-		marginRight: 10,
-	},
-	avatarText: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#7C3AED",
-	},
-	clientName: {
-		fontSize: 16,
-		color: "#0F172A",
-	},
-	slideToUnlock: {
-		padding: 16,
-		paddingBottom: 0,
-	},
-	slider: {
-		backgroundColor: "#EEF2FF",
-		borderRadius: 100,
-		width: "100%",
-		height: 54,
-		justifyContent: "center",
-	},
-	sliderThumb: {
-		backgroundColor: "#6366F1",
-		borderRadius: 100,
-		width: 54,
-		height: 54,
-		alignItems: "center",
-		justifyContent: "center",
-		shadowColor: "#000",
-		shadowOpacity: 0.12,
-		shadowRadius: 8,
-	},
-	sliderText: {
-		position: "absolute",
-		left: 0,
-		right: 0,
-		textAlign: "center",
-		color: "#6366F1",
-		fontWeight: "700",
-		fontSize: 15.5,
-		letterSpacing: 0.2,
-	},
-	footer: {
-		paddingTop: 10,
-		paddingHorizontal: 20,
-		// Remove old paddingBottom, it's now in the component inline
-	},
-	button: {
-		backgroundColor: "#6366F1",
-		paddingVertical: 16,
-		borderRadius: 10,
-		alignItems: "center",
-		width: "100%",
-		shadowColor: "#4F46E5",
-		shadowOpacity: 0.18,
-		shadowOffset: { width: 0, height: 2 },
-		shadowRadius: 8,
-		elevation: 4,
-	},
-	buttonText: {
-		color: "#FFFFFF",
-		fontSize: 17,
-		fontWeight: "700",
-		letterSpacing: 0.2,
-	},
-	thumbIcon: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
-		backgroundColor: "#fff",
-		alignItems: "center",
-		justifyContent: "center",
-		shadowColor: "#000",
-		shadowOpacity: 0.06,
-		shadowRadius: 3,
-	},
-	thumbIconText: {
-		fontSize: 21,
-		color: "#6366F1",
-		fontWeight: "bold",
+		padding: DesignSystem.spacing.lg,
+		paddingBottom: DesignSystem.spacing['3xl'],
 	},
 	centerEmpty: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
+		gap: DesignSystem.spacing.md,
+	},
+	loadingText: {
+		...DesignSystem.typography.body,
+		marginTop: DesignSystem.spacing.md,
+	},
+	emptyText: {
+		...DesignSystem.typography.h3,
+		fontWeight: '600',
+	},
+	emptySubtext: {
+		...DesignSystem.typography.body,
+		textAlign: 'center',
+		paddingHorizontal: DesignSystem.spacing.lg,
+	},
+	statusHeader: {
+		padding: DesignSystem.spacing.lg,
+		borderRadius: 16,
+		marginBottom: DesignSystem.spacing.lg,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+	},
+	statusBadge: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingHorizontal: DesignSystem.spacing.md,
+		paddingVertical: DesignSystem.spacing.sm,
+		borderRadius: 12,
+		gap: 6,
+	},
+	statusText: {
+		...DesignSystem.typography.bodyMedium,
+		fontWeight: '600',
+	},
+	timeRemaining: {
+		...DesignSystem.typography.body,
+		fontWeight: '500',
+	},
+	title: {
+		...DesignSystem.typography.h2,
+		fontWeight: '700',
+		marginBottom: DesignSystem.spacing.lg,
+		lineHeight: 28,
+	},
+	infoCard: {
+		borderRadius: 20,
+		padding: DesignSystem.spacing.xl,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.08,
+		shadowRadius: 12,
+		elevation: 3,
+		borderWidth: 1,
+	},
+	payoutRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginBottom: DesignSystem.spacing.xl,
+	},
+	infoLabel: {
+		...DesignSystem.typography.caption,
+		fontWeight: '500',
+		marginBottom: 4,
+	},
+	payout: {
+		...DesignSystem.typography.h3,
+		fontWeight: '700',
+	},
+	proofType: {
+		...DesignSystem.typography.bodyMedium,
+		fontWeight: '600',
+	},
+	participantsSection: {
+		marginBottom: DesignSystem.spacing.xl,
+	},
+	timelineSection: {
+		marginBottom: 0,
+	},
+	sectionTitle: {
+		...DesignSystem.typography.bodyMedium,
+		fontWeight: '600',
+		marginBottom: DesignSystem.spacing.md,
+	},
+	participantRow: {
+		marginBottom: DesignSystem.spacing.md,
+	},
+	participantInfo: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: DesignSystem.spacing.sm,
+	},
+	participantText: {
+		gap: 2,
+	},
+	participantLabel: {
+		...DesignSystem.typography.caption,
+		fontWeight: '500',
+	},
+	participantAddress: {
+		...DesignSystem.typography.body,
+		fontWeight: '500',
+	},
+	timelineItem: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: DesignSystem.spacing.sm,
+		marginBottom: DesignSystem.spacing.sm,
+	},
+	timelineText: {
+		...DesignSystem.typography.body,
+	},
+	footer: {
+		borderTopWidth: 1,
+		paddingTop: DesignSystem.spacing.lg,
+		paddingHorizontal: DesignSystem.spacing.lg,
+	},
+	disputeButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		paddingVertical: DesignSystem.spacing.lg,
+		borderRadius: 16,
+		gap: DesignSystem.spacing.sm,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
+		elevation: 4,
+		marginBottom: DesignSystem.spacing.md,
+	},
+	disputeButtonText: {
+		...DesignSystem.typography.bodyMedium,
+		color: 'white',
+		fontWeight: '600',
+	},
+	disputeWarning: {
+		...DesignSystem.typography.caption,
+		textAlign: 'center',
+		lineHeight: 16,
 	},
 });

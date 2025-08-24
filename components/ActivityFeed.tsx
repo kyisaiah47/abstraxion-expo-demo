@@ -82,67 +82,127 @@ export default function ActivityFeed({
 		const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
 		
 		if (diffInMinutes < 1) return "Just now";
-		if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+		if (diffInMinutes < 60) return `${diffInMinutes}m`;
 		
 		const diffInHours = Math.floor(diffInMinutes / 60);
-		if (diffInHours < 24) return `${diffInHours}h ago`;
+		if (diffInHours < 24) return `${diffInHours}h`;
 		
 		const diffInDays = Math.floor(diffInHours / 24);
-		if (diffInDays < 7) return `${diffInDays}d ago`;
+		if (diffInDays < 7) return `${diffInDays}d`;
 		
-		return date.toLocaleDateString();
+		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+	};
+
+	const getEnhancedMessage = (notification: Notification) => {
+		const payload = (notification as any)?.payload || {};
+		const amount = payload.amount ? `$${payload.amount}` : '';
+		
+		switch (notification.type) {
+			case 'task_created':
+				return `New ${amount} task available!`;
+			case 'proof_submitted':
+				return 'Proof submitted — review required';
+			case 'pending_release_started':
+				return 'Auto-release started — 24h countdown';
+			case 'task_released':
+				return `${amount} payment released! 💰`;
+			case 'task_disputed':
+				return 'Task disputed — review needed';
+			case 'task_refunded':
+				return `${amount} refund processed`;
+			default:
+				return notification.message;
+		}
 	};
 
 	const renderNotification = ({ item }: { item: Notification }) => (
 		<Pressable
 			onPress={() => handleNotificationPress(item)}
-			className={`border-b border-gray-100 dark:border-gray-800 p-4 ${
-				!item.read ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-gray-900'
-			}`}
+			style={{
+				backgroundColor: !item.read ? colors.surface.secondary : colors.surface.primary,
+				borderBottomWidth: 1,
+				borderBottomColor: colors.border.primary,
+				paddingVertical: DesignSystem.spacing.lg,
+				paddingHorizontal: DesignSystem.spacing.lg,
+			}}
 		>
-			<View className="flex-row items-start">
-				{/* Icon */}
-				<View className="mr-3 mt-1">
-					<View className={`w-10 h-10 rounded-full items-center justify-center ${
-						!item.read ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-gray-800'
-					}`}>
+			<View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+				{/* Icon with gradient-like styling */}
+				<View style={{ marginRight: DesignSystem.spacing.md, marginTop: 2 }}>
+					<View style={{
+						width: 44,
+						height: 44,
+						borderRadius: 22,
+						backgroundColor: getNotificationColor(item.type, colors),
+						alignItems: 'center',
+						justifyContent: 'center',
+						shadowColor: '#000',
+						shadowOffset: { width: 0, height: 2 },
+						shadowOpacity: 0.1,
+						shadowRadius: 4,
+						elevation: 2,
+					}}>
 						<Ionicons
 							name={getNotificationIcon(item.type) as any}
-							size={20}
-							color={getNotificationColor(item.type, colors)}
+							size={22}
+							color="white"
 						/>
 					</View>
 				</View>
 
 				{/* Content */}
-				<View className="flex-1">
-					<View className="flex-row items-center justify-between mb-1">
-						<Text className={`font-medium text-gray-900 dark:text-white ${
-							!item.read ? 'font-semibold' : ''
-						}`} numberOfLines={1}>
+				<View style={{ flex: 1 }}>
+					<View style={{ 
+						flexDirection: 'row', 
+						justifyContent: 'space-between', 
+						alignItems: 'center',
+						marginBottom: DesignSystem.spacing.xs
+					}}>
+						<Text style={{
+							...DesignSystem.typography.bodyMedium,
+							color: colors.text.primary,
+							fontWeight: !item.read ? '600' : '500',
+							flex: 1,
+							marginRight: DesignSystem.spacing.sm,
+						}} numberOfLines={1}>
 							{item.title}
 						</Text>
-						<Text className="text-xs text-gray-500 dark:text-gray-400">
+						<Text style={{
+							...DesignSystem.typography.caption,
+							color: colors.text.tertiary,
+							fontWeight: '500',
+						}}>
 							{formatTimeAgo(item.createdAt)}
 						</Text>
 					</View>
 
-					<Text className="text-sm text-gray-600 dark:text-gray-300" numberOfLines={2}>
-						{item.message}
+					<Text style={{
+						...DesignSystem.typography.body,
+						color: colors.text.secondary,
+						lineHeight: 20,
+					}} numberOfLines={2}>
+						{getEnhancedMessage(item)}
 					</Text>
 
 					{/* Unread indicator */}
 					{!item.read && (
-						<View className="w-2 h-2 bg-blue-600 rounded-full mt-2" />
+						<View style={{
+							width: 8,
+							height: 8,
+							backgroundColor: colors.accent?.primary || '#2563EB',
+							borderRadius: 4,
+							marginTop: DesignSystem.spacing.sm,
+							alignSelf: 'flex-start',
+						}} />
 					)}
 				</View>
 
-				{/* Arrow */}
+				{/* Arrow for navigation */}
 				{item.taskId && (
-					<View className="ml-2 mt-2">
+					<View style={{ marginLeft: DesignSystem.spacing.sm, marginTop: 8 }}>
 						<Ionicons
 							name="chevron-forward"
-							size={16}
+							size={18}
 							color={colors.text.tertiary}
 						/>
 					</View>
@@ -152,17 +212,41 @@ export default function ActivityFeed({
 	);
 
 	const renderEmpty = () => (
-		<View className="items-center py-12">
-			<Ionicons
-				name="notifications-outline"
-				size={48}
-				color={colors.text.tertiary}
-			/>
-			<Text className="text-lg font-medium text-gray-700 dark:text-gray-300 mt-4 mb-2">
-				No Activity Yet
+		<View style={{
+			alignItems: 'center',
+			paddingVertical: DesignSystem.spacing['3xl'],
+			paddingHorizontal: DesignSystem.spacing.xl,
+		}}>
+			<View style={{
+				width: 80,
+				height: 80,
+				borderRadius: 40,
+				backgroundColor: colors.surface.secondary,
+				alignItems: 'center',
+				justifyContent: 'center',
+				marginBottom: DesignSystem.spacing.lg,
+			}}>
+				<Ionicons
+					name="notifications-outline"
+					size={40}
+					color={colors.text.tertiary}
+				/>
+			</View>
+			<Text style={{
+				...DesignSystem.typography.h3,
+				color: colors.text.primary,
+				textAlign: 'center',
+				marginBottom: DesignSystem.spacing.md,
+			}}>
+				Stay In The Loop
 			</Text>
-			<Text className="text-gray-500 dark:text-gray-400 text-center px-8">
-				Your task activity and notifications will appear here
+			<Text style={{
+				...DesignSystem.typography.body,
+				color: colors.text.secondary,
+				textAlign: 'center',
+				lineHeight: 22,
+			}}>
+				Your task activity, payments, and proof confirmations will appear here. Create your first task to get started!
 			</Text>
 		</View>
 	);
@@ -178,11 +262,18 @@ export default function ActivityFeed({
 					<RefreshControl
 						refreshing={refreshing}
 						onRefresh={onRefresh}
+						tintColor={colors.accent?.primary || '#2563EB'}
 					/>
 				) : undefined
 			}
 			showsVerticalScrollIndicator={false}
-			className="flex-1 bg-white dark:bg-gray-900"
+			style={{
+				flex: 1,
+				backgroundColor: colors.surface.primary,
+			}}
+			contentContainerStyle={{
+				flexGrow: 1,
+			}}
 		/>
 	);
 }

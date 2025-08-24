@@ -9,6 +9,7 @@ import {
 	RefreshControl,
 	SafeAreaView,
 	Alert,
+	Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,205 +19,131 @@ import {
 } from "@burnt-labs/abstraxion-react-native";
 import { ContractService, type Job } from "../../../lib/contractService";
 import { TREASURY_CONFIG } from "../../../constants/contracts";
+import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { DesignSystem } from "@/constants/DesignSystem";
+import { supabase } from "@/lib/supabase";
+import { TaskStatus } from "@/types/proofpay";
+import SophisticatedHeader from "@/components/SophisticatedHeader";
 import Toast from "react-native-toast-message";
+
+type TabType = 'active' | 'pending' | 'completed';
+
+interface Task {
+	id: string;
+	payer: string;
+	worker: string;
+	amount: number;
+	denom: string;
+	description: string;
+	status: TaskStatus;
+	created_at: string;
+	deadline_ts?: string;
+	proof_type: 'soft' | 'zktls' | 'hybrid';
+}
 
 export default function JobsScreen() {
 	const router = useRouter();
+	const { user } = useAuth();
+	const { colors } = useTheme();
 	const { data: account } = useAbstraxionAccount();
-	const { client } = useAbstraxionSigningClient();
 
-	const [jobs, setJobs] = useState<Job[]>([]);
+	const [activeTab, setActiveTab] = useState<TabType>('active');
+	const [tasks, setTasks] = useState<Task[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [refreshing, setRefreshing] = useState(false);
-	const [acceptingJobId, setAcceptingJobId] = useState<number | null>(null);
-	const [contractService, setContractService] =
-		useState<ContractService | null>(null);
-	const [treasuryStatus, setTreasuryStatus] = useState({
-		isAvailable: false,
-		balance: 0,
-		canSponsorGas: false,
-		estimatedTransactionsLeft: 0,
-	});
 
-	// Helper function to map Treasury status
-	const mapTreasuryStatus = (status: any) => ({
-		isAvailable: status.isConnected || status.isAvailable || false,
-		balance: status.balance || 0,
-		canSponsorGas: status.canSponsorGas || false,
-		estimatedTransactionsLeft: Math.floor((status.balance || 0) * 5), // Estimate 5 txs per XION
-	});
+	// Fetch tasks from Supabase
+	const fetchTasks = async () => {
+		if (!user?.walletAddress) return;
 
-	// Initialize contract service and load jobs
-	useEffect(() => {
-		if (account && client) {
-			// Initialize with Treasury if available
-			const treasuryAddress = TREASURY_CONFIG.enabled
-				? TREASURY_CONFIG.address
-				: undefined;
-			const service = new ContractService(account, client, treasuryAddress);
-			setContractService(service);
+		try {
+			const { data, error } = await supabase
+				.from('tasks')
+				.select('*')
+				.or(`payer.eq.${user.walletAddress},worker.eq.${user.walletAddress}`)
+				.order('created_at', { ascending: false });
 
-			// Load jobs and Treasury status
-			const loadInitialData = async () => {
-				try {
-					setLoading(true);
-					const allJobs = await service.queryJobs();
-					// Filter for open jobs only (worker === null and status === 'Open')
-					const openJobs = allJobs.filter(
-						(job) => job.worker === null && job.status === "Open"
-					);
-					setJobs(openJobs);
-
-					// Check Treasury status if available
-					if (treasuryAddress) {
-						const status = await service.getTreasuryStatus();
-						setTreasuryStatus(mapTreasuryStatus(status));
-					}
-				} catch (error) {
-					console.error("Failed to load jobs:", error);
-					Toast.show({
-						type: "error",
-						text1: "Error",
-						text2: "Failed to load jobs from blockchain",
-						position: "bottom",
-					});
-				} finally {
-					setLoading(false);
-				}
-			};
-
-			loadInitialData();
-		}
-	}, [account?.bech32Address, client]); // Use specific properties instead of objects
-
-	const handleRefresh = async () => {
-		if (contractService) {
-			setRefreshing(true);
-			try {
-				const allJobs = await contractService.queryJobs();
-				// Filter for open jobs only (worker === null and status === 'Open')
-				const openJobs = allJobs.filter(
-					(job) => job.worker === null && job.status === "Open"
-				);
-				setJobs(openJobs);
-			} catch (error) {
-				console.error("Failed to refresh jobs:", error);
-				Toast.show({
-					type: "error",
-					text1: "Error",
-					text2: "Failed to refresh jobs from blockchain",
-					position: "bottom",
-				});
-			} finally {
-				setRefreshing(false);
+			if (error) {
+				console.error('Error fetching tasks:', error);
+				return;
 			}
+
+			const mappedTasks: Task[] = (data || []).map(item => ({
+				id: item.id,
+				payer: item.payer,
+				worker: item.worker,
+				amount: parseFloat(item.amount) / 1000000, // Convert from uxion to xion
+				denom: item.denom,
+				description: item.description || '',
+				status: item.status,
+				created_at: item.created_at,
+				deadline_ts: item.deadline_ts,
+				proof_type: item.proof_type,
+			}));
+
+			setTasks(mappedTasks);
+		} catch (error) {
+			console.error('Error in fetchTasks:', error);
+		} finally {
+			setLoading(false);
 		}
 	};
 
-	const handleAcceptJob = async (jobId: number) => {
-		if (!contractService || !account) {
-			Toast.show({
-				type: "error",
-				text1: "Error",
-				text2: "Wallet not connected",
-				position: "bottom",
-			});
-			return;
+	useEffect(() => {
+		fetchTasks();
+	}, [user?.walletAddress]);
+
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		await fetchTasks();
+		setRefreshing(false);
+	};
+
+	// Filter tasks by tab
+	const getFilteredTasks = () => {
+		switch (activeTab) {
+			case 'active':
+				return tasks.filter(task => 
+					task.status === 'pending' || 
+					task.status === 'proof_submitted'
+				);
+			case 'pending':
+				return tasks.filter(task => task.status === 'pending_release');
+			case 'completed':
+				return tasks.filter(task => 
+					task.status === 'released' || 
+					task.status === 'refunded'
+				);
+			default:
+				return [];
 		}
+	};
 
-		const treasuryInfo = treasuryStatus.canSponsorGas
-			? "This transaction will be gasless via Treasury."
-			: treasuryStatus.isAvailable
-			? "Treasury is low on funds. You may need to pay gas fees."
-			: "You will pay gas fees for this transaction.";
+	// Get task counts for tabs
+	const getTaskCounts = () => {
+		const active = tasks.filter(task => 
+			task.status === 'pending' || 
+			task.status === 'proof_submitted'
+		).length;
+		
+		const pending = tasks.filter(task => task.status === 'pending_release').length;
+		
+		const completed = tasks.filter(task => 
+			task.status === 'released' || 
+			task.status === 'refunded'
+		).length;
 
-		Alert.alert(
-			"Accept Job",
-			`Are you sure you want to accept this job? You'll be responsible for completing the work.\n\n${treasuryInfo}`,
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Accept",
-					onPress: async () => {
-						try {
-							setAcceptingJobId(jobId);
-
-							// Use Treasury-enabled contract service
-							const result = await contractService.acceptJob(jobId);
-
-							if (result.success) {
-								const gasMessage = result.usedTreasury
-									? "Job accepted gaslessly via Treasury!"
-									: "Job accepted! Gas fees were paid directly.";
-
-								Toast.show({
-									type: "success",
-									text1: "Job Accepted!",
-									text2: gasMessage,
-									position: "bottom",
-								});
-
-								// Refresh jobs list and Treasury status
-								try {
-									const allJobs = await contractService.queryJobs();
-									const openJobs = allJobs.filter(
-										(job) => job.worker === null && job.status === "Open"
-									);
-									setJobs(openJobs);
-
-									// Update Treasury status
-									if (TREASURY_CONFIG.enabled) {
-										const status = await contractService.getTreasuryStatus();
-										setTreasuryStatus(mapTreasuryStatus(status));
-									}
-								} catch (refreshError) {
-									console.error(
-										"Failed to refresh after job acceptance:",
-										refreshError
-									);
-								}
-							} else {
-								// Handle Treasury-specific errors
-								const errorMessage = result.error || "Unknown error occurred";
-								const displayMessage = result.usedTreasury
-									? `Treasury transaction failed: ${errorMessage}`
-									: `Transaction failed: ${errorMessage}`;
-
-								Toast.show({
-									type: "error",
-									text1: "Failed to Accept Job",
-									text2: displayMessage,
-									position: "bottom",
-								});
-							}
-						} catch (error: any) {
-							console.error("Failed to accept job:", error);
-							Toast.show({
-								type: "error",
-								text1: "Failed to Accept Job",
-								text2: error?.message || "Unknown error",
-								position: "bottom",
-							});
-						} finally {
-							setAcceptingJobId(null);
-						}
-					},
-				},
-			]
-		);
+		return { active, pending, completed };
 	};
 
 	const truncateAddress = (address: string) => {
 		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
 
-	const formatTimeAgo = (timestamp: string | number) => {
+	const formatTimeAgo = (timestamp: string) => {
 		try {
-			// Handle both string and number timestamps
-			const date =
-				typeof timestamp === "string"
-					? new Date(timestamp)
-					: new Date(timestamp * 1000);
+			const date = new Date(timestamp);
 			const now = new Date();
 			const diffMs = now.getTime() - date.getTime();
 			const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -229,200 +156,228 @@ export default function JobsScreen() {
 		}
 	};
 
-	const getJobTags = (job: Job) => {
-		const tags = ["Remote"];
-
-		// Add payment tier tag
-		const paymentAmount = ContractService.convertUxionToXion(
-			parseInt(job.escrow_amount.amount)
-		);
-		if (paymentAmount >= 10) tags.push("High Pay");
-		else if (paymentAmount >= 5) tags.push("Good Pay");
-
-		// Add urgency if deadline is soon
-		if (job.deadline) {
-			const deadline = new Date(job.deadline);
-			const now = new Date();
-			const daysUntil = Math.ceil(
-				(deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-			);
-			if (daysUntil <= 3) tags.push("Urgent");
+	const getStatusColor = (status: TaskStatus) => {
+		switch (status) {
+			case 'pending':
+				return colors.status?.info || '#2563EB';
+			case 'proof_submitted':
+				return colors.status?.warning || '#D97706';
+			case 'pending_release':
+				return '#FF6B35';
+			case 'released':
+				return colors.status?.success || '#059669';
+			case 'disputed':
+				return colors.status?.error || '#DC2626';
+			case 'refunded':
+				return colors.text.secondary;
+			default:
+				return colors.text.secondary;
 		}
-
-		return tags;
 	};
 
-	if (!account || !client) {
+	const getStatusText = (status: TaskStatus) => {
+		switch (status) {
+			case 'pending':
+				return 'Pending';
+			case 'proof_submitted':
+				return 'Proof Submitted';
+			case 'pending_release':
+				return 'Pending Release';
+			case 'released':
+				return 'Released';
+			case 'disputed':
+				return 'Disputed';
+			case 'refunded':
+				return 'Refunded';
+			default:
+				return status;
+		}
+	};
+
+	const handleLogout = async () => {
+		Alert.alert(
+			"Sign Out",
+			"Are you sure you want to sign out?",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Sign Out",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							await supabase.auth.signOut();
+							router.replace("/");
+						} catch (error) {
+							console.error('Logout error:', error);
+							Alert.alert("Error", "Failed to sign out. Please try again.");
+						}
+					},
+				},
+			]
+		);
+	};
+
+	if (!user?.walletAddress) {
 		return (
-			<SafeAreaView style={styles.container}>
+			<SafeAreaView style={[styles.container, { backgroundColor: colors.surface.primary }]}>
 				<View style={styles.centered}>
-					<Text>Connect your wallet to view jobs</Text>
+					<Text style={{ color: colors.text.primary }}>Connect your wallet to view tasks</Text>
 				</View>
 			</SafeAreaView>
 		);
 	}
 
+	const taskCounts = getTaskCounts();
+	const filteredTasks = getFilteredTasks();
+
 	return (
-		<SafeAreaView style={styles.container}>
-			<View style={styles.content}>
-				<View style={styles.header}>
-					<View style={styles.headerInfo}>
-						<Text style={styles.headerTitle}>Job Marketplace</Text>
-						<Text style={styles.subheading}>
-							{loading ? "Loading..." : `${jobs.length} available jobs`}
+		<SafeAreaView style={[styles.container, { backgroundColor: colors.surface.primary }]} edges={["top"]}>
+			<SophisticatedHeader
+				title="Task Dashboard"
+				subtitle="Track all your tasks and progress"
+				onLogout={handleLogout}
+			/>
+			
+			<View style={[styles.content, { backgroundColor: colors.surface.primary }]}>
+				{/* Tabs */}
+				<View style={[styles.tabContainer, { backgroundColor: colors.surface.secondary }]}>
+					<Pressable 
+						style={[
+							styles.tab,
+							activeTab === 'active' && { backgroundColor: colors.accent?.primary || '#2563EB' }
+						]}
+						onPress={() => setActiveTab('active')}
+					>
+						<Text style={[
+							styles.tabText,
+							{ color: activeTab === 'active' ? '#FFFFFF' : colors.text.secondary }
+						]}>
+							Active {taskCounts.active > 0 && `(${taskCounts.active})`}
 						</Text>
-						{TREASURY_CONFIG.enabled && (
-							<View style={styles.treasuryStatus}>
-								<View
-									style={[
-										styles.treasuryIndicator,
-										{
-											backgroundColor: treasuryStatus.canSponsorGas
-												? "#10B981"
-												: "#EF4444",
-										},
-									]}
-								/>
-								<Text style={styles.treasuryText}>
-									{treasuryStatus.canSponsorGas
-										? `Treasury Active (${treasuryStatus.estimatedTransactionsLeft} txns)`
-										: treasuryStatus.isAvailable
-										? "Treasury Low"
-										: "Treasury Unavailable"}
-								</Text>
-							</View>
-						)}
-					</View>
+					</Pressable>
+					
+					<Pressable 
+						style={[
+							styles.tab,
+							activeTab === 'pending' && { backgroundColor: colors.accent?.primary || '#2563EB' }
+						]}
+						onPress={() => setActiveTab('pending')}
+					>
+						<Text style={[
+							styles.tabText,
+							{ color: activeTab === 'pending' ? '#FFFFFF' : colors.text.secondary }
+						]}>
+							Pending {taskCounts.pending > 0 && `(${taskCounts.pending})`}
+						</Text>
+					</Pressable>
+					
+					<Pressable 
+						style={[
+							styles.tab,
+							activeTab === 'completed' && { backgroundColor: colors.accent?.primary || '#2563EB' }
+						]}
+						onPress={() => setActiveTab('completed')}
+					>
+						<Text style={[
+							styles.tabText,
+							{ color: activeTab === 'completed' ? '#FFFFFF' : colors.text.secondary }
+						]}>
+							Completed {taskCounts.completed > 0 && `(${taskCounts.completed})`}
+						</Text>
+					</Pressable>
 				</View>
 
 				{loading ? (
 					<View style={styles.centered}>
-						<ActivityIndicator size="large" />
-						<Text style={styles.loadingText}>
-							Loading jobs from blockchain...
+						<ActivityIndicator size="large" color={colors.accent?.primary || '#2563EB'} />
+						<Text style={[styles.loadingText, { color: colors.text.secondary }]}>
+							Loading your tasks...
 						</Text>
 					</View>
 				) : (
 					<FlatList
-						data={jobs}
-						keyExtractor={(item) => item.id.toString()}
+						data={filteredTasks}
+						keyExtractor={(item) => item.id}
 						contentContainerStyle={styles.listContainer}
 						refreshControl={
 							<RefreshControl
 								refreshing={refreshing}
 								onRefresh={handleRefresh}
+								tintColor={colors.accent?.primary || '#2563EB'}
 							/>
 						}
 						ListEmptyComponent={
 							<View style={styles.emptyState}>
-								<Ionicons
-									name="briefcase-outline"
-									size={64}
-									color="#D1D5DB"
-								/>
-								<Text style={styles.emptyTitle}>No jobs available</Text>
-								<Text style={styles.emptySubtitle}>
-									Check back later for new opportunities!
+								<View style={[styles.emptyIconContainer, { backgroundColor: colors.surface.secondary }]}>
+									<Ionicons
+										name={activeTab === 'active' ? 'flash-outline' : 
+											  activeTab === 'pending' ? 'hourglass-outline' :
+											  'checkmark-circle-outline'}
+										size={48}
+										color={colors.text.tertiary}
+									/>
+								</View>
+								<Text style={[styles.emptyTitle, { color: colors.text.primary }]}>
+									{activeTab === 'active' ? 'No Active Tasks' :
+									 activeTab === 'pending' ? 'No Pending Tasks' :
+									 'No Completed Tasks'}
+								</Text>
+								<Text style={[styles.emptySubtitle, { color: colors.text.secondary }]}>
+									{activeTab === 'active' ? 'Create a new task to get started!' :
+									 activeTab === 'pending' ? 'Tasks pending approval will appear here' :
+									 'Your completed tasks will show up here'}
 								</Text>
 							</View>
 						}
 						renderItem={({ item }) => (
-							<View style={styles.jobCard}>
-								<View style={styles.jobHeader}>
-									<Text style={styles.jobTitle}>{item.description}</Text>
-									<Text style={styles.paymentText}>
-										{ContractService.formatXionAmount(
-											parseInt(item.escrow_amount.amount)
-										)}
-									</Text>
+							<Pressable 
+								style={[styles.taskCard, { 
+									backgroundColor: colors.surface.primary,
+									borderColor: colors.border.primary,
+								}]}
+								onPress={() => router.push(`/(tabs)/jobs/${item.id}`)}
+							>
+								<View style={styles.taskHeader}>
+									<View style={{ flex: 1 }}>
+										<Text style={[styles.taskTitle, { color: colors.text.primary }]} numberOfLines={2}>
+											{item.description}
+										</Text>
+										<View style={styles.taskMeta}>
+											<Text style={[styles.taskAmount, { color: colors.status?.success || '#059669' }]}>
+												${item.amount.toFixed(2)} XION
+											</Text>
+											<View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
+												<Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+													{getStatusText(item.status)}
+												</Text>
+											</View>
+										</View>
+									</View>
 								</View>
-
-								<View style={styles.jobContent}>
-									<View style={styles.jobInfo}>
+								
+								<View style={styles.taskFooter}>
+									<View style={styles.taskInfo}>
 										<View style={styles.infoRow}>
-											<Ionicons
-												name="person-outline"
-												size={16}
-												color="#6B7280"
-											/>
-											<Text style={styles.clientText}>
-												{truncateAddress(item.client)}
+											<Ionicons name="person-outline" size={14} color={colors.text.tertiary} />
+											<Text style={[styles.infoText, { color: colors.text.tertiary }]}>
+												{item.payer === user.walletAddress ? 'You created' : 'You accepted'}
 											</Text>
 										</View>
 										<View style={styles.infoRow}>
-											<Ionicons
-												name="time-outline"
-												size={16}
-												color="#6B7280"
-											/>
-											<Text style={styles.dateText}>
-												{item.created_at ? formatTimeAgo(item.created_at) : "Unknown"}
+											<Ionicons name="time-outline" size={14} color={colors.text.tertiary} />
+											<Text style={[styles.infoText, { color: colors.text.tertiary }]}>
+												{formatTimeAgo(item.created_at)}
 											</Text>
 										</View>
-										{item.deadline && (
-											<View style={styles.infoRow}>
-												<Ionicons
-													name="calendar-outline"
-													size={16}
-													color="#EF4444"
-												/>
-												<Text style={styles.deadlineText}>
-													Due {new Date(item.deadline).toLocaleDateString()}
-												</Text>
-											</View>
-										)}
 									</View>
-
-									<View style={styles.tagRow}>
-										{getJobTags(item).map((tag) => (
-											<View
-												style={[
-													styles.tag,
-													tag === "Urgent" && styles.urgentTag,
-													tag === "High Pay" && styles.highPayTag,
-												]}
-												key={tag}
-											>
-												<Text
-													style={[
-														styles.tagText,
-														tag === "Urgent" && styles.urgentTagText,
-														tag === "High Pay" && styles.highPayTagText,
-													]}
-												>
-													{tag}
-												</Text>
-											</View>
-										))}
+									
+									<View style={styles.proofTypeBadge}>
+										<Text style={[styles.proofTypeText, { color: colors.text.secondary }]}>
+											{item.proof_type.toUpperCase()}
+										</Text>
 									</View>
 								</View>
-
-								<TouchableOpacity
-									style={[
-										styles.acceptButton,
-										acceptingJobId === item.id && styles.acceptButtonDisabled,
-									]}
-									onPress={() => handleAcceptJob(item.id)}
-									disabled={acceptingJobId === item.id}
-									activeOpacity={0.8}
-								>
-									{acceptingJobId === item.id ? (
-										<ActivityIndicator
-											size="small"
-											color="#fff"
-										/>
-									) : (
-										<>
-											<Ionicons
-												name="checkmark"
-												size={20}
-												color="#fff"
-											/>
-											<Text style={styles.acceptButtonText}>Accept Job</Text>
-										</>
-									)}
-								</TouchableOpacity>
-							</View>
+							</Pressable>
 						)}
 					/>
 				)}
@@ -434,200 +389,127 @@ export default function JobsScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#F9FAFB",
 	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 20,
-		paddingTop: 0,
-	},
-	header: {
-		paddingVertical: 16,
-		borderBottomWidth: 1,
-		borderBottomColor: "#F3F4F6",
-		backgroundColor: "#FFFFFF",
-		marginHorizontal: -20,
-		paddingHorizontal: 20,
-		marginBottom: 16,
-	},
-	headerTitle: {
-		fontSize: 24,
-		fontWeight: "700",
-		color: "#111827",
-		marginBottom: 8,
-	},
-	headerInfo: {
-		marginTop: 12,
 	},
 	centered: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
 	},
-	subheading: {
-		fontSize: 16,
-		color: "#374151",
-		fontWeight: "600",
-		marginBottom: 8,
-	},
-	treasuryStatus: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: 12,
-		paddingVertical: 6,
-		backgroundColor: "#F9FAFB",
-		borderRadius: 16,
-		alignSelf: "flex-start",
-	},
-	treasuryIndicator: {
-		width: 8,
-		height: 8,
-		borderRadius: 4,
-		marginRight: 8,
-	},
-	treasuryText: {
-		fontSize: 12,
-		color: "#6B7280",
-		fontWeight: "500",
-	},
 	loadingText: {
-		marginTop: 16,
-		color: "#6B7280",
+		marginTop: DesignSystem.spacing.lg,
 		fontSize: 16,
+		fontWeight: '500',
+	},
+	tabContainer: {
+		flexDirection: 'row',
+		margin: DesignSystem.spacing.lg,
+		borderRadius: 12,
+		padding: 4,
+	},
+	tab: {
+		flex: 1,
+		paddingVertical: DesignSystem.spacing.md,
+		paddingHorizontal: DesignSystem.spacing.sm,
+		borderRadius: 8,
+		alignItems: 'center',
+	},
+	tabText: {
+		fontSize: 14,
+		fontWeight: '600',
 	},
 	listContainer: {
-		paddingBottom: 120, // Add padding for floating buttons
+		paddingHorizontal: DesignSystem.spacing.lg,
+		paddingBottom: DesignSystem.spacing['3xl'],
 	},
 	emptyState: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		paddingVertical: 60,
+		alignItems: 'center',
+		paddingVertical: DesignSystem.spacing['3xl'],
+		paddingHorizontal: DesignSystem.spacing.xl,
+	},
+	emptyIconContainer: {
+		width: 80,
+		height: 80,
+		borderRadius: 40,
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginBottom: DesignSystem.spacing.lg,
 	},
 	emptyTitle: {
-		color: "#374151",
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 8,
-		marginTop: 16,
-		textAlign: "center",
+		...DesignSystem.typography.h3,
+		textAlign: 'center',
+		marginBottom: DesignSystem.spacing.md,
 	},
 	emptySubtitle: {
-		color: "#6B7280",
-		fontSize: 14,
-		textAlign: "center",
+		...DesignSystem.typography.body,
+		textAlign: 'center',
+		lineHeight: 22,
 	},
-	jobCard: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: 12,
-		padding: 14,
-		marginBottom: 12,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.05,
-		shadowRadius: 4,
-		elevation: 2,
+	taskCard: {
+		borderRadius: 16,
+		padding: DesignSystem.spacing.lg,
+		marginBottom: DesignSystem.spacing.lg,
 		borderWidth: 1,
-		borderColor: "#F3F4F6",
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.08,
+		shadowRadius: 8,
+		elevation: 3,
 	},
-	jobHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-start",
-		marginBottom: 8,
+	taskHeader: {
+		marginBottom: DesignSystem.spacing.md,
 	},
-	jobContent: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-start",
+	taskTitle: {
+		...DesignSystem.typography.bodyMedium,
+		fontWeight: '600',
+		marginBottom: DesignSystem.spacing.sm,
+		lineHeight: 22,
 	},
-	jobTitle: {
-		fontSize: 15,
-		fontWeight: "600",
-		color: "#111827",
-		flex: 1,
-		marginRight: 10,
-		lineHeight: 20,
+	taskMeta: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
 	},
-	tagRow: {
-		flexDirection: "column",
-		alignItems: "flex-end",
-		gap: 6,
-		flex: 0,
+	taskAmount: {
+		...DesignSystem.typography.bodyMedium,
+		fontWeight: '700',
 	},
-	tag: {
-		backgroundColor: "#F3F4F6",
-		paddingHorizontal: 8,
+	statusBadge: {
+		paddingHorizontal: DesignSystem.spacing.sm,
 		paddingVertical: 4,
 		borderRadius: 12,
 	},
-	urgentTag: {
-		backgroundColor: "#FEE2E2",
-	},
-	highPayTag: {
-		backgroundColor: "#D1FAE5",
-	},
-	tagText: {
+	statusText: {
 		fontSize: 12,
-		color: "#6B7280",
-		fontWeight: "600",
+		fontWeight: '600',
 	},
-	urgentTagText: {
-		color: "#DC2626",
+	taskFooter: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
 	},
-	highPayTagText: {
-		color: "#059669",
-	},
-	jobInfo: {
-		gap: 6,
-		marginBottom: 12,
+	taskInfo: {
+		gap: DesignSystem.spacing.xs,
 	},
 	infoRow: {
-		flexDirection: "row",
-		alignItems: "center",
+		flexDirection: 'row',
+		alignItems: 'center',
 		gap: 6,
 	},
-	clientText: {
-		fontSize: 13,
-		color: "#6B7280",
-		fontWeight: "500",
+	infoText: {
+		fontSize: 12,
+		fontWeight: '500',
 	},
-	paymentText: {
-		fontSize: 16,
-		fontWeight: "700",
-		color: "#059669",
+	proofTypeBadge: {
+		backgroundColor: 'rgba(107, 114, 128, 0.1)',
+		paddingHorizontal: DesignSystem.spacing.sm,
+		paddingVertical: 4,
+		borderRadius: 8,
 	},
-	dateText: {
-		fontSize: 13,
-		color: "#6B7280",
-		fontWeight: "500",
-	},
-	deadlineText: {
-		fontSize: 13,
-		color: "#DC2626",
-		fontWeight: "600",
-	},
-	acceptButton: {
-		backgroundColor: "#111827",
-		paddingVertical: 10,
-		paddingHorizontal: 16,
-		borderRadius: 10,
-		alignItems: "center",
-		flexDirection: "row",
-		justifyContent: "center",
-		gap: 6,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.08,
-		shadowRadius: 3,
-		elevation: 1,
-	},
-	acceptButtonDisabled: {
-		backgroundColor: "#9CA3AF",
-	},
-	acceptButtonText: {
-		color: "#FFFFFF",
-		fontWeight: "600",
-		fontSize: 14,
+	proofTypeText: {
+		fontSize: 11,
+		fontWeight: '600',
 	},
 });

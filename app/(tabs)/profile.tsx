@@ -20,7 +20,10 @@ import {
 	useAbstraxionAccount,
 	useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { supabase } from "@/lib/supabase";
+import Toast from "react-native-toast-message";
 
 interface MenuItem {
 	id: string;
@@ -31,13 +34,23 @@ interface MenuItem {
 	hasToggle?: boolean;
 	isEnabled?: boolean;
 	onToggle?: (value: boolean) => void;
+	hasNotification?: boolean;
+	notificationCount?: number;
 }
 
 export default function ProfileScreen() {
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+	const [unreadCount, setUnreadCount] = useState(0);
+	const [userStats, setUserStats] = useState({
+		totalTasks: 0,
+		completedTasks: 0,
+		totalEarned: 0,
+		averageRating: 0,
+	});
 	
-	// Theme context
+	// Theme and auth context
+	const { user } = useAuth();
 	const { isDarkMode, toggleDarkMode, colors } = useTheme();
 
 	// Get wallet address from Abstraxion
@@ -57,6 +70,60 @@ export default function ProfileScreen() {
 		}
 	};
 
+	// Fetch user stats and notifications
+	const fetchUserStats = async () => {
+		if (!user?.walletAddress) return;
+
+		try {
+			// Get user tasks statistics
+			const { data: tasks, error: tasksError } = await supabase
+				.from('tasks')
+				.select('*')
+				.or(`payer.eq.${user.walletAddress},worker.eq.${user.walletAddress}`);
+
+			if (tasksError) {
+				console.error('Error fetching tasks:', tasksError);
+				return;
+			}
+
+			const totalTasks = tasks?.length || 0;
+			const completedTasks = tasks?.filter(task => task.status === 'released').length || 0;
+			const totalEarned = tasks?.filter(task => task.status === 'released' && task.worker === user.walletAddress)
+				.reduce((sum, task) => sum + (parseFloat(task.amount) / 1000000), 0) || 0;
+
+			setUserStats({
+				totalTasks,
+				completedTasks,
+				totalEarned,
+				averageRating: 4.8, // Placeholder for now
+			});
+
+			// Get unread notifications count
+			const { data: userData, error: userError } = await supabase
+				.from('users')
+				.select('id')
+				.eq('wallet_address', user.walletAddress)
+				.single();
+
+			if (userError || !userData) {
+				console.log('User not found in database');
+				return;
+			}
+
+			const { count, error: notifError } = await supabase
+				.from('notifications')
+				.select('*', { count: 'exact', head: true })
+				.eq('user_id', userData.id)
+				.is('read_at', null);
+
+			if (!notifError) {
+				setUnreadCount(count || 0);
+			}
+		} catch (error) {
+			console.error('Error fetching user stats:', error);
+		}
+	};
+
 	// Initialize UserService and load current user data
 	useEffect(() => {
 		if (!client || !walletAddress) return;
@@ -72,10 +139,24 @@ export default function ProfileScreen() {
 		loadUserData();
 	}, [client, walletAddress]);
 
+	// Fetch user stats and notifications
+	useEffect(() => {
+		fetchUserStats();
+	}, [user?.walletAddress]);
+
 	const menuSections = [
 		{
 			title: "Account",
 			items: [
+				{
+					id: "activity-feed",
+					title: "Activity Feed",
+					subtitle: unreadCount > 0 ? `${unreadCount} new notification${unreadCount > 1 ? 's' : ''}` : "View your task activity",
+					icon: "notifications-outline" as const,
+					action: () => router.push("/(tabs)/recent-activity"),
+					hasNotification: unreadCount > 0,
+					notificationCount: unreadCount,
+				},
 				{
 					id: "edit-profile",
 					title: "Edit Profile",
@@ -188,11 +269,20 @@ export default function ProfileScreen() {
 								thumbColor={colors.surface.primary}
 							/>
 						) : (
-							<Ionicons
-								name="chevron-forward"
-								size={20}
-								color={colors.text.tertiary}
-							/>
+							<View style={styles.rightContent}>
+								{item.hasNotification && item.notificationCount && item.notificationCount > 0 && (
+									<View style={[styles.notificationBadge, { backgroundColor: colors.status?.error || '#DC2626' }]}>
+										<Text style={styles.notificationText}>
+											{item.notificationCount > 9 ? '9+' : item.notificationCount}
+										</Text>
+									</View>
+								)}
+								<Ionicons
+									name="chevron-forward"
+									size={20}
+									color={colors.text.tertiary}
+								/>
+							</View>
 						)}
 					</View>
 				</View>
@@ -262,6 +352,47 @@ export default function ProfileScreen() {
 							}
 							variant="default"
 						/>
+					</View>
+				</View>
+
+				{/* Stats Card */}
+				<View style={[styles.statsCard, { backgroundColor: colors.surface.elevated, borderColor: colors.border.primary }]}>
+					<View style={styles.statsRow}>
+						<View style={styles.statItem}>
+							<Text style={[styles.statValue, { color: colors.text.primary }]}>
+								{userStats.totalTasks}
+							</Text>
+							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+								Total Tasks
+							</Text>
+						</View>
+						<View style={styles.statItem}>
+							<Text style={[styles.statValue, { color: colors.status?.success || '#059669' }]}>
+								{userStats.completedTasks}
+							</Text>
+							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+								Completed
+							</Text>
+						</View>
+						<View style={styles.statItem}>
+							<Text style={[styles.statValue, { color: colors.text.primary }]}>
+								${userStats.totalEarned.toFixed(1)}
+							</Text>
+							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+								Earned
+							</Text>
+						</View>
+						<View style={styles.statItem}>
+							<View style={styles.ratingContainer}>
+								<Text style={[styles.statValue, { color: colors.text.primary }]}>
+									{userStats.averageRating.toFixed(1)}
+								</Text>
+								<Ionicons name="star" size={16} color="#F59E0B" />
+							</View>
+							<Text style={[styles.statLabel, { color: colors.text.secondary }]}>
+								Rating
+							</Text>
+						</View>
 					</View>
 				</View>
 
@@ -417,6 +548,64 @@ const createStyles = (colors: any) => StyleSheet.create({
 
 	menuItemRight: {
 		marginLeft: DesignSystem.spacing.md,
+	},
+
+	rightContent: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: DesignSystem.spacing.sm,
+	},
+
+	notificationBadge: {
+		width: 20,
+		height: 20,
+		borderRadius: 10,
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginRight: DesignSystem.spacing.xs,
+	},
+
+	notificationText: {
+		...DesignSystem.typography.body.small,
+		color: 'white',
+		fontWeight: '600',
+		fontSize: 10,
+	},
+
+	// Stats Card Styles
+	statsCard: {
+		borderRadius: DesignSystem.radius.xl,
+		padding: DesignSystem.spacing.xl,
+		marginBottom: DesignSystem.spacing["3xl"],
+		borderWidth: 1,
+		...DesignSystem.shadows.sm,
+	},
+
+	statsRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+	},
+
+	statItem: {
+		alignItems: 'center',
+		flex: 1,
+	},
+
+	statValue: {
+		...DesignSystem.typography.h3,
+		fontWeight: '700',
+		marginBottom: 4,
+	},
+
+	statLabel: {
+		...DesignSystem.typography.body.small,
+		textAlign: 'center',
+	},
+
+	ratingContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 4,
 	},
 
 	bottomSpacer: {
