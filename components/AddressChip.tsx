@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DesignSystem } from "@/constants/DesignSystem";
+import { useTheme } from "@/contexts/ThemeContext";
 import * as Clipboard from "expo-clipboard";
 
 interface AddressChipProps {
@@ -21,12 +22,13 @@ export default function AddressChip({
 	variant = "default",
 	onCopy,
 }: AddressChipProps) {
+	const { colors } = useTheme();
 	const formatAddress = (addr: string) => {
 		return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 	};
 
 	const formatActiveSince = (date?: Date) => {
-		if (!date) return "Proof ID active since Jan 2024";
+		if (!date) return null;
 
 		const now = new Date();
 		const diffMs = now.getTime() - date.getTime();
@@ -63,118 +65,124 @@ export default function AddressChip({
 	const displayText = ens || formatAddress(address);
 	const subText = formatActiveSince(activeSince);
 	const isLarge = variant === "large";
+	const styles = createStyles(colors);
 
 	return (
 		<View style={styles.container}>
-			<View style={styles.addressRow}>
-				<Pressable
-					style={[styles.addressChip, isLarge && styles.addressChipLarge]}
-					onPress={handleCopy}
-				>
+			<Pressable
+				style={[styles.addressChip, isLarge && styles.addressChipLarge]}
+				onPress={handleCopy}
+			>
+				<View style={styles.leftContent}>
+					<View style={[styles.chainBadge, isLarge && styles.chainBadgeLarge]}>
+						<Ionicons
+							name="shield-checkmark"
+							size={isLarge ? 12 : 10}
+							color={colors.text.inverse}
+						/>
+						<Text style={[styles.chainText, isLarge && styles.chainTextLarge]}>
+							{chain}
+						</Text>
+					</View>
+					
 					<Text
 						style={[styles.addressText, isLarge && styles.addressTextLarge]}
 					>
 						{displayText}
 					</Text>
-					<Ionicons
-						name="copy-outline"
-						size={isLarge ? 20 : 16}
-						color={DesignSystem.colors.text.secondary}
-					/>
-				</Pressable>
-
-				<View style={[styles.chainBadge, isLarge && styles.chainBadgeLarge]}>
-					<Ionicons
-						name="shield-checkmark"
-						size={isLarge ? 14 : 12}
-						color={DesignSystem.colors.text.inverse}
-					/>
-					<Text style={[styles.chainText, isLarge && styles.chainTextLarge]}>
-						{chain}
-					</Text>
 				</View>
-			</View>
+				
+				<Ionicons
+					name="copy-outline"
+					size={isLarge ? 20 : 16}
+					color={colors.text.secondary}
+				/>
+			</Pressable>
 
-			<Text style={[styles.subText, isLarge && styles.subTextLarge]}>
-				{subText}
-			</Text>
+			{subText && (
+				<Text style={[styles.subText, isLarge && styles.subTextLarge]}>
+					{subText}
+				</Text>
+			)}
 		</View>
 	);
 }
 
-const styles = StyleSheet.create({
-	container: {
-		alignItems: "center",
-		gap: DesignSystem.spacing.sm,
-	},
+const createStyles = (colors: any) =>
+	StyleSheet.create({
+		container: {
+			alignItems: "center",
+			gap: DesignSystem.spacing.sm,
+		},
 
-	addressRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: DesignSystem.spacing.md,
-	},
+		addressChip: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "space-between",
+			backgroundColor: colors.surface.secondary,
+			paddingHorizontal: DesignSystem.spacing.lg,
+			paddingVertical: DesignSystem.spacing.md,
+			borderRadius: DesignSystem.radius.lg,
+			borderWidth: 1,
+			borderColor: colors.border.primary,
+			width: "100%",
+		},
 
-	addressChip: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: DesignSystem.colors.surface.elevated,
-		paddingHorizontal: DesignSystem.spacing.lg,
-		paddingVertical: DesignSystem.spacing.md,
-		borderRadius: DesignSystem.radius.lg,
-		borderWidth: 1,
-		borderColor: DesignSystem.colors.border.secondary,
-		gap: DesignSystem.spacing.sm,
-	},
+		addressChipLarge: {
+			paddingHorizontal: DesignSystem.spacing["2xl"],
+			paddingVertical: DesignSystem.spacing.lg,
+		},
 
-	addressChipLarge: {
-		paddingHorizontal: DesignSystem.spacing["2xl"],
-		paddingVertical: DesignSystem.spacing.lg,
-		gap: DesignSystem.spacing.md,
-	},
+		leftContent: {
+			flexDirection: "row",
+			alignItems: "center",
+			gap: DesignSystem.spacing.md,
+			flex: 1,
+		},
 
-	addressText: {
-		...DesignSystem.typography.label.large,
-		color: DesignSystem.colors.text.primary,
-		fontFamily: "monospace",
-	},
+		addressText: {
+			...DesignSystem.typography.label.large,
+			color: colors.text.primary,
+			fontFamily: "monospace",
+		},
 
-	addressTextLarge: {
-		...DesignSystem.typography.h4,
-	},
+		addressTextLarge: {
+			...DesignSystem.typography.h4,
+		},
 
-	chainBadge: {
-		backgroundColor: DesignSystem.colors.primary[800],
-		paddingHorizontal: DesignSystem.spacing.md,
-		paddingVertical: DesignSystem.spacing.xs,
-		borderRadius: DesignSystem.radius.md,
-		flexDirection: "row",
-		alignItems: "center",
-		gap: DesignSystem.spacing.xs,
-	},
+		chainBadge: {
+			backgroundColor: colors.primary[700],
+			paddingHorizontal: DesignSystem.spacing.md,
+			paddingVertical: DesignSystem.spacing.xs,
+			borderRadius: DesignSystem.radius.md,
+			flexDirection: "row",
+			alignItems: "center",
+			gap: DesignSystem.spacing.xs,
+		},
 
-	chainBadgeLarge: {
-		paddingHorizontal: DesignSystem.spacing.lg,
-		paddingVertical: DesignSystem.spacing.sm,
-		borderRadius: DesignSystem.radius.lg,
-	},
+		chainBadgeLarge: {
+			paddingHorizontal: DesignSystem.spacing.lg,
+			paddingVertical: DesignSystem.spacing.sm,
+			borderRadius: DesignSystem.radius.lg,
+		},
 
-	chainText: {
-		...DesignSystem.typography.label.small,
-		color: DesignSystem.colors.text.inverse,
-		fontWeight: "600",
-	},
+		chainText: {
+			...DesignSystem.typography.label.small,
+			color: colors.text.inverse,
+			fontWeight: "600",
+		},
 
-	chainTextLarge: {
-		...DesignSystem.typography.label.large,
-	},
+		chainTextLarge: {
+			...DesignSystem.typography.label.large,
+		},
 
-	subText: {
-		...DesignSystem.typography.body.small,
-		color: DesignSystem.colors.text.secondary,
-		textAlign: "center",
-	},
+		subText: {
+			...DesignSystem.typography.body.small,
+			color: colors.text.secondary,
+			textAlign: "center",
+		},
 
-	subTextLarge: {
-		...DesignSystem.typography.body.medium,
-	},
-});
+		subTextLarge: {
+			...DesignSystem.typography.body.medium,
+		},
+	});

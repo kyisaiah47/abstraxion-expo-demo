@@ -347,7 +347,7 @@ const createStyles = (colors: any) =>
 			padding: DesignSystem.spacing.xl,
 		},
 		walletCard: {
-			backgroundColor: colors.surface.elevated,
+			backgroundColor: colors.surface.secondary,
 			borderRadius: DesignSystem.radius.xl,
 			padding: DesignSystem.spacing.xl,
 			marginBottom: DesignSystem.spacing.xl,
@@ -423,7 +423,7 @@ const createStyles = (colors: any) =>
 			marginBottom: DesignSystem.spacing.md,
 		},
 		menuContainer: {
-			backgroundColor: colors.surface.elevated,
+			backgroundColor: colors.surface.secondary,
 			borderRadius: DesignSystem.radius.xl,
 			overflow: "hidden",
 			...DesignSystem.shadows.sm,

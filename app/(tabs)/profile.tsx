@@ -361,7 +361,7 @@ export default function ProfileScreen() {
 				</View>
 
 				{/* Stats Card */}
-				<View style={[styles.statsCard, { backgroundColor: colors.surface.elevated, borderColor: colors.border.primary }]}>
+				<View style={[styles.statsCard, { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary }]}>
 					<View style={styles.statsRow}>
 						<View style={styles.statItem}>
 							<Text style={[styles.statValue, { color: colors.text.primary }]}>
@@ -438,7 +438,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 
 	// Profile Card Styles
 	profileCard: {
-		backgroundColor: colors.surface.elevated,
+		backgroundColor: colors.surface.secondary,
 		borderRadius: DesignSystem.radius.xl,
 		padding: DesignSystem.spacing["3xl"],
 		marginBottom: DesignSystem.spacing["3xl"],
@@ -506,7 +506,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 	},
 
 	menuContainer: {
-		backgroundColor: colors.surface.elevated,
+		backgroundColor: colors.surface.secondary,
 		borderRadius: DesignSystem.radius.xl,
 		overflow: "hidden",
 		...DesignSystem.shadows.sm,
