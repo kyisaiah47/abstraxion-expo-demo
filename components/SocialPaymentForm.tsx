@@ -122,7 +122,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 	// Validate recipient username existence
 	useEffect(() => {
-		if (recipient && /^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
+		if (recipient && /^[a-zA-Z0-9_]{1,50}$/.test(recipient)) {
 			refetchUser();
 		}
 	}, [recipient, refetchUser]);
@@ -150,7 +150,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			});
 			return;
 		}
-		if (!recipient || !/^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
+		if (!recipient || !/^[a-zA-Z0-9_]{1,50}$/.test(recipient)) {
 			Toast.show({
 				type: "error",
 				text1: "Error",
@@ -229,21 +229,47 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					account.bech32Address
 				);
 			} else if (paymentType === "request_money" || paymentType === "request_task") {
-				// For now, just simulate the request without database storage
-				// TODO: Set up proper RLS policies or use server-side functions for database writes
-				
 				if (!currentUser?.username) {
 					throw new Error("Current user profile not found");
 				}
 
-				const requestId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-					const r = Math.random() * 16 | 0;
-					const v = c == 'x' ? r : (r & 0x3 | 0x8);
-					return v.toString(16);
-				});
+				// Add request to activity feed
+				try {
+					const { supabase } = await import("@/lib/supabase");
+					
+					const requestId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+						const r = Math.random() * 16 | 0;
+						const v = c == 'x' ? r : (r & 0x3 | 0x8);
+						return v.toString(16);
+					});
 
-				// Simulate successful request creation
-				result = { id: requestId, type: 'request' };
+					const { data, error } = await supabase
+						.from('activity_feed')
+						.insert({
+							actor: currentUser.username,
+							verb: paymentType === 'request_money' ? 'requested_payment' : 'requested_task',
+							object: recipientUser.username,
+							meta: {
+								amount: parseFloat(formData.amount) * 1000000, // Convert to uxion
+								description: formData.description,
+								to_username: recipientUser.username,
+								request_id: requestId,
+								status: 'pending',
+								proof_type: formData.proofType
+							}
+						})
+						.select()
+						.single();
+
+					if (error) {
+						throw new Error(`Failed to create request: ${error.message}`);
+					}
+
+					result = { id: requestId, type: 'request', data };
+				} catch (dbError) {
+					console.error('Database error:', dbError);
+					throw new Error(`Failed to save request: ${dbError.message}`);
+				}
 			}
 
 			// Show completion view for all successful actions
@@ -373,17 +399,21 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		const friendSuggestions =
 			friends?.filter(
 				(friend) =>
-					friend.username.toLowerCase().includes(recipient.toLowerCase()) ||
+					// Exclude current user
+					friend.username !== currentUser?.username &&
+					(friend.username.toLowerCase().includes(recipient.toLowerCase()) ||
 					(friend.display_name &&
-						friend.display_name.toLowerCase().includes(recipient.toLowerCase()))
+						friend.display_name.toLowerCase().includes(recipient.toLowerCase())))
 			) || [];
 
 		const searchSuggestions =
 			searchResults?.filter(
 				(user) =>
-					user.username.toLowerCase().includes(recipient.toLowerCase()) ||
+					// Exclude current user
+					user.username !== currentUser?.username &&
+					(user.username.toLowerCase().includes(recipient.toLowerCase()) ||
 					(user.display_name &&
-						user.display_name.toLowerCase().includes(recipient.toLowerCase()))
+						user.display_name.toLowerCase().includes(recipient.toLowerCase())))
 			) || [];
 
 		const combined = [...friendSuggestions, ...searchSuggestions];

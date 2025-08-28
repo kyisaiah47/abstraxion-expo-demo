@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
 	View,
 	Text,
@@ -9,14 +9,21 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
-import ActivityFeed from "@/components/ActivityFeed";
-import { useAuth } from "@/context/AuthContext";
+import PaymentRow from "@/components/PaymentRow";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
-import { supabase } from "@/lib/supabase";
-import { Notification, NotificationType } from "@/types/proofpay";
+import { usePaymentHistory } from "@/hooks/useSocialContract";
 import Toast from "react-native-toast-message";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import isToday from "dayjs/plugin/isToday";
+import isYesterday from "dayjs/plugin/isYesterday";
+
+dayjs.extend(relativeTime);
+dayjs.extend(isToday);
+dayjs.extend(isYesterday);
 
 const createStyles = (colors: any) => StyleSheet.create({
 	container: {
@@ -30,92 +37,52 @@ const createStyles = (colors: any) => StyleSheet.create({
 		padding: DesignSystem.spacing.lg,
 		paddingBottom: DesignSystem.spacing["2xl"],
 	},
+	sectionTitle: {
+		...DesignSystem.typography.h3,
+		color: colors.text.primary,
+		marginBottom: DesignSystem.spacing.lg,
+		marginTop: DesignSystem.spacing.xl,
+	},
+	paymentsList: {
+		gap: DesignSystem.spacing.lg,
+	},
+	emptyContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingTop: DesignSystem.spacing["4xl"],
+	},
+	emptyTitle: {
+		...DesignSystem.typography.h3,
+		color: colors.text.primary,
+		marginBottom: DesignSystem.spacing.md,
+		textAlign: 'center',
+	},
+	emptyMessage: {
+		...DesignSystem.typography.body,
+		color: colors.text.secondary,
+		textAlign: 'center',
+		lineHeight: 22,
+	},
 });
 
 export default function RecentActivityScreen() {
-	const { user } = useAuth();
+	const { data: account, logout } = useAbstraxionAccount();
 	const { colors } = useTheme();
-	const [notifications, setNotifications] = useState<Notification[]>([]);
+	const walletAddress = account?.bech32Address || "";
+	const { payments, refetch } = usePaymentHistory(walletAddress);
 	const [refreshing, setRefreshing] = useState(false);
-	const [loading, setLoading] = useState(true);
 	const [showLogoutModal, setShowLogoutModal] = useState(false);
 
 	const styles = createStyles(colors);
 
-	const fetchNotifications = async () => {
-		if (!user?.walletAddress) return;
-
-		try {
-			// First get the user ID from wallet address
-			const { data: userData, error: userError } = await supabase
-				.from('users')
-				.select('id')
-				.eq('wallet_address', user.walletAddress)
-				.single();
-
-			if (userError || !userData) {
-				return;
-			}
-
-			// Fetch notifications
-			const { data, error } = await supabase
-				.from('notifications')
-				.select('*')
-				.eq('user_id', userData.id)
-				.order('created_at', { ascending: false })
-				.limit(50);
-
-			if (error) {
-				console.error('Error fetching notifications:', error);
-				return;
-			}
-
-			const mappedNotifications: Notification[] = (data || []).map(item => ({
-				id: item.id,
-				type: item.type as NotificationType,
-				title: item.title,
-				message: item.message,
-				taskId: item.task_id,
-				createdAt: new Date(item.created_at),
-				read: !!item.read_at,
-			}));
-
-			setNotifications(mappedNotifications);
-		} catch (error) {
-			console.error('Error in fetchNotifications:', error);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const handleMarkAsRead = async (notificationId: string) => {
-		try {
-			const { error } = await supabase
-				.from('notifications')
-				.update({ read_at: new Date().toISOString() })
-				.eq('id', notificationId);
-
-			if (error) {
-				console.error('Error marking notification as read:', error);
-				return;
-			}
-
-			// Update local state
-			setNotifications(prev => 
-				prev.map(notif => 
-					notif.id === notificationId 
-						? { ...notif, read: true }
-						: notif
-				)
-			);
-		} catch (error) {
-			console.error('Error in handleMarkAsRead:', error);
-		}
-	};
+	console.log('🔄 Payment activity:', payments?.length || 0, 'items');
+	console.log('💳 Wallet address:', walletAddress);
+	console.log('📊 Payments data:', payments);
 
 	const handleRefresh = async () => {
 		setRefreshing(true);
-		await fetchNotifications();
+		await refetch();
 		setRefreshing(false);
 	};
 
@@ -126,7 +93,7 @@ export default function RecentActivityScreen() {
 	const confirmLogout = async () => {
 		setShowLogoutModal(false);
 		try {
-			await supabase.auth.signOut();
+			await logout();
 			router.replace("/");
 		} catch (error) {
 			console.error('Logout error:', error);
@@ -139,39 +106,45 @@ export default function RecentActivityScreen() {
 		}
 	};
 
-	// Set up real-time subscription for new notifications
-	useEffect(() => {
-		fetchNotifications();
+	// Group payments by date
+	const groupedPayments: { [date: string]: typeof payments } = {};
+	if (payments && payments.length > 0) {
+		payments.forEach((payment) => {
+			let dateLabel = "";
+			if (
+				"created_at" in payment &&
+				(typeof payment.created_at === "string" ||
+					typeof payment.created_at === "number")
+			) {
+				const d = dayjs(payment.created_at);
+				if (d.isToday()) dateLabel = "Today";
+				else if (d.isYesterday()) dateLabel = "Yesterday";
+				else dateLabel = d.format("MMM D, YYYY");
+			} else {
+				dateLabel = "Unknown Date";
+			}
+			if (!groupedPayments[dateLabel]) groupedPayments[dateLabel] = [];
+			groupedPayments[dateLabel].push(payment);
+		});
+	}
 
-		// Listen for new notifications
-		const handleNewNotification = (event: any) => {
-			const newNotification = event.detail.notification;
-			setNotifications(prev => [newNotification, ...prev]);
-			
-			// Show toast for new notifications
-			Toast.show({
-				type: 'success',
-				text1: newNotification.title,
-				text2: newNotification.message,
-				position: 'top',
-				visibilityTime: 4000,
-			});
-		};
-
-		window.addEventListener?.('newNotification', handleNewNotification);
-
-		return () => {
-			window.removeEventListener?.('newNotification', handleNewNotification);
-		};
-	}, [user?.walletAddress]);
+	const renderEmptyState = () => (
+		<View style={styles.emptyContainer}>
+			<Text style={styles.emptyTitle}>No Activity Yet</Text>
+			<Text style={styles.emptyMessage}>
+				Your payment requests, task completions, and transaction history will appear here. Create your first task or payment to get started!
+			</Text>
+		</View>
+	);
 
 	return (
 		<SafeAreaView style={styles.container} edges={["top"]}>
 			<SophisticatedHeader
 				title="Activity Feed"
-				subtitle="Stay updated on your task activity"
+				subtitle="Your complete transaction history"
 				onLogout={handleLogout}
 			/>
+			
 			<ScrollView
 				style={styles.scrollView}
 				contentContainerStyle={styles.scrollContent}
@@ -183,12 +156,54 @@ export default function RecentActivityScreen() {
 					/>
 				}
 			>
-				<ActivityFeed
-					notifications={notifications}
-					onRefresh={handleRefresh}
-					refreshing={refreshing}
-					onMarkAsRead={handleMarkAsRead}
-				/>
+				{payments && payments.length > 0 
+					? Object.entries(groupedPayments).map(([date, group]) => (
+						<View key={date} style={{ marginBottom: DesignSystem.spacing.xl }}>
+							<Text style={{
+								...DesignSystem.typography.body,
+								color: colors.text.secondary,
+								marginBottom: DesignSystem.spacing.md,
+							}}>
+								{date}
+							</Text>
+							<View style={styles.paymentsList}>
+								{group.map((payment) => {
+									let proofStatus: "Proof Confirmed" | "Awaiting Proof" | "Payment Sent" = "Payment Sent";
+									if (payment.status === "Completed") proofStatus = "Proof Confirmed";
+									else if (payment.status === "Pending") proofStatus = "Awaiting Proof";
+									
+									let timeAgo = "";
+									if (
+										"created_at" in payment &&
+										(typeof payment.created_at === "string" ||
+											typeof payment.created_at === "number")
+									) {
+										timeAgo = dayjs(payment.created_at).fromNow();
+									}
+									
+									return (
+										<PaymentRow
+											key={payment.id}
+											title={payment.description || ""}
+											subtitle={payment.payment_type || ""}
+											amount={
+												typeof payment.amount === "number"
+													? payment.amount
+													: parseFloat(payment.amount) / 1_000_000
+											}
+											direction={
+												payment.from_username === walletAddress ? "out" : "in"
+											}
+											status={proofStatus}
+											timeAgo={timeAgo}
+										/>
+									);
+								})}
+							</View>
+						</View>
+					))
+					: renderEmptyState()
+				}
 			</ScrollView>
 
 			<ConfirmationModal

@@ -47,7 +47,7 @@ export default function CreateScreen() {
 				case "request_money":
 					return "Payment Request Sent! 💳";
 				case "send_money":
-					return "Payment Sent! �";
+					return "Payment Sent! 💰";
 			}
 		};
 

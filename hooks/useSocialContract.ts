@@ -362,17 +362,43 @@ export function usePaymentHistory(walletAddress: string) {
 			return;
 		}
 
+		console.log('🔍 usePaymentHistory: Fetching for wallet:', walletAddress);
 		setLoading(true);
 		setError(null);
 		try {
 			const { supabase } = await import("@/lib/supabase");
 			
-			// Fetch activity feed entries for this user
+			// First get the user's handle from their wallet address
+			const { data: userData, error: userError } = await supabase
+				.from('users')
+				.select('handle')
+				.eq('wallet_address', walletAddress)
+				.single();
+
+			console.log('👤 User lookup result:', { userData, userError });
+
+			if (userError && userError.code !== 'PGRST116') {
+				throw new Error(userError.message);
+			}
+
+			const username = userData?.handle;
+			if (!username) {
+				console.log('❌ No username found for wallet');
+				// User not found, return empty array
+				setPayments([]);
+				return;
+			}
+
+			console.log('✅ Found username:', username);
+
+			// Fetch activity feed entries for this username
 			const { data: activities, error: dbError } = await supabase
 				.from('activity_feed')
 				.select('*')
-				.eq('actor', walletAddress)
+				.or(`actor.eq.${username},meta->>to_username.eq.${username}`)
 				.order('created_at', { ascending: false });
+
+			console.log('📋 Activity feed query result:', { activities, dbError, username });
 
 			if (dbError) {
 				throw new Error(dbError.message);
@@ -543,7 +569,7 @@ export function useSocialOperations(signingClient: any) {
 			setLoading(true);
 			setError(null);
 			try {
-				return await signingClient.execute(
+				const result = await signingClient.execute(
 					senderAddress,
 					CONTRACT_ADDRESS,
 					{
@@ -558,6 +584,40 @@ export function useSocialOperations(signingClient: any) {
 					undefined,
 					[{ denom: "uxion", amount }] // Send the actual funds
 				);
+
+				// Add to activity feed
+				try {
+					const { supabase } = await import("@/lib/supabase");
+					
+					// Get sender's handle
+					const { data: senderData } = await supabase
+						.from('users')
+						.select('handle')
+						.eq('wallet_address', senderAddress)
+						.single();
+
+					if (senderData?.handle) {
+						await supabase
+							.from('activity_feed')
+							.insert({
+								actor: senderData.handle,
+								verb: 'sent_payment',
+								object: toUsername,
+								meta: {
+									amount: parseInt(amount),
+									description,
+									to_username: toUsername,
+									tx_hash: result.transactionHash,
+									status: 'completed'
+								}
+							});
+					}
+				} catch (dbError) {
+					console.error('Failed to add to activity feed:', dbError);
+					// Don't throw - payment was successful
+				}
+
+				return result;
 			} catch (e: any) {
 				setError(e.message);
 				throw e;

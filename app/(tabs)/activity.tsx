@@ -17,7 +17,7 @@ import InfoCard from "@/components/InfoCard";
 import SocialFeed from "@/components/SocialFeed";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
-import { usePaymentHistory, useUserFriends } from "@/hooks/useSocialContract";
+import { usePaymentHistory, useUserFriends, useUserProfile } from "@/hooks/useSocialContract";
 import { useTheme } from "@/contexts/ThemeContext";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -166,16 +166,14 @@ export default function PaymentsScreen() {
 		/>
 	);
 
-	// Get friends list for current user - use actual wallet address instead of hardcoded values
-	const currentUsername = walletAddress === 'xion12yrhw2huu9h2nd0jyahdntkg02p3kl3zmzumc0lvrywr4yvhscts7sdkuc' ? 'mayathedesigner' : 
-	                       walletAddress === 'xion1v6duwyarac5ttd8p4htq5j5jngz6csdj4q560jt9h04g43dz6frqfh2659' ? 'samr_dev' : 
-	                       null; // Only show social feed for registered users
-	const { friends } = useUserFriends(currentUsername || '');
+	// Get current user profile to get their username
+	const { user: currentUser } = useUserProfile(walletAddress);
+	const { friends } = useUserFriends(currentUser?.username || '');
 
 	// Create social activity from friends' transactions
 	const socialActivity = React.useMemo(() => {
 		// Only show activity if user is registered
-		if (!currentUsername) return [];
+		if (!currentUser?.username) return [];
 		
 		// If no friends loaded yet, show some default activity for registered users
 		if (!friends || friends.length === 0) {
@@ -244,7 +242,7 @@ export default function PaymentsScreen() {
 		}
 		
 		return activities;
-	}, [friends, currentUsername]);
+	}, [friends, currentUser?.username]);
 
 	// Group payments by date
 	const groupedPayments: { [date: string]: typeof payments } = {};
