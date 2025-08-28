@@ -235,7 +235,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 				// Add request to activity feed
 				try {
-					const { supabase } = await import("@/lib/supabase");
+					const { supabaseServiceClient } = await import("@/lib/supabase");
 					
 					const requestId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 						const r = Math.random() * 16 | 0;
@@ -243,12 +243,11 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						return v.toString(16);
 					});
 
-					const { data, error } = await supabase
+					const { data, error } = await supabaseServiceClient
 						.from('activity_feed')
 						.insert({
 							actor: currentUser.username,
-							verb: paymentType === 'request_money' ? 'requested_payment' : 'requested_task',
-							object: recipientUser.username,
+							verb: paymentType === 'request_money' ? 'request_money' : 'request_task',
 							meta: {
 								amount: parseFloat(formData.amount) * 1000000, // Convert to uxion
 								description: formData.description,
@@ -296,11 +295,11 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					
 					// Store blockchain transaction in database for activity feed
 					try {
-						const { supabase } = await import("@/lib/supabase");
-						const { data: { user } } = await supabase.auth.getUser();
+						const { supabaseServiceClient } = await import("@/lib/supabase");
+						const { data: { user } } = await supabaseServiceClient.auth.getUser();
 						
 						if (user) {
-							await supabase.from('transactions').insert({
+							await supabaseServiceClient.from('transactions').insert({
 								id: txHash,
 								from_user: account.bech32Address,
 								to_user: recipientUser.wallet_address,

@@ -13,7 +13,7 @@ import PaymentRow from "@/components/PaymentRow";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
-import { usePaymentHistory } from "@/hooks/useSocialContract";
+import { usePaymentHistory, useUserProfile } from "@/hooks/useSocialContract";
 import Toast from "react-native-toast-message";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import dayjs from "dayjs";
@@ -71,14 +71,18 @@ export default function RecentActivityScreen() {
 	const { colors } = useTheme();
 	const walletAddress = account?.bech32Address || "";
 	const { payments, refetch } = usePaymentHistory(walletAddress);
+	const { user: currentUser } = useUserProfile(walletAddress);
 	const [refreshing, setRefreshing] = useState(false);
 	const [showLogoutModal, setShowLogoutModal] = useState(false);
 
 	const styles = createStyles(colors);
 
-	console.log('🔄 Payment activity:', payments?.length || 0, 'items');
-	console.log('💳 Wallet address:', walletAddress);
-	console.log('📊 Payments data:', payments);
+	console.log('📱 Recent Activity Debug:');
+	console.log('  - Wallet:', walletAddress);
+	console.log('  - Payments count:', payments?.length || 0);
+	console.log('  - Current user:', currentUser?.username);
+	console.log('  - First payment:', payments?.[0]);
+
 
 	const handleRefresh = async () => {
 		setRefreshing(true);
@@ -106,10 +110,12 @@ export default function RecentActivityScreen() {
 		}
 	};
 
+	const displayPayments = payments || [];
+
 	// Group payments by date
-	const groupedPayments: { [date: string]: typeof payments } = {};
-	if (payments && payments.length > 0) {
-		payments.forEach((payment) => {
+	const groupedPayments: { [date: string]: typeof displayPayments } = {};
+	if (displayPayments && displayPayments.length > 0) {
+		displayPayments.forEach((payment) => {
 			let dateLabel = "";
 			if (
 				"created_at" in payment &&
@@ -127,6 +133,10 @@ export default function RecentActivityScreen() {
 			groupedPayments[dateLabel].push(payment);
 		});
 	}
+	
+	console.log('  - Display payments count:', displayPayments?.length);
+	console.log('  - Grouped payments keys:', Object.keys(groupedPayments));
+	console.log('  - Grouped payments:', groupedPayments);
 
 	const renderEmptyState = () => (
 		<View style={styles.emptyContainer}>
@@ -140,7 +150,7 @@ export default function RecentActivityScreen() {
 	return (
 		<SafeAreaView style={styles.container} edges={["top"]}>
 			<SophisticatedHeader
-				title="Activity Feed"
+				title="Activities"
 				subtitle="Your complete transaction history"
 				onLogout={handleLogout}
 			/>
@@ -156,7 +166,7 @@ export default function RecentActivityScreen() {
 					/>
 				}
 			>
-				{payments && payments.length > 0 
+				{displayPayments && displayPayments.length > 0 
 					? Object.entries(groupedPayments).map(([date, group]) => (
 						<View key={date} style={{ marginBottom: DesignSystem.spacing.xl }}>
 							<Text style={{
@@ -168,9 +178,20 @@ export default function RecentActivityScreen() {
 							</Text>
 							<View style={styles.paymentsList}>
 								{group.map((payment) => {
-									let proofStatus: "Proof Confirmed" | "Awaiting Proof" | "Payment Sent" = "Payment Sent";
-									if (payment.status === "Completed") proofStatus = "Proof Confirmed";
-									else if (payment.status === "Pending") proofStatus = "Awaiting Proof";
+									const isOutgoing = payment.from_username === currentUser?.username;
+									let transactionStatus: "Completed" | "Pending" | "Failed" = "Completed";
+									
+									// For payments in the activity feed, they're typically completed
+									// Only show pending for outgoing requests or actual pending transactions
+									if (payment.payment_type === 'request_money' && payment.status === "Pending") {
+										transactionStatus = "Pending";
+									} else if (payment.status === "Completed" || payment.payment_type === 'sent_money') {
+										transactionStatus = "Completed";
+									} else if (payment.status === "Failed") {
+										transactionStatus = "Failed";
+									} else {
+										transactionStatus = "Completed"; // Default for activity feed items
+									}
 									
 									let timeAgo = "";
 									if (
@@ -180,21 +201,39 @@ export default function RecentActivityScreen() {
 									) {
 										timeAgo = dayjs(payment.created_at).fromNow();
 									}
+									const otherUsername = isOutgoing ? payment.to_username : payment.from_username;
+									const actionText = isOutgoing ? "Sent to" : "Received from";
+									
+									// Create a nice display format with display name and @username
+									// For known users, show a friendly name, otherwise use the username
+									const getDisplayName = (username: string) => {
+										const nameMap: Record<string, string> = {
+											'isaiah_kim': 'Isaiah Kim',
+											'mayathedesigner': 'Maya Designer',
+											'samr_dev': 'Sam Rivera',
+											'alice': 'Alice Cooper',
+											'bob': 'Bob Builder',
+										};
+										return nameMap[username] || username.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+									};
+									
+									const displayName = getDisplayName(otherUsername || '');
+									const formattedTitle = displayName;
 									
 									return (
 										<PaymentRow
 											key={payment.id}
-											title={payment.description || ""}
-											subtitle={payment.payment_type || ""}
+											title={formattedTitle || "Unknown User"}
+											subtitle={`${actionText} • ${payment.description || payment.payment_type}`}
 											amount={
 												typeof payment.amount === "number"
-													? payment.amount
+													? payment.amount / 1_000_000
 													: parseFloat(payment.amount) / 1_000_000
 											}
 											direction={
-												payment.from_username === walletAddress ? "out" : "in"
+												payment.from_username === currentUser?.username ? "out" : "in"
 											}
-											status={proofStatus}
+											showStatus={false}
 											timeAgo={timeAgo}
 										/>
 									);

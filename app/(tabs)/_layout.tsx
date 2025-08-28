@@ -26,7 +26,7 @@ export default function TabLayout() {
 				<Tabs.Screen
 					name="activity"
 					options={{
-						title: "Payments",
+						title: "Feed",
 					}}
 				/>
 				<Tabs.Screen

@@ -25,9 +25,10 @@ interface SocialActivity {
 interface SocialFeedProps {
 	activities: SocialActivity[];
 	compact?: boolean;
+	style?: any;
 }
 
-export default function SocialFeed({ activities, compact = false }: SocialFeedProps) {
+export default function SocialFeed({ activities, compact = false, style }: SocialFeedProps) {
 	const { colors } = useTheme();
 
 	const getTaskEmoji = (taskTitle: string) => {
@@ -83,28 +84,28 @@ export default function SocialFeed({ activities, compact = false }: SocialFeedPr
 	};
 
 	const renderActivity = (activity: SocialActivity) => (
-		<Pressable 
-			key={activity.id}
-			style={[
-				styles.activityCard, 
-				{ 
-					backgroundColor: colors.surface.secondary,
-					borderColor: colors.border.secondary 
-				},
-				compact && styles.activityCardCompact
-			]}
-		>
-			<View style={styles.activityHeader}>
-				<Text style={[styles.activityText, { color: colors.text.primary }]}>
-					<Text style={styles.payerName}>{activity.payerName}</Text>
-					{' paid '}
-					<Text style={styles.workerName}>{activity.workerName}</Text>
-					{' for '}
-					<Text style={styles.taskTitle}>{activity.taskTitle}</Text>
-					{' '}
-					<Text style={styles.taskEmoji}>{getTaskEmoji(activity.taskTitle)}</Text>
-				</Text>
-			</View>
+			<Pressable 
+				key={activity.id}
+				style={[
+					styles.activityCard, 
+					{ 
+						backgroundColor: colors.surface.secondary,
+						borderColor: colors.border.secondary 
+					},
+					compact && styles.activityCardCompact
+				]}
+			>
+				<View style={styles.activityHeader}>
+					<Text style={[styles.activityText, { color: colors.text.primary }]}>
+						<Text style={styles.payerName}>{activity.payerName}</Text>
+						{' paid '}
+						<Text style={styles.workerName}>{activity.workerName}</Text>
+						{' for '}
+						<Text style={styles.taskTitle}>{activity.taskTitle}</Text>
+						{' '}
+						<Text style={styles.taskEmoji}>{getTaskEmoji(activity.taskTitle)}</Text>
+					</Text>
+				</View>
 			
 			<View style={styles.activityFooter}>
 				<View style={styles.leftFooter}>
@@ -133,12 +134,8 @@ export default function SocialFeed({ activities, compact = false }: SocialFeedPr
 	}
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.header}>
-				<Ionicons name="pulse" size={20} color={colors.primary[700]} />
-				<Text style={[styles.headerTitle, { color: colors.text.primary }]}>
-					Recent Activity
-				</Text>
+		<View style={[styles.container, style]}>
+			<View style={[styles.header, { justifyContent: 'flex-end' }]}>
 				<View style={[styles.liveBadge, { backgroundColor: colors.status?.success + '20' }]}>
 					<View style={[styles.liveDot, { backgroundColor: colors.status?.success }]} />
 					<Text style={[styles.liveText, { color: colors.status?.success }]}>Live</Text>
@@ -195,6 +192,10 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	
+	scrollView: {
+		flex: 1,
+	},
+	
 	feedContent: {
 		paddingHorizontal: DesignSystem.spacing.lg,
 		gap: DesignSystem.spacing.md,
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
 	},
 	
 	activityHeader: {
-		flex: 1,
+		minHeight: 50,
 	},
 	
 	activityText: {

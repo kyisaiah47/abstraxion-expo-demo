@@ -10,8 +10,9 @@ interface PaymentRowProps {
 	subtitle: string;
 	amount: number;
 	direction: "in" | "out";
-	status: ProofStatus;
+	status?: ProofStatus;
 	timeAgo: string;
+	showStatus?: boolean;
 }
 
 export default function PaymentRow({
@@ -21,6 +22,7 @@ export default function PaymentRow({
 	direction,
 	status,
 	timeAgo,
+	showStatus = true,
 }: PaymentRowProps) {
 	const getDirectionIcon = () => {
 		return direction === "in" ? "arrow-down" : "arrow-up";
@@ -57,9 +59,9 @@ export default function PaymentRow({
 
 			<View style={styles.rightSection}>
 				<Text style={[styles.amount, { color: getDirectionColor() }]}>
-					{direction === "in" ? "+" : "-"}${amount.toFixed(2)}
+					{direction === "in" ? "+" : "-"}{amount.toFixed(2)} XION
 				</Text>
-				<StatusPill status={status} />
+				{showStatus && status && <StatusPill status={status} />}
 			</View>
 		</View>
 	);
@@ -117,7 +119,8 @@ const styles = StyleSheet.create({
 
 	rightSection: {
 		alignItems: "flex-end",
-		gap: DesignSystem.spacing.sm,
+		gap: DesignSystem.spacing.md,
+		marginLeft: DesignSystem.spacing.lg,
 	},
 
 	amount: {

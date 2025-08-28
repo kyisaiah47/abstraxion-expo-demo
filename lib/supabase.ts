@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-// These would normally come from environment variables
-// For demo purposes, using placeholder values
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+// Use environment variables for keys
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://mchiibkcxzejravsckzc.supabase.co';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseServiceKey = process.env.EXPO_PUBLIC_SUPABASE_SERVICE_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -11,6 +11,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+  },
+});
+
+// Service client for server-side operations (bypasses RLS)
+export const supabaseServiceClient = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
   },
 });
 

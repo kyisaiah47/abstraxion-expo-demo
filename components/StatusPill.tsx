@@ -68,6 +68,26 @@ export default function StatusPill({ status }: StatusPillProps) {
 					backgroundColor: "#6B7280" + "20",
 					icon: "refresh-circle" as keyof typeof Ionicons.glyphMap,
 				};
+			// Simple transaction statuses
+			case "Completed":
+				return {
+					color: DesignSystem.colors.status.success,
+					backgroundColor: DesignSystem.colors.status.success + "20",
+					icon: "checkmark-circle" as keyof typeof Ionicons.glyphMap,
+				};
+			case "Pending":
+				return {
+					color: DesignSystem.colors.status.warning,
+					backgroundColor: DesignSystem.colors.status.warning + "20",
+					icon: "time" as keyof typeof Ionicons.glyphMap,
+				};
+			case "Failed":
+				return {
+					color: DesignSystem.colors.status.error,
+					backgroundColor: DesignSystem.colors.status.error + "20",
+					icon: "close-circle" as keyof typeof Ionicons.glyphMap,
+				};
+			
 			default:
 				return {
 					color: DesignSystem.colors.text.secondary,

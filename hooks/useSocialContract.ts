@@ -362,7 +362,6 @@ export function usePaymentHistory(walletAddress: string) {
 			return;
 		}
 
-		console.log('🔍 usePaymentHistory: Fetching for wallet:', walletAddress);
 		setLoading(true);
 		setError(null);
 		try {
@@ -375,21 +374,15 @@ export function usePaymentHistory(walletAddress: string) {
 				.eq('wallet_address', walletAddress)
 				.single();
 
-			console.log('👤 User lookup result:', { userData, userError });
-
 			if (userError && userError.code !== 'PGRST116') {
 				throw new Error(userError.message);
 			}
 
 			const username = userData?.handle;
 			if (!username) {
-				console.log('❌ No username found for wallet');
-				// User not found, return empty array
 				setPayments([]);
 				return;
 			}
-
-			console.log('✅ Found username:', username);
 
 			// Fetch activity feed entries for this username
 			const { data: activities, error: dbError } = await supabase
@@ -397,8 +390,6 @@ export function usePaymentHistory(walletAddress: string) {
 				.select('*')
 				.or(`actor.eq.${username},meta->>to_username.eq.${username}`)
 				.order('created_at', { ascending: false });
-
-			console.log('📋 Activity feed query result:', { activities, dbError, username });
 
 			if (dbError) {
 				throw new Error(dbError.message);
@@ -424,6 +415,10 @@ export function usePaymentHistory(walletAddress: string) {
 			setLoading(false);
 		}
 	}, [walletAddress]);
+
+	useEffect(() => {
+		fetch();
+	}, [fetch]);
 
 	return { payments, loading, error, refetch: fetch };
 }
@@ -569,12 +564,48 @@ export function useSocialOperations(signingClient: any) {
 			setLoading(true);
 			setError(null);
 			try {
+				// First, look up the recipient's wallet address from database
+				const { supabase } = await import("@/lib/supabase");
+				const { data: userData, error: dbError } = await supabase
+					.from('users')
+					.select('handle, display_name, wallet_address')
+					.eq('handle', toUsername)
+					.single();
+
+				if (dbError && dbError.code !== 'PGRST116') {
+					throw new Error(`Failed to check database: ${dbError.message}`);
+				}
+
+				if (!userData) {
+					throw new Error(`Recipient '${toUsername}' not found.`);
+				}
+
+				console.log('👤 Found recipient in database:', userData);
+
+				// Now check what username this wallet is registered with in the smart contract
+				const client = await getReadClient();
+				const contract = new SocialPaymentContract(client);
+				
+				let contractUsername = toUsername; // Default to the database username
+				
+				try {
+					const contractUser = await contract.getUserByWallet(userData.wallet_address);
+					contractUsername = contractUser.user.username;
+					console.log(`🔄 Wallet ${userData.wallet_address} is registered as '${contractUsername}' in smart contract`);
+					
+					if (contractUsername !== toUsername) {
+						console.log(`⚠️ Username mismatch: database='${toUsername}', contract='${contractUsername}'. Using contract username.`);
+					}
+				} catch (contractError: any) {
+					throw new Error(`Recipient '${toUsername}' (${userData.wallet_address}) is not registered in the smart contract. They need to complete onboarding first.`);
+				}
+
 				const result = await signingClient.execute(
 					senderAddress,
 					CONTRACT_ADDRESS,
 					{
 						send_direct_payment: {
-							to_username: toUsername,
+							to_username: contractUsername, // Use the contract username
 							amount: { denom: "uxion", amount },
 							description,
 							proof_type: "None",
@@ -585,35 +616,50 @@ export function useSocialOperations(signingClient: any) {
 					[{ denom: "uxion", amount }] // Send the actual funds
 				);
 
-				// Add to activity feed
+				// Add to activity feed using service client to bypass RLS
 				try {
-					const { supabase } = await import("@/lib/supabase");
+					console.log('💾 Adding payment to activity feed...');
+					console.log('🔑 Service key available:', !!process.env.EXPO_PUBLIC_SUPABASE_SERVICE_KEY);
+					console.log('🔑 Service key preview:', process.env.EXPO_PUBLIC_SUPABASE_SERVICE_KEY?.substring(0, 20) + '...');
+					const { supabaseServiceClient } = await import("@/lib/supabase");
 					
-					// Get sender's handle
-					const { data: senderData } = await supabase
+					// Get sender's handle using regular client
+					const { supabase } = await import("@/lib/supabase");
+					const { data: senderData, error: userError } = await supabase
 						.from('users')
 						.select('handle')
 						.eq('wallet_address', senderAddress)
 						.single();
 
+					console.log('👤 Sender lookup:', { senderData, userError, senderAddress });
+
 					if (senderData?.handle) {
-						await supabase
+						const activityData = {
+							actor: senderData.handle,
+							verb: 'sent_money',
+							meta: {
+								amount: parseInt(amount),
+								description,
+								to_username: toUsername,
+								tx_hash: result.transactionHash,
+								status: 'completed'
+							}
+						};
+
+						console.log('📝 Inserting activity:', activityData);
+
+						// Use service client to bypass RLS
+						const { data: insertResult, error: insertError } = await supabaseServiceClient
 							.from('activity_feed')
-							.insert({
-								actor: senderData.handle,
-								verb: 'sent_payment',
-								object: toUsername,
-								meta: {
-									amount: parseInt(amount),
-									description,
-									to_username: toUsername,
-									tx_hash: result.transactionHash,
-									status: 'completed'
-								}
-							});
+							.insert(activityData)
+							.select();
+
+						console.log('✅ Activity insert result:', { insertResult, insertError });
+					} else {
+						console.log('❌ No sender handle found');
 					}
 				} catch (dbError) {
-					console.error('Failed to add to activity feed:', dbError);
+					console.error('💥 Failed to add to activity feed:', dbError);
 					// Don't throw - payment was successful
 				}
 
