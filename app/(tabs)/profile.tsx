@@ -144,20 +144,38 @@ export default function ProfileScreen() {
 		}
 	};
 
-	// Initialize UserService and load current user data
+	// Load current user data from Supabase database only
 	useEffect(() => {
-		if (!client || !walletAddress) return;
-		initializeUserService(client, walletAddress);
+		if (!walletAddress) return;
 		const loadUserData = async () => {
 			try {
-				const user = await UserService.getCurrentUser();
+				const { data: userData, error } = await supabase
+					.from('users')
+					.select('*')
+					.eq('wallet_address', walletAddress)
+					.single();
+
+				if (error || !userData) {
+					console.log("User not found in database");
+					setCurrentUser(null);
+					return;
+				}
+
+				// Convert Supabase user data to User type format
+				const user: User = {
+					username: userData.handle || '',
+					display_name: userData.display_name || '',
+					wallet_address: userData.wallet_address,
+					profile_picture: userData.profile_picture || '',
+				};
 				setCurrentUser(user);
 			} catch (error) {
-				console.error("Error loading user:", error);
+				console.error("Error loading user from database:", error);
+				setCurrentUser(null);
 			}
 		};
 		loadUserData();
-	}, [client, walletAddress]);
+	}, [walletAddress]);
 
 	// Fetch user stats and notifications
 	useEffect(() => {

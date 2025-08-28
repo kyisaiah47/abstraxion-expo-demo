@@ -29,24 +29,24 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
-// REAL WALLETS - Replace these with your actual wallet addresses
+// REAL WALLETS - Your actual wallet addresses
 const REAL_WALLETS = {
   primary: {
-    wallet_address: 'REPLACE_WITH_YOUR_WALLET_1',
-    username: 'your_username',
-    display_name: 'Your Name',
+    wallet_address: '2485ab34-c3f0-4d60-a194-6a32ccfb6306',
+    username: 'isaiah_kim',
+    display_name: 'Isaiah Kim',
     profile_picture: null as string | null,
   },
   secondary: {
-    wallet_address: 'REPLACE_WITH_YOUR_WALLET_2', 
-    username: 'your_alt_account',
-    display_name: 'Your Alt Account',
+    wallet_address: '9fadcf56-21f6-4f22-9991-c9204c6e42ea', 
+    username: 'mayathedesigner',
+    display_name: 'Maya Chen',
     profile_picture: null as string | null,
   },
   tertiary: {
-    wallet_address: 'REPLACE_WITH_YOUR_WALLET_3',
-    username: 'your_business',
-    display_name: 'Your Business Account', 
+    wallet_address: 'xion1n6nesg6yzdq3nzrzxv8zxms9tx7eh7d65zaadr',
+    username: 'isaiah_dev',
+    display_name: 'Isaiah Dev Account', 
     profile_picture: null as string | null,
   }
 };

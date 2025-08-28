@@ -92,8 +92,8 @@ export default function PaymentsScreen() {
 	const { data: account, logout } = useAbstraxionAccount();
 	const { colors } = useTheme();
 	// TODO: Replace with actual user profile fetch logic
-	const username = account?.bech32Address || "";
-	const { payments, refetch } = usePaymentHistory(username);
+	const walletAddress = account?.bech32Address || "";
+	const { payments, refetch } = usePaymentHistory(walletAddress);
 	const [refreshing, setRefreshing] = React.useState(false);
 	const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 	const [activeTab, setActiveTab] = React.useState<'personal' | 'social'>('personal');
@@ -347,7 +347,7 @@ export default function PaymentsScreen() {
 																: parseFloat(payment.amount) / 1_000_000
 														}
 														direction={
-															payment.from_username === username ? "out" : "in"
+															payment.from_username === walletAddress ? "out" : "in"
 														}
 														status={proofStatus}
 														timeAgo={timeAgo}

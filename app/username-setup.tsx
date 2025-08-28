@@ -90,11 +90,27 @@ export default function UsernameSetupScreen() {
 		// All checks passed, proceeding with registration
 
 		try {
+			// Register with smart contract
 			const result = await registerUser(
 				username,
 				displayName,
 				account.bech32Address
 			);
+			
+			// Also update Supabase database
+			const { supabase } = await import("@/lib/supabase");
+			const { data: { user } } = await supabase.auth.getUser();
+			if (user) {
+				await supabase
+					.from('users')
+					.update({
+						handle: username,
+						display_name: displayName,
+						updated_at: new Date().toISOString(),
+					})
+					.eq('id', user.id);
+			}
+			
 			router.replace("/(tabs)/activity");
 		} catch (error) {
 			const errorMsg = error instanceof Error ? error.message : String(error);
