@@ -401,10 +401,12 @@ export function usePaymentHistory(walletAddress: string) {
 				amount: activity.meta?.amount || 0,
 				description: activity.meta?.description || activity.verb,
 				payment_type: activity.verb,
+				verb: activity.verb, // Include original verb for debugging
 				status: activity.meta?.status === 'pending' ? 'Pending' : 'Completed',
 				from_username: activity.actor,
 				to_username: activity.meta?.to_username || '',
 				created_at: activity.created_at,
+				meta: activity.meta, // Include full meta object for hidden flag
 			})) || [];
 
 			setPayments(paymentsData);

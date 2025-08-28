@@ -37,7 +37,7 @@ const createStyles = (colors: any) => StyleSheet.create({
 	},
 	scrollContent: {
 		padding: DesignSystem.spacing.lg,
-		paddingBottom: DesignSystem.spacing["2xl"],
+		paddingBottom: 140, // Space for tab bar
 	},
 	sectionTitle: {
 		...DesignSystem.typography.h3,
@@ -206,11 +206,13 @@ export default function RecentActivityScreen() {
 									console.log('🔍 Payment debug:', {
 										id: payment.id,
 										payment_type: payment.payment_type,
+										verb: payment.verb,
 										status: payment.status,
 										from_username: payment.from_username,
 										to_username: payment.to_username,
 										currentUser: currentUser?.username,
-										description: payment.description
+										description: payment.description,
+										displayDirection: payment.payment_type === 'request_money' && payment.to_username === currentUser?.username && payment.status === "Pending" ? "WILL_BE_REQUEST" : "WILL_BE_NORMAL"
 									});
 									
 									let isOutgoing: boolean;
@@ -272,6 +274,11 @@ export default function RecentActivityScreen() {
 									const displayName = getDisplayName(otherUsername || '');
 									const formattedTitle = displayName;
 									
+									// Hide completed/fulfilled requests
+									if (payment.payment_type === 'request_money' && payment.meta?.hidden) {
+										return null;
+									}
+
 									// Determine direction for display
 									let displayDirection: "in" | "out" | "request";
 									if (payment.payment_type === 'request_money' && payment.to_username === currentUser?.username && payment.status === "Pending") {
@@ -284,6 +291,13 @@ export default function RecentActivityScreen() {
 									}
 									
 									const handleRequestPress = () => {
+										console.log('🔍 Selected request for payment:', {
+											id: payment.id,
+											payment_type: payment.payment_type,
+											status: payment.status,
+											from_username: payment.from_username,
+											to_username: payment.to_username
+										});
 										setSelectedRequest(payment);
 										setShowPaymentModal(true);
 									};
@@ -352,7 +366,7 @@ export default function RecentActivityScreen() {
 							setShowPaymentModal(false);
 							setSendingPayment(true);
 							try {
-								// Send the payment via smart contract
+								// Send the actual payment on blockchain (creates new entry)
 								await sendDirectPayment(
 									selectedRequest.from_username,
 									selectedRequest.amount.toString(),
@@ -360,24 +374,35 @@ export default function RecentActivityScreen() {
 									walletAddress
 								);
 
-								// Update the existing request to be a completed sent_money transaction
-								const { supabase } = await import("@/lib/supabase");
-								await supabase
+								// Mark the old request as completed/hidden using service key
+								console.log('✅ Marking request as completed:', selectedRequest.id);
+								const { createClient } = require('@supabase/supabase-js');
+								const serviceClient = createClient(
+									'https://mchiibkcxzejravsckzc.supabase.co',
+									'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jaGlpYmtjeHplanJhdnNja3pjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjA0NTA2MSwiZXhwIjoyMDcxNjIxMDYxfQ.I_0fdEqhwhH5Y3kiXNUCSpCglgxMt5qqskhtdDULufE'
+								);
+								const { error: updateError } = await serviceClient
 									.from('activity_feed')
 									.update({ 
-										verb: 'sent_money',
-										status: 'Completed',
 										meta: {
 											...selectedRequest.meta,
 											status: 'completed',
+											hidden: true,
 											fulfilled_at: new Date().toISOString()
 										}
 									})
 									.eq('id', selectedRequest.id);
 
+								if (updateError) {
+									console.error('❌ Update error:', updateError);
+									throw new Error(`Failed to update request: ${updateError.message}`);
+								}
+								console.log('✅ Request marked as completed/hidden');
+
 								setSelectedRequest(null);
 								setSendingPayment(false);
 								await refetch();
+								
 								Toast.show({
 									type: 'success',
 									text1: 'Payment Sent!',
