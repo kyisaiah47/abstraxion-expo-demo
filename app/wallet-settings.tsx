@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
 	View,
 	Text,
@@ -40,11 +40,7 @@ export default function WalletSettingsScreen() {
 	const { client } = useAbstraxionSigningClient();
 	const { user } = useAuth();
 
-	useEffect(() => {
-		loadWalletInfo();
-	}, [account]);
-
-	const loadWalletInfo = async () => {
+	const loadWalletInfo = useCallback(async () => {
 		setLoading(true);
 		try {
 			if (account?.bech32Address) {
@@ -65,9 +61,13 @@ export default function WalletSettingsScreen() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [account?.bech32Address, client]);
 
-	const handleCopyAddress = async () => {
+	useEffect(() => {
+		loadWalletInfo();
+	}, [loadWalletInfo]);
+
+	const handleCopyAddress = useCallback(async () => {
 		if (walletInfo?.address) {
 			await Clipboard.setStringAsync(walletInfo.address);
 			Toast.show({
@@ -77,9 +77,9 @@ export default function WalletSettingsScreen() {
 				position: 'bottom',
 			});
 		}
-	};
+	}, [walletInfo?.address]);
 
-	const handleShareAddress = async () => {
+	const handleShareAddress = useCallback(async () => {
 		if (walletInfo?.address) {
 			try {
 				await Share.share({
@@ -90,11 +90,11 @@ export default function WalletSettingsScreen() {
 				console.error('Error sharing address:', error);
 			}
 		}
-	};
+	}, [walletInfo?.address]);
 
-	const handleDisconnectWallet = () => {
+	const handleDisconnectWallet = useCallback(() => {
 		setShowDisconnectConfirm(true);
-	};
+	}, []);
 
 	const confirmDisconnect = async () => {
 		setShowDisconnectConfirm(false);
@@ -118,7 +118,7 @@ export default function WalletSettingsScreen() {
 		}
 	};
 
-	const handleRefresh = () => {
+	const handleRefresh = useCallback(() => {
 		loadWalletInfo();
 		Toast.show({
 			type: 'info',
@@ -126,9 +126,9 @@ export default function WalletSettingsScreen() {
 			text2: 'Wallet information updated',
 			position: 'bottom',
 		});
-	};
+	}, [loadWalletInfo]);
 
-	const menuItems = [
+	const menuItems = useMemo(() => [
 		{
 			id: "copy-address",
 			title: "Copy Address",
@@ -174,9 +174,9 @@ export default function WalletSettingsScreen() {
 				position: 'bottom',
 			}),
 		},
-	];
+	], [handleCopyAddress, handleShareAddress, handleRefresh]);
 
-	const dangerousActions = [
+	const dangerousActions = useMemo(() => [
 		{
 			id: "disconnect",
 			title: "Disconnect Wallet",
@@ -184,9 +184,9 @@ export default function WalletSettingsScreen() {
 			icon: "log-out-outline" as const,
 			action: handleDisconnectWallet,
 		},
-	];
+	], [handleDisconnectWallet]);
 
-	const renderMenuItem = (item: any, isDangerous = false) => (
+	const renderMenuItem = useCallback((item: any, isDangerous = false) => (
 		<Pressable
 			key={item.id}
 			style={styles.menuItem}
@@ -222,7 +222,7 @@ export default function WalletSettingsScreen() {
 				</View>
 			)}
 		</Pressable>
-	);
+	), [colors]);
 
 	return (
 		<SafeAreaView style={styles.container} edges={["top"]}>

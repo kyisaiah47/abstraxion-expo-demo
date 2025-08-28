@@ -14,11 +14,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { User } from "@/types/proofpay";
-import { UserService } from "@/lib/userService";
 import FormInput from "@/components/FormInput";
 import {
 	useSocialOperations,
 	useIsUsernameAvailable,
+	useUserProfile,
 } from "@/hooks/useSocialContract";
 import {
 	useAbstraxionAccount,
@@ -29,12 +29,16 @@ import Toast from "react-native-toast-message";
 export default function EditProfileScreen() {
 	const [displayName, setDisplayName] = useState("");
 	const [username, setUsername] = useState("");
-	const [currentUser, setCurrentUser] = useState<User | null>(null);
 	
 	const { colors } = useTheme();
 	const styles = createStyles(colors);
 	const { data: account } = useAbstraxionAccount();
 	const { client: signingClient } = useAbstraxionSigningClient();
+	const walletAddress = account?.bech32Address || "";
+	
+	// Load current user data from database
+	const { user: currentUser, loading: loadingUser } = useUserProfile(walletAddress);
+	
 	const {
 		loading,
 		updateUser,
@@ -45,26 +49,13 @@ export default function EditProfileScreen() {
 		loading: checkingUsername,
 	} = useIsUsernameAvailable(username !== currentUser?.username ? username : "");
 
-	// Load current user data
+	// Update form fields when user data loads
 	useEffect(() => {
-		const loadUserData = async () => {
-			try {
-				const user = await UserService.getCurrentUser();
-				setCurrentUser(user);
-				setDisplayName(user?.display_name || "");
-				setUsername(user?.username || "");
-			} catch (error) {
-				console.error("Error loading user:", error);
-				Toast.show({
-					type: 'error',
-					text1: 'Error',
-					text2: 'Failed to load profile data',
-					position: 'bottom',
-				});
-			}
-		};
-		loadUserData();
-	}, []);
+		if (currentUser) {
+			setDisplayName(currentUser.display_name || "");
+			setUsername(currentUser.username || "");
+		}
+	}, [currentUser]);
 
 
 	const handleSave = async () => {

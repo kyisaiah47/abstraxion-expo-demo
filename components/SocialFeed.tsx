@@ -45,9 +45,9 @@ export default function SocialFeed({ activities, compact = false }: SocialFeedPr
 	const getProofBadge = (proofType: string, isZkTLSVerified: boolean) => {
 		if (isZkTLSVerified) {
 			return (
-				<View style={[styles.proofBadge, { backgroundColor: colors.primary[100] }]}>
-					<Ionicons name="shield-checkmark" size={12} color={colors.primary[700]} />
-					<Text style={[styles.proofText, { color: colors.primary[700] }]}>zkTLS ✓</Text>
+				<View style={[styles.proofBadge, { backgroundColor: '#3B82F6' + '20' }]}>
+					<Ionicons name="shield-checkmark" size={12} color="#3B82F6" />
+					<Text style={[styles.proofText, { color: '#3B82F6' }]}>zkTLS ✓</Text>
 				</View>
 			);
 		}
@@ -55,9 +55,9 @@ export default function SocialFeed({ activities, compact = false }: SocialFeedPr
 		switch (proofType) {
 			case 'zktls':
 				return (
-					<View style={[styles.proofBadge, { backgroundColor: colors.status?.info + '20' }]}>
-						<Ionicons name="lock-closed" size={12} color={colors.status?.info} />
-						<Text style={[styles.proofText, { color: colors.status?.info }]}>zkTLS</Text>
+					<View style={[styles.proofBadge, { backgroundColor: '#3B82F6' + '20' }]}>
+						<Ionicons name="lock-closed" size={12} color="#3B82F6" />
+						<Text style={[styles.proofText, { color: '#3B82F6' }]}>zkTLS</Text>
 					</View>
 				);
 			case 'hybrid':
@@ -117,9 +117,6 @@ export default function SocialFeed({ activities, compact = false }: SocialFeedPr
 			
 			<View style={styles.activityFooter}>
 				<View style={styles.leftFooter}>
-					<Text style={[styles.amount, { color: colors.status?.success }]}>
-						${activity.amount.toFixed(2)} {activity.denom.replace('u', '').toUpperCase()}
-					</Text>
 					{getProofBadge(activity.proofType, activity.isZkTLSVerified)}
 				</View>
 				
@@ -157,13 +154,9 @@ export default function SocialFeed({ activities, compact = false }: SocialFeedPr
 				</View>
 			</View>
 			
-			<ScrollView 
-				style={styles.feed}
-				contentContainerStyle={styles.feedContent}
-				showsVerticalScrollIndicator={false}
-			>
+			<View style={styles.feedContent}>
 				{activities.map(renderActivity)}
-			</ScrollView>
+			</View>
 		</View>
 	);
 }
@@ -213,7 +206,6 @@ const styles = StyleSheet.create({
 	
 	feedContent: {
 		paddingHorizontal: DesignSystem.spacing.lg,
-		paddingBottom: DesignSystem.spacing.xl,
 		gap: DesignSystem.spacing.md,
 	},
 	

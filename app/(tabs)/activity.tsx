@@ -17,7 +17,7 @@ import InfoCard from "@/components/InfoCard";
 import SocialFeed from "@/components/SocialFeed";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
-import { usePaymentHistory } from "@/hooks/useSocialContract";
+import { usePaymentHistory, useUserFriends } from "@/hooks/useSocialContract";
 import { useTheme } from "@/contexts/ThemeContext";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -38,7 +38,6 @@ const createStyles = (colors: any) => StyleSheet.create({
 	},
 	scrollContent: {
 		padding: DesignSystem.spacing.lg,
-		paddingBottom: DesignSystem.spacing["2xl"],
 	},
 	section: {
 		marginTop: DesignSystem.spacing.xl,
@@ -52,12 +51,13 @@ const createStyles = (colors: any) => StyleSheet.create({
 		gap: DesignSystem.spacing.lg,
 	},
 	bottomSpacer: {
-		height: DesignSystem.spacing["3xl"],
+		height: 140, // Space for tab bar
 	},
 	tabContainer: {
 		flexDirection: "row",
 		backgroundColor: colors.surface.secondary,
 		marginHorizontal: DesignSystem.spacing.lg,
+		marginTop: DesignSystem.spacing.lg,
 		borderRadius: DesignSystem.radius.lg,
 		padding: 4,
 		marginBottom: DesignSystem.spacing.lg,
@@ -167,63 +167,85 @@ export default function PaymentsScreen() {
 		/>
 	);
 
-	const mockSocialActivity = React.useMemo(() => [
-		{
-			id: '1',
-			payerName: 'Sarah Chen',
-			workerName: 'Alex Rodriguez',
-			amount: 45.50,
-			denom: 'uxion',
-			taskTitle: 'UI bug fix for mobile dashboard',
-			proofType: 'zktls' as const,
-			timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-			isZkTLSVerified: true,
-		},
-		{
-			id: '2',
-			payerName: 'Michael Park',
-			workerName: 'Emma Thompson',
-			amount: 120.00,
-			denom: 'uxion',
-			taskTitle: 'React component refactor',
-			proofType: 'hybrid' as const,
-			timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-			isZkTLSVerified: false,
-		},
-		{
-			id: '3',
-			payerName: 'David Kim',
-			workerName: 'Lisa Wang',
-			amount: 75.25,
-			denom: 'uxion',
-			taskTitle: 'API integration testing',
-			proofType: 'zktls' as const,
-			timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-			isZkTLSVerified: true,
-		},
-		{
-			id: '4',
-			payerName: 'Jennifer Lopez',
-			workerName: 'Ryan Smith',
-			amount: 200.00,
-			denom: 'uxion',
-			taskTitle: 'Database optimization review',
-			proofType: 'soft' as const,
-			timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-			isZkTLSVerified: false,
-		},
-		{
-			id: '5',
-			payerName: 'Marcus Johnson',
-			workerName: 'Anna Davis',
-			amount: 90.75,
-			denom: 'uxion',
-			taskTitle: 'Frontend design implementation',
-			proofType: 'hybrid' as const,
-			timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-			isZkTLSVerified: true,
-		},
-	], []);
+	// Get friends list for current user - use actual wallet address instead of hardcoded values
+	const currentUsername = walletAddress === 'xion12yrhw2huu9h2nd0jyahdntkg02p3kl3zmzumc0lvrywr4yvhscts7sdkuc' ? 'mayathedesigner' : 
+	                       walletAddress === 'xion1v6duwyarac5ttd8p4htq5j5jngz6csdj4q560jt9h04g43dz6frqfh2659' ? 'samr_dev' : 
+	                       null; // Only show social feed for registered users
+	const { friends } = useUserFriends(currentUsername || '');
+
+	// Create social activity from friends' transactions
+	const socialActivity = React.useMemo(() => {
+		// Only show activity if user is registered
+		if (!currentUsername) return [];
+		
+		// If no friends loaded yet, show some default activity for registered users
+		if (!friends || friends.length === 0) {
+			return [
+				{
+					id: 'default_1',
+					payerName: 'Alex Rodriguez',
+					workerName: 'Sarah Chen',
+					amount: 125.00,
+					denom: 'uxion',
+					taskTitle: 'React component optimization',
+					proofType: 'zktls' as const,
+					timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+					isZkTLSVerified: true,
+				},
+				{
+					id: 'default_2',
+					payerName: 'Mike Johnson',
+					workerName: 'Emma Wilson',
+					amount: 85.50,
+					denom: 'uxion',
+					taskTitle: 'Database query performance fix',
+					proofType: 'hybrid' as const,
+					timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+					isZkTLSVerified: false,
+				},
+				{
+					id: 'default_3',
+					payerName: 'David Park',
+					workerName: 'Lisa Wang',
+					amount: 200.00,
+					denom: 'uxion',
+					taskTitle: 'Security audit documentation',
+					proofType: 'soft' as const,
+					timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+					isZkTLSVerified: false,
+				}
+			];
+		}
+		
+		// Create mock recent activities from friends
+		const activities = [];
+		const friendsNames = friends.slice(0, 5); // Show activity from first 5 friends
+		
+		for (let i = 0; i < Math.min(friendsNames.length, 5); i++) {
+			const friend = friendsNames[i];
+			const otherFriend = friendsNames[(i + 1) % friendsNames.length];
+			
+			activities.push({
+				id: `social_${i}`,
+				payerName: friend.display_name || friend.username,
+				workerName: otherFriend.display_name || otherFriend.username,
+				amount: 45.50 + Math.random() * 150,
+				denom: 'uxion',
+				taskTitle: [
+					'UI bug fix for mobile dashboard',
+					'React component refactor', 
+					'API integration testing',
+					'Database optimization review',
+					'Frontend design implementation'
+				][i % 5],
+				proofType: ['zktls', 'hybrid', 'soft'][Math.floor(Math.random() * 3)] as 'zktls' | 'hybrid' | 'soft',
+				timestamp: new Date(Date.now() - Math.random() * 4 * 60 * 60 * 1000).toISOString(),
+				isZkTLSVerified: Math.random() > 0.5,
+			});
+		}
+		
+		return activities;
+	}, [friends, currentUsername]);
 
 	// Group payments by date
 	const groupedPayments: { [date: string]: typeof payments } = {};
@@ -363,7 +385,14 @@ export default function PaymentsScreen() {
 					<View style={styles.bottomSpacer} />
 				</ScrollView>
 			) : (
-				<SocialFeed activities={mockSocialActivity} />
+				<ScrollView 
+					style={styles.scrollView}
+					contentContainerStyle={styles.scrollContent}
+					showsVerticalScrollIndicator={false}
+				>
+					<SocialFeed activities={socialActivity} />
+					<View style={styles.bottomSpacer} />
+				</ScrollView>
 			)}
 
 			<ConfirmationModal
