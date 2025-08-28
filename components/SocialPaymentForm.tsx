@@ -22,7 +22,7 @@ import {
 	useSearchUsers,
 	useUserProfile,
 } from "@/hooks/useSocialContract";
-import { formatXionAmount } from "@/lib/socialContract";
+import { User, formatXionAmount } from "@/lib/socialContract";
 import { useTheme } from "@/contexts/ThemeContext";
 import ZkTLSSelectionModal from "./ZkTLSSelectionModal";
 import { ZKTLS_OPTIONS } from "@/constants/zkTLSOptions";
@@ -71,12 +71,12 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	});
 	const [amountText, setAmountText] = useState("");
 	const [recipient, setRecipient] = useState("");
+	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [feedback, setFeedback] = useState<string | null>(null);
 	const [showProofDropdown, setShowProofDropdown] = useState(false);
 	const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
 	const [debouncedRecipient, setDebouncedRecipient] = useState("");
-	const [endpoint, setEndpoint] = useState("");
 	const [reviewWindow, setReviewWindow] = useState(24);
 	const [showZkTLSModal, setShowZkTLSModal] = useState(false);
 	const [selectedZkTLSOption, setSelectedZkTLSOption] = useState("custom");
@@ -119,9 +119,16 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 	// Show friend suggestions when typing
 	useEffect(() => {
-		const shouldShow = recipient.length > 0 && !user && !userLoading;
+		const shouldShow = recipient.length > 0 && !selectedUser && !user && !userLoading;
 		setShowFriendSuggestions(shouldShow);
-	}, [recipient, user, userLoading]);
+	}, [recipient, selectedUser, user, userLoading]);
+
+	// Clear selectedUser when recipient changes (manual typing)
+	useEffect(() => {
+		if (selectedUser && recipient !== selectedUser.username) {
+			setSelectedUser(null);
+		}
+	}, [recipient, selectedUser]);
 
 	const handleSubmit = async () => {
 		if (!isConnected || !account?.bech32Address || !signingClient) {
@@ -142,7 +149,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			});
 			return;
 		}
-		if (userLoading) {
+		const recipientUser = selectedUser || user;
+		if (!selectedUser && userLoading) {
 			Toast.show({
 				type: "info",
 				text1: "Checking recipient",
@@ -151,7 +159,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			});
 			return;
 		}
-		if (!user) {
+		if (!recipientUser) {
 			Toast.show({
 				type: "error",
 				text1: "Error",
@@ -281,18 +289,6 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		);
 	};
 
-	// Update endpoint when zkTLS option changes
-	useEffect(() => {
-		const option =
-			ZKTLS_OPTIONS.find((opt) => opt.id === selectedZkTLSOption) ||
-			ZKTLS_OPTIONS[ZKTLS_OPTIONS.length - 1];
-		if (option.baseEndpoint && option.id !== "custom") {
-			setEndpoint(option.baseEndpoint);
-		} else if (option.id === "custom") {
-			setEndpoint(""); // Clear for custom entry
-		}
-	}, [selectedZkTLSOption]);
-
 	const getSuggestions = () => {
 		if (!showFriendSuggestions || recipient.length === 0) return [];
 
@@ -318,16 +314,17 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				arr.findIndex((u) => u.username === user.username) === index
 		);
 
-		return unique.slice(0, 5); // Limit to 5 suggestions
+		return unique.slice(0, 10); // Limit to 10 suggestions with scroll
 	};
 
+	const recipientUser = selectedUser || user;
 	const isSubmitDisabled =
 		!recipient ||
-		!user ||
+		!recipientUser ||
 		formData.amount <= 0 ||
 		!formData.description.trim() ||
 		loading ||
-		userLoading;
+		(!selectedUser && userLoading);
 
 	const styles = createStyles(colors);
 
@@ -338,21 +335,22 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		>
 			{/* Recipient Username Input */}
 			<View style={styles.userSection}>
-				{user ? (
+				{recipientUser ? (
 					/* Selected User Chip */
 					<View style={styles.selectedUserChip}>
 						<View style={styles.chipAvatar}>
 							<Text style={styles.chipAvatarText}>
-								{(user.display_name || user.username).charAt(0).toUpperCase()}
+								{(recipientUser.display_name || recipientUser.username).charAt(0).toUpperCase()}
 							</Text>
 						</View>
 						<Text style={styles.chipUsername}>
-							{user.display_name || user.username}
+							{recipientUser.display_name || recipientUser.username}
 						</Text>
 						<Pressable
 							style={styles.chipRemoveButton}
 							onPress={() => {
 								setRecipient("");
+								setSelectedUser(null);
 								setShowFriendSuggestions(false);
 							}}
 						>
@@ -376,7 +374,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 							autoCorrect={false}
 							editable={!loading}
 							onFocus={() =>
-								setShowFriendSuggestions(recipient.length > 0 && !user)
+								setShowFriendSuggestions(recipient.length > 0 && !recipientUser)
 							}
 						/>
 						{userLoading && (
@@ -384,7 +382,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 								<Text style={styles.statusText}>Checking...</Text>
 							</View>
 						)}
-						{recipient && !userLoading && !user && !showFriendSuggestions && (
+						{recipient && !userLoading && !recipientUser && !showFriendSuggestions && (
 							<Text style={styles.statusTextError}>User not found</Text>
 						)}
 					</View>
@@ -393,37 +391,44 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				{/* Friend Suggestions Dropdown */}
 				{showFriendSuggestions && getSuggestions().length > 0 && (
 					<View style={styles.suggestionsContainer}>
-						{getSuggestions().map((suggestion) => (
-							<Pressable
-								key={suggestion.username}
-								style={styles.suggestionItem}
-								onPress={() => {
-									setRecipient(suggestion.username);
-									setShowFriendSuggestions(false);
-								}}
-							>
-								<View style={styles.suggestionAvatar}>
-									<Text style={styles.suggestionAvatarText}>
-										{(suggestion.display_name || suggestion.username)
-											.charAt(0)
-											.toUpperCase()}
-									</Text>
-								</View>
-								<View style={styles.suggestionInfo}>
-									<Text style={styles.suggestionName}>
-										{suggestion.display_name || suggestion.username}
-									</Text>
-									<Text style={styles.suggestionUsername}>
-										@{suggestion.username}
-									</Text>
-								</View>
-								{friends?.some((f) => f.username === suggestion.username) && (
-									<View style={styles.friendBadge}>
-										<Text style={styles.friendBadgeText}>Friend</Text>
+						<ScrollView
+							style={styles.suggestionsScrollView}
+							showsVerticalScrollIndicator={true}
+							keyboardShouldPersistTaps="handled"
+						>
+							{getSuggestions().map((suggestion) => (
+								<Pressable
+									key={suggestion.username}
+									style={styles.suggestionItem}
+									onPress={() => {
+										setRecipient(suggestion.username);
+										setSelectedUser(suggestion);
+										setShowFriendSuggestions(false);
+									}}
+								>
+									<View style={styles.suggestionAvatar}>
+										<Text style={styles.suggestionAvatarText}>
+											{(suggestion.display_name || suggestion.username)
+												.charAt(0)
+												.toUpperCase()}
+										</Text>
 									</View>
-								)}
-							</Pressable>
-						))}
+									<View style={styles.suggestionInfo}>
+										<Text style={styles.suggestionName}>
+											{suggestion.display_name || suggestion.username}
+										</Text>
+										<Text style={styles.suggestionUsername}>
+											@{suggestion.username}
+										</Text>
+									</View>
+									{friends?.some((f) => f.username === suggestion.username) && (
+										<View style={styles.friendBadge}>
+											<Text style={styles.friendBadgeText}>Friend</Text>
+										</View>
+									)}
+								</Pressable>
+							))}
+						</ScrollView>
 					</View>
 				)}
 			</View>
@@ -446,7 +451,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				<Text style={styles.currencySymbol}>XION</Text>
 			</View>
 
-			{/* Proof Type Chip Dropdown */}
+			{/* Proof Type Chip Dropdown - Only for task requests */}
+			{paymentType === "request_task" && (
 			<View style={styles.proofSection}>
 				<Pressable
 					style={styles.proofChipButton}
@@ -526,11 +532,14 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					</View>
 				)}
 			</View>
+			)}
 
-			{/* Simple proof type info */}
+			{/* Simple proof type info - Only for task requests */}
+			{paymentType === "request_task" && (
 			<Text style={styles.proofTypeHint}>
 				{getSelectedProofType().sublabel}
 			</Text>
+			)}
 
 			{/* zkTLS and Review Window Row */}
 			{paymentType === "request_task" &&
@@ -582,26 +591,6 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 								</View>
 							</View>
 						)}
-					</View>
-				)}
-
-			{/* Custom Endpoint Input - only show for custom zkTLS option */}
-			{paymentType === "request_task" &&
-				(formData.proofType === "zktls" || formData.proofType === "hybrid") &&
-				selectedZkTLSOption === "custom" && (
-					<View style={styles.compactInputSection}>
-						<Text style={styles.compactInputLabel}>
-							Custom Verification Endpoint
-						</Text>
-						<TextInput
-							style={styles.compactTextInput}
-							value={endpoint}
-							onChangeText={setEndpoint}
-							placeholder="https://api.example.com/verify"
-							placeholderTextColor={colors.text.tertiary}
-							editable={!loading}
-							autoCapitalize="none"
-						/>
 					</View>
 				)}
 
@@ -753,7 +742,7 @@ const createStyles = (colors: any) =>
 		// Friend Suggestions
 		suggestionsContainer: {
 			position: "absolute",
-			top: 60,
+			top: 25,
 			left: 0,
 			right: 0,
 			backgroundColor: colors.surface.elevated,
@@ -767,6 +756,10 @@ const createStyles = (colors: any) =>
 			elevation: 8,
 			maxHeight: 200,
 			zIndex: 1001,
+		},
+
+		suggestionsScrollView: {
+			maxHeight: 200,
 		},
 
 		suggestionItem: {

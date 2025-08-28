@@ -18,6 +18,7 @@ import {
 	useAbstraxionAccount,
 	useAbstraxionSigningClient,
 } from "@burnt-labs/abstraxion-react-native";
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { useAuth } from "@/context/AuthContext";
 import * as Clipboard from 'expo-clipboard';
 import Toast from "react-native-toast-message";
@@ -36,7 +37,7 @@ export default function WalletSettingsScreen() {
 	
 	const { colors } = useTheme();
 	const styles = createStyles(colors);
-	const { data: account, logout } = useAbstraxionAccount();
+	const { data: account, logout, isConnected } = useAbstraxionAccount();
 	const { client } = useAbstraxionSigningClient();
 	const { user } = useAuth();
 
@@ -44,13 +45,27 @@ export default function WalletSettingsScreen() {
 		setLoading(true);
 		try {
 			if (account?.bech32Address) {
-				// For now, we'll use mock data for balance and network
-				// In a real app, you'd fetch this from the blockchain
+				// Fetch actual balance from XION testnet
+				let balance = "0.00";
+				try {
+					const rpcEndpoint = process.env.EXPO_PUBLIC_RPC_ENDPOINT || "";
+					if (rpcEndpoint) {
+						const client = await CosmWasmClient.connect(rpcEndpoint);
+						const balanceResponse = await client.getBalance(account.bech32Address, "uxion");
+						// Convert from uxion to XION (divide by 1e6)
+						const balanceInXion = parseFloat(balanceResponse.amount) / 1000000;
+						balance = balanceInXion.toFixed(2);
+					}
+				} catch (balanceError) {
+					console.error("Error fetching balance:", balanceError);
+					// Keep default balance of "0.00" if fetch fails
+				}
+
 				setWalletInfo({
 					address: account.bech32Address,
-					balance: "0.00", // Would be fetched from chain
+					balance: balance,
 					network: "Xion Testnet",
-					connected: !!client,
+					connected: isConnected,
 				});
 			} else {
 				setWalletInfo(null);
@@ -61,7 +76,7 @@ export default function WalletSettingsScreen() {
 		} finally {
 			setLoading(false);
 		}
-	}, [account?.bech32Address, client]);
+	}, [account?.bech32Address, isConnected]);
 
 	useEffect(() => {
 		loadWalletInfo();
