@@ -76,6 +76,7 @@ export interface Job {
 	deadline?: number; // Unix timestamp
 	proof_hash?: string;
 	proof_url?: string;
+	proof_type?: "soft" | "zktls" | "hybrid";
 }
 
 export interface ContractAccount {

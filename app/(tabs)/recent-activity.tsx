@@ -7,6 +7,7 @@ import {
 	RefreshControl,
 	Modal,
 	ActivityIndicator,
+	Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -18,6 +19,9 @@ import { DesignSystem } from "@/constants/DesignSystem";
 import { usePaymentHistory, useUserProfile, useSocialOperations } from "@/hooks/useSocialContract";
 import Toast from "react-native-toast-message";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
+import { type Job } from "@/lib/contractService";
+import { createClient } from '@supabase/supabase-js';
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import isToday from "dayjs/plugin/isToday";
@@ -95,7 +99,9 @@ export default function RecentActivityScreen() {
 	const [refreshing, setRefreshing] = useState(false);
 	const [showLogoutModal, setShowLogoutModal] = useState(false);
 	const [showPaymentModal, setShowPaymentModal] = useState(false);
+	const [showProofModal, setShowProofModal] = useState(false);
 	const [selectedRequest, setSelectedRequest] = useState<any>(null);
+	const [selectedTask, setSelectedTask] = useState<any>(null);
 	const [sendingPayment, setSendingPayment] = useState(false);
 
 	const styles = createStyles(colors);
@@ -130,6 +136,56 @@ export default function RecentActivityScreen() {
 				type: 'error',
 				text1: 'Error',
 				text2: 'Failed to sign out. Please try again.',
+				position: 'bottom',
+			});
+		}
+	};
+
+	const handleProofSubmit = async (proof: string) => {
+		if (!selectedTask) return;
+		
+		try {
+			console.log("📝 Proof submitted:", proof);
+			
+			const supabase = createClient(
+				process.env.EXPO_PUBLIC_SUPABASE_URL!,
+				process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+			);
+			
+			// Update the original task activity with proof submission
+			const { error: updateError } = await supabase
+				.from('activity_feed')
+				.update({
+					meta: {
+						...selectedTask.meta,
+						status: 'proof_submitted',
+						proof: proof,
+						submitted_at: new Date().toISOString()
+					}
+				})
+				.eq('id', selectedTask.id);
+
+			if (updateError) {
+				console.error("Database update error:", updateError);
+				throw new Error("Failed to update task status");
+			}
+			
+			setShowProofModal(false);
+			setSelectedTask(null);
+			await refetch();
+			
+			Toast.show({
+				type: 'success',
+				text1: 'Proof Submitted!',
+				text2: 'Your proof has been submitted for review.',
+				position: 'bottom',
+			});
+		} catch (error) {
+			console.error("Proof submission error:", error);
+			Toast.show({
+				type: 'error',
+				text1: 'Submission Failed',
+				text2: 'Please try again',
 				position: 'bottom',
 			});
 		}
@@ -330,8 +386,9 @@ export default function RecentActivityScreen() {
 											amount: payment.amount,
 											meta: payment.meta
 										});
-										// Navigate to proof submission screen
-										router.push(`/jobs/${payment.id}/proof-submission`);
+										// Show proof modal instead of navigation
+										setSelectedTask(payment);
+										setShowProofModal(true);
 									};
 									
 									return (
@@ -472,6 +529,53 @@ export default function RecentActivityScreen() {
 					}}
 				/>
 			)}
+
+			{/* Proof Submission Modal */}
+			<Modal
+				visible={showProofModal}
+				animationType="slide"
+				presentationStyle="pageSheet"
+			>
+				<SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+					<View style={{ 
+						flexDirection: 'row', 
+						justifyContent: 'space-between', 
+						alignItems: 'center',
+						paddingHorizontal: 20,
+						paddingVertical: 16,
+						borderBottomWidth: 1,
+						borderBottomColor: '#E5E5E5'
+					}}>
+						<Text style={{ fontSize: 18, fontWeight: '600' }}>Submit Proof</Text>
+						<Pressable onPress={() => {
+							setShowProofModal(false);
+							setSelectedTask(null);
+						}}>
+							<Text style={{ fontSize: 16, color: '#666' }}>Cancel</Text>
+						</Pressable>
+					</View>
+					{selectedTask && (
+						<ProofSubmissionSheet
+							job={{
+								id: parseInt(selectedTask.id || "0"),
+								client: selectedTask.meta?.from_username || selectedTask.actor,
+								worker: walletAddress,
+								description: selectedTask.meta?.description || "Task completion",
+								escrow_amount: {
+									amount: selectedTask.meta?.amount?.toString() || "0",
+									denom: "uxion"
+								},
+								status: "Accepted",
+								deadline: selectedTask.meta?.deadline,
+								proof_type: selectedTask.meta?.proof_type || "soft"
+							}}
+							onSubmit={handleProofSubmit}
+							userAddress={walletAddress}
+							contractClient={signingClient}
+						/>
+					)}
+				</SafeAreaView>
+			</Modal>
 		</SafeAreaView>
 	);
 }
