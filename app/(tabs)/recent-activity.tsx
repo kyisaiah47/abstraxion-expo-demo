@@ -54,7 +54,6 @@ export default function RecentActivityScreen() {
 				.single();
 
 			if (userError || !userData) {
-				console.log('User not found in database');
 				return;
 			}
 

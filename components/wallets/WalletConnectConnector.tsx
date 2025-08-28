@@ -1,7 +1,7 @@
 import { createWeb3Modal, defaultConfig } from '@walletconnect/modal-react-native';
 import { ethers } from 'ethers';
-import { Wallet, WalletType, ChainType } from '../../packages/shared/types';
-import { SUPPORTED_CHAINS, EVM_CHAINS } from '../../packages/shared/chains';
+import { Wallet, WalletType, ChainType } from '../../types/wallet';
+import { SUPPORTED_CHAINS, EVM_CHAINS } from '../../types/chains';
 import { WalletConnector } from './WalletConnector';
 
 export class WalletConnectConnector implements WalletConnector {

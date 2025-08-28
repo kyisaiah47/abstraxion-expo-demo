@@ -194,7 +194,6 @@ app.get('/health', (req, res) => {
 app.post('/verify', async (req, res) => {
   const { endpoint, task_id, worker, expected_data, proof_type = 'zktls' } = req.body as VerificationRequest;
 
-  console.log(`🔍 Verification request: ${task_id} - ${endpoint}`);
 
   if (!endpoint || !task_id || !worker) {
     return res.status(400).json({
@@ -211,7 +210,6 @@ app.post('/verify', async (req, res) => {
     const shouldSucceed = shouldVerificationSucceed(endpoint);
     
     if (!shouldSucceed) {
-      console.log(`❌ Verification failed for ${task_id}`);
       return res.json({
         verified: false,
         error: 'Verification failed: endpoint did not meet criteria',
@@ -228,7 +226,6 @@ app.post('/verify', async (req, res) => {
     const httpResult = await mockHttpVerification(endpoint);
     
     if (!httpResult.success) {
-      console.log(`❌ HTTP verification failed for ${task_id}:`, httpResult.error);
       return res.json({
         verified: false,
         error: httpResult.error,
@@ -244,7 +241,6 @@ app.post('/verify', async (req, res) => {
     // Generate zkTLS proof hash
     const zkProofHash = generateZkProofHash(endpoint, task_id, timestamp);
 
-    console.log(`✅ Verification succeeded for ${task_id}: ${zkProofHash}`);
 
     const response: VerificationResponse = {
       verified: true,
@@ -283,7 +279,6 @@ app.post('/verify/batch', async (req, res) => {
     });
   }
 
-  console.log(`🔍 Batch verification: ${requests.length} requests`);
 
   const results = [];
 
@@ -386,7 +381,6 @@ async function triggerMockEvents(taskId: string, worker: string, zkProofHash: st
     };
 
     mockEventQueue.push(proofSubmittedEvent);
-    console.log(`📡 Mock event: ProofSubmitted for ${taskId}`);
 
     // 2. Trigger different flows based on proof type
     if (proofType === 'zktls') {
@@ -404,7 +398,6 @@ async function triggerMockEvents(taskId: string, worker: string, zkProofHash: st
         };
 
         mockEventQueue.push(releasedEvent);
-        console.log(`📡 Mock event: TaskReleased for ${taskId} (zkTLS instant)`);
         
         // Send to indexer if available
         notifyIndexer(releasedEvent);
@@ -425,7 +418,6 @@ async function triggerMockEvents(taskId: string, worker: string, zkProofHash: st
         };
 
         mockEventQueue.push(pendingEvent);
-        console.log(`📡 Mock event: TaskPendingRelease for ${taskId} (hybrid)`);
         
         // Send to indexer if available
         notifyIndexer(pendingEvent);
@@ -449,32 +441,13 @@ async function notifyIndexer(event: MockEvent) {
     });
 
     if (response.ok) {
-      console.log(`📡 Sent mock event to indexer: ${event.type}`);
     } else {
-      console.log(`⚠️  Indexer not available for event: ${event.type}`);
     }
   } catch (error) {
-    console.log(`⚠️  Could not notify indexer (may not be running): ${event.type}`);
   }
 }
 
 // ===== SERVER STARTUP =====
 
 app.listen(PORT, () => {
-  console.log('🚀 ProofPay Mock zkTLS Verifier');
-  console.log(`📡 Server running on port ${PORT}`);
-  console.log(`🔧 Development mode: ${DEV_MODE}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/health`);
-  console.log('');
-  console.log('Available endpoints:');
-  console.log(`  POST /verify              - Verify single endpoint`);
-  console.log(`  POST /verify/batch        - Verify multiple endpoints`);
-  console.log(`  POST /cli/verify          - CLI-style verification`);
-  console.log(`  GET  /dev/events          - View mock events queue`);
-  console.log(`  DELETE /dev/events        - Clear mock events queue`);
-  console.log('');
-  console.log('Example verification:');
-  console.log(`curl -X POST http://localhost:${PORT}/verify \\`);
-  console.log(`  -H "Content-Type: application/json" \\`);
-  console.log(`  -d '{"endpoint":"https://api.github.com/repos/user/repo/commits","task_id":"test_001","worker":"xion1abc..."}'`);
 });

@@ -40,8 +40,6 @@ export default function FriendsScreen() {
 	// Get current user profile to get their username
 	const { user: currentUser } = useUserProfile(address);
 	const username = currentUser?.username || "";
-	console.log("👤 Current user data:", currentUser);
-	console.log("📝 Username for queries:", username);
 	
 	const {
 		friends,
@@ -49,7 +47,6 @@ export default function FriendsScreen() {
 		error: friendsError,
 		refetch: refetchFriends,
 	} = useUserFriends(username);
-	console.log("👥 Friends data:", friends, "loading:", friendsLoading, "error:", friendsError);
 	
 	const {
 		requests: pendingRequests,
@@ -57,8 +54,6 @@ export default function FriendsScreen() {
 		error: requestsError,
 		refetch: refetchRequests,
 	} = usePendingFriendRequests(username);
-	console.log("📨 Pending requests data:", pendingRequests, "loading:", requestsLoading, "error:", requestsError);
-	console.log("📨 Pending requests detailed:", JSON.stringify(pendingRequests, null, 2));
 	// Get signing client for operations
 	const {
 		sendFriendRequest,
@@ -122,15 +117,9 @@ export default function FriendsScreen() {
 	};
 
 	const handleSendFriendRequest = async (toUsername: string) => {
-		console.log("🚀 Sending friend request...");
-		console.log("  - toUsername:", toUsername);
-		console.log("  - address:", address);
-		console.log("  - signingClient:", signingClient);
-		console.log("  - data object:", data);
 
 		try {
 			await sendFriendRequest(toUsername, address);
-			console.log("✅ Friend request sent successfully!");
 
 			// Add to sent requests to update UI
 			setSentRequests((prev) => new Set([...prev, toUsername]));
@@ -142,7 +131,6 @@ export default function FriendsScreen() {
 				position: 'bottom',
 			});
 		} catch (error) {
-			console.error("❌ Friend request failed:", error);
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -156,12 +144,6 @@ export default function FriendsScreen() {
 		requestUsername: string,
 		response: "accepted" | "declined"
 	) => {
-		console.log("📨 Responding to friend request...");
-		console.log("  - requestUsername:", requestUsername);
-		console.log("  - response:", response);
-		console.log("  - address:", address);
-		console.log("  - signingClient:", signingClient);
-
 		try {
 			if (response === "accepted") {
 				await acceptFriendRequest(requestUsername, address);
@@ -181,7 +163,6 @@ export default function FriendsScreen() {
 			}
 			await handleRefresh();
 		} catch (error) {
-			console.error("❌ Friend request response failed:", error);
 			Toast.show({
 				type: 'error',
 				text1: 'Error',
@@ -345,14 +326,6 @@ export default function FriendsScreen() {
 				subtitle="Connect with people you trust"
 				onLogout={handleLogout}
 			/>
-			{anyLoading && (
-				<View style={{ padding: 24, alignItems: "center" }}>
-					<ActivityIndicator
-						size="large"
-						color={colors.primary[800]}
-					/>
-				</View>
-			)}
 			{anyError && (
 				<View style={{ padding: 24, alignItems: "center" }}>
 					<Text
@@ -426,6 +399,21 @@ export default function FriendsScreen() {
 							placeholderTextColor={colors.text.tertiary}
 						/>
 					</View>
+					{searchLoading && debouncedQuery && (
+						<View style={{ padding: 24, alignItems: "center" }}>
+							<ActivityIndicator
+								size="small"
+								color={colors.primary[800]}
+							/>
+							<Text style={{ 
+								marginTop: 8, 
+								color: colors.text.secondary,
+								fontSize: 14 
+							}}>
+								Searching...
+							</Text>
+						</View>
+					)}
 					{searchResults.length > 0 && (
 						<View style={styles.searchResults}>
 							{searchResults.map((user, index) =>
@@ -442,7 +430,21 @@ export default function FriendsScreen() {
 				{activeTab === "requests" && (
 					<View style={styles.section}>
 						<Text style={styles.sectionTitle}>Friend Requests</Text>
-						{pendingRequests.length > 0 ? (
+						{requestsLoading ? (
+							<View style={{ padding: 24, alignItems: "center" }}>
+								<ActivityIndicator
+									size="small"
+									color={colors.primary[800]}
+								/>
+								<Text style={{ 
+									marginTop: 8, 
+									color: colors.text.secondary,
+									fontSize: 14 
+								}}>
+									Loading requests...
+								</Text>
+							</View>
+						) : pendingRequests.length > 0 ? (
 							<View style={styles.requestsList}>
 								{pendingRequests.map((request, index) => {
 									return (
@@ -472,7 +474,21 @@ export default function FriendsScreen() {
 				{activeTab === "friends" && (
 					<View style={styles.section}>
 						<Text style={styles.sectionTitle}>Your Friends</Text>
-						{friends.length > 0 ? (
+						{friendsLoading ? (
+							<View style={{ padding: 24, alignItems: "center" }}>
+								<ActivityIndicator
+									size="small"
+									color={colors.primary[800]}
+								/>
+								<Text style={{ 
+									marginTop: 8, 
+									color: colors.text.secondary,
+									fontSize: 14 
+								}}>
+									Loading friends...
+								</Text>
+							</View>
+						) : friends.length > 0 ? (
 							<View style={styles.friendsList}>
 								{friends.map((friend, index) => {
 									return (

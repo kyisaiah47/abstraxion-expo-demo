@@ -43,20 +43,11 @@ export default function SocialFeed({ activities, compact = false }: SocialFeedPr
 	};
 
 	const getProofBadge = (proofType: string, isZkTLSVerified: boolean) => {
-		if (isZkTLSVerified) {
-			return (
-				<View style={[styles.proofBadge, { backgroundColor: '#3B82F6' + '20' }]}>
-					<Ionicons name="shield-checkmark" size={12} color="#3B82F6" />
-					<Text style={[styles.proofText, { color: '#3B82F6' }]}>zkTLS ✓</Text>
-				</View>
-			);
-		}
-		
 		switch (proofType) {
 			case 'zktls':
 				return (
 					<View style={[styles.proofBadge, { backgroundColor: '#3B82F6' + '20' }]}>
-						<Ionicons name="lock-closed" size={12} color="#3B82F6" />
+						<Ionicons name="shield-checkmark" size={12} color="#3B82F6" />
 						<Text style={[styles.proofText, { color: '#3B82F6' }]}>zkTLS</Text>
 					</View>
 				);

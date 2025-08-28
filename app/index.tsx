@@ -81,7 +81,6 @@ export default function OnboardingScreen() {
 			!userLoading &&
 			!hasCompletedUserCheck
 		) {
-			console.log("✅ Marking user check as completed");
 			setHasCompletedUserCheck(true);
 		}
 
@@ -94,10 +93,8 @@ export default function OnboardingScreen() {
 			!isCheckingUser
 		) {
 			if (user) {
-				console.log("✅ User found, navigating to main app...");
 				router.replace("/(tabs)/activity");
 			} else {
-				console.log("❌ No user found, navigating to username setup...");
 				router.replace("/username-setup");
 			}
 		}

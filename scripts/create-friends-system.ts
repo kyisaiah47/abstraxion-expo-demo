@@ -21,10 +21,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
 
 async function createFriendsSystem() {
   try {
-    console.log('🚀 Creating friends system...');
 
     // 1. Create friends table
-    console.log('📊 Creating friends table...');
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS friends (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -67,13 +65,10 @@ async function createFriendsSystem() {
 
     const { error: tableError } = await supabase.rpc('exec_sql', { sql: createTableSQL });
     if (tableError) {
-      console.log('⚠️  Table might already exist:', tableError.message);
     } else {
-      console.log('✅ Friends table created!');
     }
 
     // 2. Get all users to create connections
-    console.log('👥 Getting all users...');
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, handle, wallet_address');
@@ -93,10 +88,8 @@ async function createFriendsSystem() {
       return;
     }
 
-    console.log(`📋 Found ${users.length} users (${mockUsers.length} mock users)`);
 
     // 3. Create friendships
-    console.log('🤝 Creating friend connections...');
     const friendships = [];
 
     // Make your two accounts friends with each other
@@ -158,20 +151,8 @@ async function createFriendsSystem() {
       return;
     }
 
-    console.log(`✅ Created ${friendships.length} friend connections!`);
 
     // 4. Summary
-    console.log('\n🎉 FRIENDS SYSTEM CREATED!');
-    console.log('='.repeat(50));
-    console.log(`👥 Total Users: ${users.length}`);
-    console.log(`🤝 Friend Connections: ${friendships.length}`);
-    console.log('');
-    console.log('✨ Your accounts now have:');
-    console.log(`  • isaiah_kim: ${isaiahFriends.length + 1} friends (including mayathedesigner)`);
-    console.log(`  • mayathedesigner: ${mayaFriends.length + 1} friends (including isaiah_kim)`);
-    console.log('  • Pending friend requests to accept');
-    console.log('  • Active social network connections');
-    console.log('='.repeat(50));
 
   } catch (error) {
     console.error('❌ Error creating friends system:', error);

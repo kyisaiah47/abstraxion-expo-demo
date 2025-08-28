@@ -1,5 +1,5 @@
-import { Chain, ChainType, MultiChainBalance, TokenBalance } from '../../packages/shared/types';
-import { SUPPORTED_CHAINS, getChainById, isEVMChain, isCosmosChain } from '../../packages/shared/chains';
+import { Chain, ChainType, MultiChainBalance, TokenBalance } from '../../types/wallet';
+import { SUPPORTED_CHAINS, getChainById, isEVMChain, isCosmosChain } from '../../types/chains';
 import { EVMChainService } from './EVMChainService';
 import { CosmosChainService } from './CosmosChainService';
 

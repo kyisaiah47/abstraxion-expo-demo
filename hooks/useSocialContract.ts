@@ -503,17 +503,12 @@ export function useSocialOperations(signingClient: any) {
 				throw new Error("Signing client not available");
 			}
 
-			console.log("🔗 Executing acceptFriendRequest with:");
-			console.log("  - requesterUsername:", requesterUsername);
-			console.log("  - senderAddress:", senderAddress);
-			console.log("  - CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
 			
 			const message = {
 				accept_friend_request: {
 					from_username: requesterUsername,
 				},
 			};
-			console.log("  - message:", JSON.stringify(message, null, 2));
 
 			setLoading(true);
 			setError(null);
@@ -629,20 +624,6 @@ export function useSocialOperations(signingClient: any) {
 			setLoading(true);
 			setError(null);
 			try {
-				console.log("🔧 TRANSACTION DEBUG:");
-				console.log("  - senderAddress:", senderAddress);
-				console.log("  - CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
-				console.log("  - message:", JSON.stringify({
-					create_help_request: {
-						to_username: toUsername,
-						amount: { denom: "uxion", amount },
-						description,
-						proof_type: "None",
-					},
-				}, null, 2));
-				console.log("  - funds:", [{ denom: "uxion", amount }]);
-				console.log("  - signingClient type:", typeof signingClient);
-				
 				const result = await signingClient.execute(
 					senderAddress,
 					CONTRACT_ADDRESS,
@@ -659,7 +640,6 @@ export function useSocialOperations(signingClient: any) {
 					[{ denom: "uxion", amount }] // Send the actual funds for escrow
 				);
 				
-				console.log("✅ Transaction successful:", result);
 				return result;
 			} catch (e: any) {
 				setError(e.message);

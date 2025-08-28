@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Alert } from 'react-native';
-import { WalletType, ConnectedWallet } from '../../packages/shared/types';
+import { WalletType, ConnectedWallet } from '../../types/wallet';
 
 interface WalletContextType {
   connectedWallets: ConnectedWallet[];

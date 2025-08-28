@@ -319,7 +319,7 @@ export const GET_CROSS_CHAIN_PAYMENTS = gql`
 // Cosmos-specific queries (for SubQuery)
 export const GET_COSMOS_USER = gql`
   query GetCosmosUser($address: String!, $chain: String!) {
-    user(id: "${chain}-${address}") {
+    user(id: $chain) {
       id
       address
       username

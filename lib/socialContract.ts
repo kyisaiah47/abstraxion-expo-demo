@@ -15,8 +15,6 @@ export const SOCIAL_CONTRACT_ADDRESS =
 	"xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy";
 
 // Add logging to verify the contract address being used
-// console.log("Using contract address:", SOCIAL_CONTRACT_ADDRESS);
-// console.log("Environment variables:", process.env);
 
 // User interface
 export interface User {

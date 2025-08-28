@@ -45,7 +45,7 @@ const PROOF_TYPE_OPTIONS = [
 		id: "zktls" as ProofType,
 		label: "zkTLS Proof",
 		sublabel: "(instant auto-release)",
-		icon: "shield-checkmark-outline", 
+		icon: "shield-checkmark-outline",
 		description: "🔒 Instant verification & release",
 		disabled: false,
 	},
@@ -59,7 +59,6 @@ const PROOF_TYPE_OPTIONS = [
 		recommended: true,
 	},
 ];
-
 
 export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const { paymentType, onSubmit } = props;
@@ -92,7 +91,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		loading: userLoading,
 		refetch: refetchUser,
 	} = useUserByUsername(recipient);
-	
+
 	// Friend suggestions
 	const { user: currentUser } = useUserProfile(account?.bech32Address ?? "");
 	const { friends } = useUserFriends(currentUser?.username ?? "");
@@ -125,110 +124,64 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	}, [recipient, user, userLoading]);
 
 	const handleSubmit = async () => {
-		console.log("🚀 SUBMIT DEBUG - Starting submission...");
-		console.log("📋 Form Data:", {
-			paymentType,
-			recipient,
-			amount: formData.amount,
-			description: formData.description,
-			proofType: formData.proofType
-		});
-		console.log("👤 User Info:", { user, userLoading });
-		console.log("🔗 Wallet Info:", { 
-			isConnected, 
-			address: account?.bech32Address, 
-			hasSigningClient: !!signingClient 
-		});
-		
-		// DEBUG: Check current user registration
-		console.log("🔍 DEBUG - Checking user registration...");
-		if (currentUser) {
-			console.log("✅ Current user found:", currentUser);
-		} else {
-			console.log("❌ Current user not found - this might be the issue!");
-			console.log("📱 Account address:", account?.bech32Address);
-			
-			// Try to manually query for the user
-			try {
-				console.log("🔍 Attempting manual user lookup...");
-				const client = await import("@cosmjs/cosmwasm-stargate").then(m => m.CosmWasmClient.connect(
-					process.env.EXPO_PUBLIC_RPC_ENDPOINT || "https://rpc.xion-testnet-2.burnt.com:443"
-				));
-				const result = await client.queryContractSmart(
-					process.env.EXPO_PUBLIC_CONTRACT_ADDRESS || "xion1lxcdce37k8n4zyanq3ne5uw958cj0r6mnrr4kdpzrylvsanfcvpq0gzrxy",
-					{ get_user_by_wallet: { wallet_address: account?.bech32Address } }
-				);
-				console.log("🔍 Manual lookup result:", result);
-			} catch (lookupError: any) {
-				console.log("❌ Manual lookup failed:", lookupError.message);
-			}
-		}
-
 		if (!isConnected || !account?.bech32Address || !signingClient) {
-			console.log("❌ Wallet not connected");
 			Toast.show({
-				type: 'error',
-				text1: 'Wallet Not Connected',
-				text2: 'Please connect your wallet.',
-				position: 'bottom',
+				type: "error",
+				text1: "Wallet Not Connected",
+				text2: "Please connect your wallet.",
+				position: "bottom",
 			});
 			return;
 		}
 		if (!recipient || !/^[a-zA-Z0-9_]{3,50}$/.test(recipient)) {
-			console.log("❌ Invalid recipient:", recipient);
 			Toast.show({
-				type: 'error',
-				text1: 'Error',
-				text2: 'Enter a valid recipient username.',
-				position: 'bottom',
+				type: "error",
+				text1: "Error",
+				text2: "Enter a valid recipient username.",
+				position: "bottom",
 			});
 			return;
 		}
 		if (userLoading) {
-			console.log("⏳ User still loading");
 			Toast.show({
-				type: 'info',
-				text1: 'Checking recipient',
-				text2: 'Please wait...',
-				position: 'bottom',
+				type: "info",
+				text1: "Checking recipient",
+				text2: "Please wait...",
+				position: "bottom",
 			});
 			return;
 		}
 		if (!user) {
-			console.log("❌ User not found");
 			Toast.show({
-				type: 'error',
-				text1: 'Error',
-				text2: 'Recipient username not found.',
-				position: 'bottom',
+				type: "error",
+				text1: "Error",
+				text2: "Recipient username not found.",
+				position: "bottom",
 			});
 			return;
 		}
 		if (formData.amount <= 0) {
-			console.log("❌ Invalid amount:", formData.amount);
 			Toast.show({
-				type: 'error',
-				text1: 'Error',
-				text2: 'Please enter a valid amount',
-				position: 'bottom',
+				type: "error",
+				text1: "Error",
+				text2: "Please enter a valid amount",
+				position: "bottom",
 			});
 			return;
 		}
 		if (!formData.description.trim()) {
-			console.log("❌ No description");
 			Toast.show({
-				type: 'error',
-				text1: 'Error',
-				text2: 'Please add a description',
-				position: 'bottom',
+				type: "error",
+				text1: "Error",
+				text2: "Please add a description",
+				position: "bottom",
 			});
 			return;
 		}
 
-		console.log("✅ All validations passed, proceeding...");
 		setLoading(true);
 		setFeedback(null);
-		
+
 		try {
 			const payload = {
 				to_username: recipient,
@@ -237,57 +190,58 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				payment_type: paymentType,
 				proof_type: formData.proofType,
 			};
-			console.log("📦 Final payload:", payload);
-			console.log("💰 Formatted amount:", formatXionAmount(formData.amount));
 
 			if (paymentType === "send_money") {
-				console.log("💸 Calling sendDirectPayment...");
 				await sendDirectPayment(
 					payload.to_username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-				console.log("✅ sendDirectPayment completed");
 			} else if (paymentType === "request_money") {
-				console.log("💳 Calling createPaymentRequest...");
 				await createPaymentRequest(
 					payload.to_username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-				console.log("✅ createPaymentRequest completed");
 			} else if (paymentType === "request_task") {
-				console.log("🙏 Calling createTaskRequest...");
 				await createHelpRequest(
 					payload.to_username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-				console.log("✅ createTaskRequest completed");
 			}
-			
-			console.log("🎉 Transaction submitted successfully!");
+
 			setFeedback("Transaction submitted successfully!");
 			onSubmit(formData);
 		} catch (err: any) {
 			console.error("💥 Transaction failed:", err);
 			console.error("💥 Error message:", err?.message);
 			console.error("💥 Full error:", err);
-			
+
 			// Check if it's a contract method not found error
-			if (err?.message?.includes("Invalid type") || err?.message?.includes("unknown request")) {
-				setFeedback("Payment features are currently in development. Smart contract methods not yet deployed.");
+			if (
+				err?.message?.includes("Invalid type") ||
+				err?.message?.includes("unknown request")
+			) {
+				setFeedback(
+					"Payment features are currently in development. Smart contract methods not yet deployed."
+				);
 			} else if (err?.message?.includes("Insufficient funds")) {
-				setFeedback(`Insufficient funds. You need ${formData.amount} XION + gas fees. ${paymentType === 'request_task' || paymentType === 'request_money' ? 'Note: Requests should not require funds - this may be a contract issue.' : ''}`);
+				setFeedback(
+					`Insufficient funds. You need ${formData.amount} XION + gas fees. ${
+						paymentType === "request_task" || paymentType === "request_money"
+							? "Note: Requests should not require funds - this may be a contract issue."
+							: ""
+					}`
+				);
 			} else {
 				setFeedback(err?.message || "Transaction failed. Please try again.");
 			}
 		} finally {
 			setLoading(false);
-			console.log("🏁 Submit process finished");
 		}
 	};
 
@@ -329,7 +283,9 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 	// Update endpoint when zkTLS option changes
 	useEffect(() => {
-		const option = ZKTLS_OPTIONS.find((opt) => opt.id === selectedZkTLSOption) || ZKTLS_OPTIONS[ZKTLS_OPTIONS.length - 1];
+		const option =
+			ZKTLS_OPTIONS.find((opt) => opt.id === selectedZkTLSOption) ||
+			ZKTLS_OPTIONS[ZKTLS_OPTIONS.length - 1];
 		if (option.baseEndpoint && option.id !== "custom") {
 			setEndpoint(option.baseEndpoint);
 		} else if (option.id === "custom") {
@@ -339,22 +295,29 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 	const getSuggestions = () => {
 		if (!showFriendSuggestions || recipient.length === 0) return [];
-		
-		const friendSuggestions = friends?.filter(friend => 
-			friend.username.toLowerCase().includes(recipient.toLowerCase()) ||
-			(friend.display_name && friend.display_name.toLowerCase().includes(recipient.toLowerCase()))
-		) || [];
-		
-		const searchSuggestions = searchResults?.filter(user => 
-			user.username.toLowerCase().includes(recipient.toLowerCase()) ||
-			(user.display_name && user.display_name.toLowerCase().includes(recipient.toLowerCase()))
-		) || [];
-		
+
+		const friendSuggestions =
+			friends?.filter(
+				(friend) =>
+					friend.username.toLowerCase().includes(recipient.toLowerCase()) ||
+					(friend.display_name &&
+						friend.display_name.toLowerCase().includes(recipient.toLowerCase()))
+			) || [];
+
+		const searchSuggestions =
+			searchResults?.filter(
+				(user) =>
+					user.username.toLowerCase().includes(recipient.toLowerCase()) ||
+					(user.display_name &&
+						user.display_name.toLowerCase().includes(recipient.toLowerCase()))
+			) || [];
+
 		const combined = [...friendSuggestions, ...searchSuggestions];
-		const unique = combined.filter((user, index, arr) => 
-			arr.findIndex(u => u.username === user.username) === index
+		const unique = combined.filter(
+			(user, index, arr) =>
+				arr.findIndex((u) => u.username === user.username) === index
 		);
-		
+
 		return unique.slice(0, 5); // Limit to 5 suggestions
 	};
 
@@ -369,7 +332,10 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const styles = createStyles(colors);
 
 	return (
-		<ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+		<ScrollView
+			style={styles.container}
+			contentContainerStyle={styles.scrollContent}
+		>
 			{/* Recipient Username Input */}
 			<View style={styles.userSection}>
 				{user ? (
@@ -380,15 +346,21 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 								{(user.display_name || user.username).charAt(0).toUpperCase()}
 							</Text>
 						</View>
-						<Text style={styles.chipUsername}>{user.display_name || user.username}</Text>
-						<Pressable 
+						<Text style={styles.chipUsername}>
+							{user.display_name || user.username}
+						</Text>
+						<Pressable
 							style={styles.chipRemoveButton}
 							onPress={() => {
 								setRecipient("");
 								setShowFriendSuggestions(false);
 							}}
 						>
-							<Ionicons name="close" size={18} color={colors.text.secondary} />
+							<Ionicons
+								name="close"
+								size={18}
+								color={colors.text.secondary}
+							/>
 						</Pressable>
 					</View>
 				) : (
@@ -403,7 +375,9 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 							autoCapitalize="none"
 							autoCorrect={false}
 							editable={!loading}
-							onFocus={() => setShowFriendSuggestions(recipient.length > 0 && !user)}
+							onFocus={() =>
+								setShowFriendSuggestions(recipient.length > 0 && !user)
+							}
 						/>
 						{userLoading && (
 							<View style={styles.loadingIndicator}>
@@ -415,7 +389,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						)}
 					</View>
 				)}
-				
+
 				{/* Friend Suggestions Dropdown */}
 				{showFriendSuggestions && getSuggestions().length > 0 && (
 					<View style={styles.suggestionsContainer}>
@@ -430,16 +404,20 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 							>
 								<View style={styles.suggestionAvatar}>
 									<Text style={styles.suggestionAvatarText}>
-										{(suggestion.display_name || suggestion.username).charAt(0).toUpperCase()}
+										{(suggestion.display_name || suggestion.username)
+											.charAt(0)
+											.toUpperCase()}
 									</Text>
 								</View>
 								<View style={styles.suggestionInfo}>
 									<Text style={styles.suggestionName}>
 										{suggestion.display_name || suggestion.username}
 									</Text>
-									<Text style={styles.suggestionUsername}>@{suggestion.username}</Text>
+									<Text style={styles.suggestionUsername}>
+										@{suggestion.username}
+									</Text>
 								</View>
-								{friends?.some(f => f.username === suggestion.username) && (
+								{friends?.some((f) => f.username === suggestion.username) && (
 									<View style={styles.friendBadge}>
 										<Text style={styles.friendBadgeText}>Friend</Text>
 									</View>
@@ -536,7 +514,9 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 										styles.dropdownMenuItemText,
 										option.disabled && styles.dropdownMenuItemTextDisabled,
 										option.id === "zktls" &&
-											formData.proofType === "zktls" && { color: colors.primary[700] },
+											formData.proofType === "zktls" && {
+												color: colors.primary[700],
+											},
 									]}
 								>
 									{option.label}
@@ -553,68 +533,77 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			</Text>
 
 			{/* zkTLS and Review Window Row */}
-			{paymentType === "request_task" && (formData.proofType === "zktls" || formData.proofType === "hybrid") && (
-				<View style={styles.zkTLSReviewRow}>
-					{/* zkTLS Options - Navigate to selection */}
-					<View style={styles.zkTLSSection}>
-						<Pressable
-							style={styles.zkTLSChipButton}
-							onPress={() => setShowZkTLSModal(true)}
-							disabled={loading}
-						>
-							<Ionicons
-								name={getSelectedZkTLSOption().icon as any}
-								size={16}
-								color={colors.primary[700]}
-							/>
-							<Text style={[styles.zkTLSChipText, { color: colors.primary[700] }]}>
-								{getSelectedZkTLSOption().label}
-							</Text>
-							<Ionicons
-								name="chevron-forward"
-								size={16}
-								color={colors.text.secondary}
-							/>
-						</Pressable>
-					</View>
-
-					{/* Review Window - only for hybrid */}
-					{formData.proofType === "hybrid" && (
-						<View style={styles.reviewWindowSection}>
-							<View style={[styles.compactTextInput, styles.hoursInputWrapper]}>
-								<TextInput
-									style={styles.hoursTextInput}
-									value={reviewWindow.toString()}
-									onChangeText={(text) => setReviewWindow(parseInt(text) || 24)}
-									placeholder="24"
-									placeholderTextColor={colors.text.tertiary}
-									keyboardType="numeric"
-									editable={!loading}
+			{paymentType === "request_task" &&
+				(formData.proofType === "zktls" || formData.proofType === "hybrid") && (
+					<View style={styles.zkTLSReviewRow}>
+						{/* zkTLS Options - Navigate to selection */}
+						<View style={styles.zkTLSSection}>
+							<Pressable
+								style={styles.zkTLSChipButton}
+								onPress={() => setShowZkTLSModal(true)}
+								disabled={loading}
+							>
+								<Ionicons
+									name={getSelectedZkTLSOption().icon as any}
+									size={16}
+									color={colors.primary[700]}
 								/>
-								<Text style={styles.hoursLabel}>Hrs</Text>
-							</View>
+								<Text
+									style={[styles.zkTLSChipText, { color: colors.primary[700] }]}
+								>
+									{getSelectedZkTLSOption().label}
+								</Text>
+								<Ionicons
+									name="chevron-forward"
+									size={16}
+									color={colors.text.secondary}
+								/>
+							</Pressable>
 						</View>
-					)}
-				</View>
-			)}
+
+						{/* Review Window - only for hybrid */}
+						{formData.proofType === "hybrid" && (
+							<View style={styles.reviewWindowSection}>
+								<View
+									style={[styles.compactTextInput, styles.hoursInputWrapper]}
+								>
+									<TextInput
+										style={styles.hoursTextInput}
+										value={reviewWindow.toString()}
+										onChangeText={(text) =>
+											setReviewWindow(parseInt(text) || 24)
+										}
+										placeholder="24"
+										placeholderTextColor={colors.text.tertiary}
+										keyboardType="numeric"
+										editable={!loading}
+									/>
+									<Text style={styles.hoursLabel}>Hrs</Text>
+								</View>
+							</View>
+						)}
+					</View>
+				)}
 
 			{/* Custom Endpoint Input - only show for custom zkTLS option */}
-			{paymentType === "request_task" && 
-			 (formData.proofType === "zktls" || formData.proofType === "hybrid") && 
-			 selectedZkTLSOption === "custom" && (
-				<View style={styles.compactInputSection}>
-					<Text style={styles.compactInputLabel}>Custom Verification Endpoint</Text>
-					<TextInput
-						style={styles.compactTextInput}
-						value={endpoint}
-						onChangeText={setEndpoint}
-						placeholder="https://api.example.com/verify"
-						placeholderTextColor={colors.text.tertiary}
-						editable={!loading}
-						autoCapitalize="none"
-					/>
-				</View>
-			)}
+			{paymentType === "request_task" &&
+				(formData.proofType === "zktls" || formData.proofType === "hybrid") &&
+				selectedZkTLSOption === "custom" && (
+					<View style={styles.compactInputSection}>
+						<Text style={styles.compactInputLabel}>
+							Custom Verification Endpoint
+						</Text>
+						<TextInput
+							style={styles.compactTextInput}
+							value={endpoint}
+							onChangeText={setEndpoint}
+							placeholder="https://api.example.com/verify"
+							placeholderTextColor={colors.text.tertiary}
+							editable={!loading}
+							autoCapitalize="none"
+						/>
+					</View>
+				)}
 
 			{/* Description Input */}
 			<View style={styles.descriptionSection}>
@@ -636,7 +625,11 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			<Pressable
 				style={[
 					styles.actionButton,
-					{ backgroundColor: isSubmitDisabled ? colors.text.secondary : colors.text.primary },
+					{
+						backgroundColor: isSubmitDisabled
+							? colors.text.secondary
+							: colors.text.primary,
+					},
 					isSubmitDisabled && styles.actionButtonDisabled,
 				]}
 				onPress={handleSubmit}
@@ -645,13 +638,26 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				{loading ? (
 					<ActivityIndicator color={colors.surface.primary} />
 				) : (
-					<Text style={[styles.actionButtonText, { color: isSubmitDisabled ? colors.text.tertiary : colors.surface.primary }]}>{getSubmitButtonText()}</Text>
+					<Text
+						style={[
+							styles.actionButtonText,
+							{
+								color: isSubmitDisabled
+									? colors.text.tertiary
+									: colors.surface.primary,
+							},
+						]}
+					>
+						{getSubmitButtonText()}
+					</Text>
 				)}
 			</Pressable>
 			{feedback && (
 				<Text
 					style={{
-						color: feedback.includes("success") ? colors.status?.success || colors.primary[700] : colors.status?.error || colors.primary[600],
+						color: feedback.includes("success")
+							? colors.status?.success || colors.primary[700]
+							: colors.status?.error || colors.primary[600],
 						marginTop: 12,
 						textAlign: "center",
 					}}
@@ -659,7 +665,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					{feedback}
 				</Text>
 			)}
-			
+
 			{/* zkTLS Selection Modal */}
 			<ZkTLSSelectionModal
 				visible={showZkTLSModal}
@@ -671,620 +677,620 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	);
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.surface.primary,
-	},
-
-	scrollContent: {
-		paddingHorizontal: 20,
-		paddingTop: 40,
-		paddingBottom: 20,
-		alignItems: "center",
-	},
-
-	// User Selection Section - Centered
-	userSection: {
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: 40,
-		width: "100%",
-		position: "relative",
-		zIndex: 1000,
-	},
-
-	inputContainer: {
-		width: "100%",
-		alignItems: "center",
-		position: "relative",
-	},
-
-	userDisplayText: {
-		fontSize: 18,
-		fontWeight: "500",
-		color: colors.text.tertiary,
-		textAlign: "center",
-	},
-
-	userDisplayTextValid: {
-		color: colors.text.primary,
-	},
-
-	loadingIndicator: {
-		marginTop: 8,
-		alignItems: "center",
-	},
-
-	statusText: {
-		fontSize: 14,
-		color: colors.text.secondary,
-		fontStyle: "italic",
-	},
-
-	statusTextError: {
-		fontSize: 14,
-		color: colors.status?.error || colors.primary[600],
-		marginTop: 8,
-		textAlign: "center",
-	},
-
-	statusTextSuccess: {
-		fontSize: 14,
-		color: colors.text.primary,
-		fontWeight: "500",
-	},
-
-	userFoundIndicator: {
-		marginTop: 8,
-		alignItems: "center",
-		backgroundColor: colors.surface.secondary,
-		borderRadius: 8,
-		paddingVertical: 6,
-		paddingHorizontal: 12,
-	},
-
-	// Friend Suggestions
-	suggestionsContainer: {
-		position: "absolute",
-		top: 60,
-		left: 0,
-		right: 0,
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 12,
-		borderWidth: 1,
-		borderColor: colors.border.secondary,
-		shadowColor: "#000",
-		shadowOpacity: 0.1,
-		shadowRadius: 12,
-		shadowOffset: { width: 0, height: 4 },
-		elevation: 8,
-		maxHeight: 200,
-		zIndex: 1001,
-	},
-
-	suggestionItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingVertical: 12,
-		paddingHorizontal: 16,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border.tertiary,
-	},
-
-	suggestionAvatar: {
-		width: 36,
-		height: 36,
-		borderRadius: 18,
-		backgroundColor: colors.primary[800],
-		alignItems: "center",
-		justifyContent: "center",
-		marginRight: 12,
-	},
-
-	suggestionAvatarText: {
-		fontSize: 14,
-		fontWeight: "600",
-		color: colors.text.inverse,
-	},
-
-	suggestionInfo: {
-		flex: 1,
-	},
-
-	suggestionName: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: colors.text.primary,
-	},
-
-	suggestionUsername: {
-		fontSize: 14,
-		color: colors.text.secondary,
-		marginTop: 2,
-	},
-
-	friendBadge: {
-		backgroundColor: colors.primary[50] || colors.surface.tertiary,
-		borderRadius: 6,
-		paddingVertical: 2,
-		paddingHorizontal: 6,
-	},
-
-	friendBadgeText: {
-		fontSize: 10,
-		color: colors.primary[700],
-		fontWeight: "500",
-	},
-
-	// Selected User Chip
-	selectedUserChip: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: colors.surface.primary,
-		borderRadius: 16,
-		paddingVertical: 4,
-		paddingHorizontal: 12,
-		gap: 6,
-		borderWidth: 1,
-		borderColor: colors.border.tertiary,
-		alignSelf: "center",
-	},
-
-	chipAvatar: {
-		width: 20,
-		height: 20,
-		borderRadius: 10,
-		backgroundColor: "#666",
-		alignItems: "center",
-		justifyContent: "center",
-	},
-
-	chipAvatarText: {
-		fontSize: 10,
-		fontWeight: "600",
-		color: colors.text.inverse,
-	},
-
-	chipUsername: {
-		fontSize: 14,
-		fontWeight: "400",
-		color: colors.text.secondary,
-	},
-
-	chipRemoveButton: {
-		width: 18,
-		height: 18,
-		borderRadius: 9,
-		backgroundColor: colors.surface.tertiary,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-
-	// Amount Display
-	amountSection: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: 40,
-		gap: 12,
-	},
-
-	currencySymbol: {
-		fontSize: 64,
-		fontWeight: "300",
-		color: colors.text.primary,
-	},
-
-	amountInput: {
-		fontSize: 64,
-		fontWeight: "300",
-		color: colors.text.primary,
-		textAlign: "center",
-		minWidth: 40,
-	},
-
-	// Proof Section - Small chip style
-	proofSection: {
-		marginBottom: 4,
-		alignItems: "center",
-		justifyContent: "center",
-		position: "relative",
-		zIndex: 999,
-	},
-
-	proofChipButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 20,
-		paddingVertical: 12,
-		paddingHorizontal: 18,
-		borderWidth: 1,
-		borderColor: colors.border.secondary,
-		gap: 8,
-		alignSelf: "center",
-		shadowColor: "#000",
-		shadowOpacity: 0.05,
-		shadowRadius: 6,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 2,
-	},
-
-	proofChipText: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: colors.text.primary,
-	},
-
-	proofChipTextDisabled: {
-		color: colors.status?.error || colors.primary[600],
-	},
-
-	// Dropdown Menu Styles
-	dropdownMenu: {
-		position: "absolute",
-		top: 52,
-		left: -20,
-		right: -20,
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 12,
-		paddingVertical: 8,
-		borderWidth: 1,
-		borderColor: colors.border.secondary,
-		shadowColor: "#000",
-		shadowOpacity: 0.1,
-		shadowRadius: 8,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 4,
-		minWidth: 200,
-		maxWidth: 300,
-		alignSelf: "center",
-		zIndex: 1001,
-	},
-
-	dropdownMenuItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingVertical: 12,
-		paddingHorizontal: 16,
-		gap: 10,
-	},
-
-	dropdownMenuItemDisabled: {
-		opacity: 0.5,
-	},
-
-	dropdownMenuItemText: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: colors.text.primary,
-	},
-
-	dropdownMenuItemTextDisabled: {
-		color: colors.status?.error || colors.primary[600],
-	},
-
-	recommendedBadge: {
-		fontSize: 9,
-		fontWeight: "700",
-		color: colors.primary[700],
-		backgroundColor: colors.primary[100],
-		paddingHorizontal: 6,
-		paddingVertical: 2,
-		borderRadius: 8,
-		marginLeft: 6,
-		textTransform: "uppercase",
-		letterSpacing: 0.5,
-	},
-
-	// Simple proof type hint
-	proofTypeHint: {
-		fontSize: 12,
-		color: colors.text.tertiary,
-		textAlign: "center",
-		marginTop: 0,
-		marginBottom: 32,
-		fontStyle: "italic",
-	},
-
-	// Compact Input Sections
-	compactInputSection: {
-		width: "100%",
-		marginBottom: 20,
-		alignItems: "center",
-	},
-
-	compactInputLabel: {
-		fontSize: 12,
-		fontWeight: "500",
-		color: colors.text.secondary,
-		marginBottom: 6,
-		textAlign: "center",
-	},
-
-	compactTextInput: {
-		backgroundColor: colors.surface.secondary,
-		borderRadius: 8,
-		paddingVertical: 10,
-		paddingHorizontal: 12,
-		borderWidth: 1,
-		borderColor: colors.border.secondary,
-		fontSize: 14,
-		color: colors.text.primary,
-		width: "100%",
-	},
-
-	numericInput: {
-		maxWidth: 100,
-		textAlign: "center",
-		alignSelf: "center",
-	},
-
-	// Hybrid fields on same line
-	hybridFieldsRow: {
-		flexDirection: "row",
-		width: "100%",
-		marginBottom: 20,
-		gap: 12,
-	},
-
-	hybridFieldContainer: {
-		flex: 2,
-	},
-
-	hybridFieldContainerSmall: {
-		flex: 1,
-	},
-
-	// Description Section
-	descriptionSection: {
-		width: "100%",
-		marginBottom: 40,
-	},
-
-	descriptionInput: {
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 16,
-		padding: 20,
-		borderWidth: 1,
-		borderColor: colors.border.secondary,
-		fontSize: 16,
-		color: colors.text.primary,
-		textAlign: "center",
-		minHeight: 80,
-		shadowColor: "#000",
-		shadowOpacity: 0.05,
-		shadowRadius: 8,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 2,
-	},
-
-	// Action Button
-	actionButton: {
-		backgroundColor: colors.text.primary,
-		borderRadius: 24,
-		paddingVertical: 18,
-		paddingHorizontal: 40,
-		width: "100%",
-		alignItems: "center",
-		marginBottom: 40,
-		shadowColor: colors.surface.overlay,
-		shadowOpacity: 0.1,
-		shadowRadius: 6,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 3,
-	},
-
-	actionButtonDisabled: {
-		backgroundColor: colors.surface.tertiary,
-		shadowOpacity: 0,
-		elevation: 0,
-	},
-
-	actionButtonText: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: colors.surface.primary,
-	},
-
-	// Modal Styles (kept for potential future use)
-	modalOverlay: {
-		flex: 1,
-		backgroundColor: colors.surface.overlay,
-		justifyContent: "center",
-		alignItems: "center",
-		padding: 20,
-	},
-
-	modalContent: {
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 20,
-		padding: 30,
-		width: "90%",
-		maxWidth: 320,
-		alignItems: "center",
-		gap: 20,
-	},
-
-	modalTitle: {
-		fontSize: 20,
-		fontWeight: "600",
-		color: colors.text.primary,
-	},
-
-	amountModalInput: {
-		fontSize: 48,
-		fontWeight: "300",
-		color: colors.text.primary,
-		textAlign: "center",
-		borderBottomWidth: 1,
-		borderBottomColor: colors.border.secondary,
-		paddingVertical: 10,
-		minWidth: 200,
-	},
-
-	modalButton: {
-		backgroundColor: colors.primary[800],
-		borderRadius: 12,
-		paddingVertical: 12,
-		paddingHorizontal: 24,
-	},
-
-	modalButtonText: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: colors.text.inverse,
-	},
-
-	// Legacy Dropdown Styles (now unused)
-	dropdownContent: {
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 16,
-		margin: 20,
-		padding: 8,
-		shadowColor: "#000",
-		shadowOpacity: 0.15,
-		shadowRadius: 12,
-		shadowOffset: { width: 0, height: 4 },
-		elevation: 8,
-	},
-
-	dropdownItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingVertical: 16,
-		paddingHorizontal: 20,
-		gap: 12,
-	},
-
-	dropdownItemDisabled: {
-		opacity: 0.5,
-	},
-
-	dropdownItemText: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: colors.text.primary,
-	},
-
-	dropdownItemTextDisabled: {
-		color: colors.status?.error || colors.primary[600],
-	},
-
-	// User search styles
-	searchResults: {
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 16,
-		margin: 20,
-		padding: 8,
-		shadowColor: "#000",
-		shadowOpacity: 0.15,
-		shadowRadius: 12,
-		shadowOffset: { width: 0, height: 4 },
-		elevation: 8,
-		maxHeight: 200,
-	},
-
-	searchResultItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingVertical: 16,
-		paddingHorizontal: 20,
-		gap: 12,
-	},
-
-	searchUserAvatar: {
-		width: 40,
-		height: 40,
-		borderRadius: 20,
-		backgroundColor: colors.primary[800],
-		alignItems: "center",
-		justifyContent: "center",
-	},
-
-	searchUserAvatarText: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: colors.text.inverse,
-	},
-
-	searchUserInfo: {
-		flex: 1,
-	},
-
-	searchUserName: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: colors.text.primary,
-	},
-
-	searchUserUsername: {
-		fontSize: 14,
-		color: colors.text.secondary,
-	},
-
-	// zkTLS and Review Window Row
-	zkTLSReviewRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
-		gap: 16,
-		marginBottom: 16,
-		paddingHorizontal: 20,
-	},
-
-	// zkTLS Dropdown Styles
-	zkTLSSection: {
-		flex: 1,
-		alignItems: "stretch",
-		position: "relative",
-	},
-
-	reviewWindowSection: {
-		alignItems: "center",
-		width: 80,
-	},
-
-	hoursInputWrapper: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 8,
-		width: 80,
-	},
-
-	hoursTextInput: {
-		flex: 1,
-		fontSize: 14,
-		color: colors.text.primary,
-		textAlign: "center",
-		padding: 0,
-	},
-
-	hoursLabel: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: colors.text.secondary,
-	},
-
-	zkTLSChipButton: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: colors.surface.elevated,
-		borderRadius: 12,
-		paddingVertical: 10,
-		paddingHorizontal: 12,
-		gap: 8,
-		borderWidth: 1,
-		borderColor: colors.primary[300] || colors.border.secondary,
-	},
-
-	zkTLSChipText: {
-		fontSize: 14,
-		fontWeight: "500",
-		flex: 1,
-	},
-
-});
+const createStyles = (colors: any) =>
+	StyleSheet.create({
+		container: {
+			flex: 1,
+			backgroundColor: colors.surface.primary,
+		},
+
+		scrollContent: {
+			paddingHorizontal: 20,
+			paddingTop: 40,
+			paddingBottom: 20,
+			alignItems: "center",
+		},
+
+		// User Selection Section - Centered
+		userSection: {
+			alignItems: "center",
+			justifyContent: "center",
+			width: "100%",
+			position: "relative",
+			zIndex: 1000,
+		},
+
+		inputContainer: {
+			width: "100%",
+			alignItems: "center",
+			position: "relative",
+		},
+
+		userDisplayText: {
+			fontSize: 18,
+			fontWeight: "500",
+			color: colors.text.tertiary,
+			textAlign: "center",
+		},
+
+		userDisplayTextValid: {
+			color: colors.text.primary,
+		},
+
+		loadingIndicator: {
+			marginTop: 8,
+			alignItems: "center",
+		},
+
+		statusText: {
+			fontSize: 14,
+			color: colors.text.secondary,
+			fontStyle: "italic",
+		},
+
+		statusTextError: {
+			fontSize: 14,
+			color: colors.status?.error || colors.primary[600],
+			marginTop: 8,
+			textAlign: "center",
+		},
+
+		statusTextSuccess: {
+			fontSize: 14,
+			color: colors.text.primary,
+			fontWeight: "500",
+		},
+
+		userFoundIndicator: {
+			marginTop: 8,
+			alignItems: "center",
+			backgroundColor: colors.surface.secondary,
+			borderRadius: 8,
+			paddingVertical: 6,
+			paddingHorizontal: 12,
+		},
+
+		// Friend Suggestions
+		suggestionsContainer: {
+			position: "absolute",
+			top: 60,
+			left: 0,
+			right: 0,
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 12,
+			borderWidth: 1,
+			borderColor: colors.border.secondary,
+			shadowColor: "#000",
+			shadowOpacity: 0.1,
+			shadowRadius: 12,
+			shadowOffset: { width: 0, height: 4 },
+			elevation: 8,
+			maxHeight: 200,
+			zIndex: 1001,
+		},
+
+		suggestionItem: {
+			flexDirection: "row",
+			alignItems: "center",
+			paddingVertical: 12,
+			paddingHorizontal: 16,
+			borderBottomWidth: 1,
+			borderBottomColor: colors.border.tertiary,
+		},
+
+		suggestionAvatar: {
+			width: 36,
+			height: 36,
+			borderRadius: 18,
+			backgroundColor: colors.primary[800],
+			alignItems: "center",
+			justifyContent: "center",
+			marginRight: 12,
+		},
+
+		suggestionAvatarText: {
+			fontSize: 14,
+			fontWeight: "600",
+			color: colors.text.inverse,
+		},
+
+		suggestionInfo: {
+			flex: 1,
+		},
+
+		suggestionName: {
+			fontSize: 16,
+			fontWeight: "500",
+			color: colors.text.primary,
+		},
+
+		suggestionUsername: {
+			fontSize: 14,
+			color: colors.text.secondary,
+			marginTop: 2,
+		},
+
+		friendBadge: {
+			backgroundColor: colors.primary[50] || colors.surface.tertiary,
+			borderRadius: 6,
+			paddingVertical: 2,
+			paddingHorizontal: 6,
+		},
+
+		friendBadgeText: {
+			fontSize: 10,
+			color: colors.primary[700],
+			fontWeight: "500",
+		},
+
+		// Selected User Chip
+		selectedUserChip: {
+			flexDirection: "row",
+			alignItems: "center",
+			backgroundColor: colors.surface.primary,
+			borderRadius: 16,
+			paddingVertical: 4,
+			paddingHorizontal: 12,
+			gap: 6,
+			borderWidth: 1,
+			borderColor: colors.border.tertiary,
+			alignSelf: "center",
+		},
+
+		chipAvatar: {
+			width: 20,
+			height: 20,
+			borderRadius: 10,
+			backgroundColor: "#666",
+			alignItems: "center",
+			justifyContent: "center",
+		},
+
+		chipAvatarText: {
+			fontSize: 10,
+			fontWeight: "600",
+			color: colors.text.inverse,
+		},
+
+		chipUsername: {
+			fontSize: 14,
+			fontWeight: "400",
+			color: colors.text.secondary,
+		},
+
+		chipRemoveButton: {
+			width: 18,
+			height: 18,
+			borderRadius: 9,
+			backgroundColor: colors.surface.tertiary,
+			alignItems: "center",
+			justifyContent: "center",
+		},
+
+		// Amount Display
+		amountSection: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "center",
+			marginBottom: 80,
+			marginTop: 80,
+			gap: 12,
+		},
+
+		currencySymbol: {
+			fontSize: 64,
+			fontWeight: "300",
+			color: colors.text.primary,
+		},
+
+		amountInput: {
+			fontSize: 64,
+			fontWeight: "300",
+			color: colors.text.primary,
+			textAlign: "center",
+			minWidth: 40,
+		},
+
+		// Proof Section - Small chip style
+		proofSection: {
+			marginBottom: 4,
+			alignItems: "center",
+			justifyContent: "center",
+			position: "relative",
+			zIndex: 999,
+		},
+
+		proofChipButton: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "center",
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 20,
+			paddingVertical: 12,
+			paddingHorizontal: 18,
+			borderWidth: 1,
+			borderColor: colors.border.secondary,
+			gap: 8,
+			alignSelf: "center",
+			shadowColor: "#000",
+			shadowOpacity: 0.05,
+			shadowRadius: 6,
+			shadowOffset: { width: 0, height: 2 },
+			elevation: 2,
+		},
+
+		proofChipText: {
+			fontSize: 14,
+			fontWeight: "500",
+			color: colors.text.primary,
+		},
+
+		proofChipTextDisabled: {
+			color: colors.status?.error || colors.primary[600],
+		},
+
+		// Dropdown Menu Styles
+		dropdownMenu: {
+			position: "absolute",
+			top: 52,
+			left: -20,
+			right: -20,
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 12,
+			paddingVertical: 8,
+			borderWidth: 1,
+			borderColor: colors.border.secondary,
+			shadowColor: "#000",
+			shadowOpacity: 0.1,
+			shadowRadius: 8,
+			shadowOffset: { width: 0, height: 2 },
+			elevation: 4,
+			minWidth: 200,
+			maxWidth: 300,
+			alignSelf: "center",
+			zIndex: 1001,
+		},
+
+		dropdownMenuItem: {
+			flexDirection: "row",
+			alignItems: "center",
+			paddingVertical: 12,
+			paddingHorizontal: 16,
+			gap: 10,
+		},
+
+		dropdownMenuItemDisabled: {
+			opacity: 0.5,
+		},
+
+		dropdownMenuItemText: {
+			fontSize: 14,
+			fontWeight: "500",
+			color: colors.text.primary,
+		},
+
+		dropdownMenuItemTextDisabled: {
+			color: colors.status?.error || colors.primary[600],
+		},
+
+		recommendedBadge: {
+			fontSize: 9,
+			fontWeight: "700",
+			color: colors.primary[700],
+			backgroundColor: colors.primary[100],
+			paddingHorizontal: 6,
+			paddingVertical: 2,
+			borderRadius: 8,
+			marginLeft: 6,
+			textTransform: "uppercase",
+			letterSpacing: 0.5,
+		},
+
+		// Simple proof type hint
+		proofTypeHint: {
+			fontSize: 12,
+			color: colors.text.tertiary,
+			textAlign: "center",
+			marginTop: 0,
+			marginBottom: 32,
+			fontStyle: "italic",
+		},
+
+		// Compact Input Sections
+		compactInputSection: {
+			width: "100%",
+			marginBottom: 20,
+			alignItems: "center",
+		},
+
+		compactInputLabel: {
+			fontSize: 12,
+			fontWeight: "500",
+			color: colors.text.secondary,
+			marginBottom: 6,
+			textAlign: "center",
+		},
+
+		compactTextInput: {
+			backgroundColor: colors.surface.secondary,
+			borderRadius: 8,
+			paddingVertical: 10,
+			paddingHorizontal: 12,
+			borderWidth: 1,
+			borderColor: colors.border.secondary,
+			fontSize: 14,
+			color: colors.text.primary,
+			width: "100%",
+		},
+
+		numericInput: {
+			maxWidth: 100,
+			textAlign: "center",
+			alignSelf: "center",
+		},
+
+		// Hybrid fields on same line
+		hybridFieldsRow: {
+			flexDirection: "row",
+			width: "100%",
+			marginBottom: 20,
+			gap: 12,
+		},
+
+		hybridFieldContainer: {
+			flex: 2,
+		},
+
+		hybridFieldContainerSmall: {
+			flex: 1,
+		},
+
+		// Description Section
+		descriptionSection: {
+			width: "100%",
+			marginBottom: 40,
+		},
+
+		descriptionInput: {
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 16,
+			padding: 20,
+			borderWidth: 1,
+			borderColor: colors.border.secondary,
+			fontSize: 16,
+			color: colors.text.primary,
+			textAlign: "center",
+			minHeight: 80,
+			shadowColor: "#000",
+			shadowOpacity: 0.05,
+			shadowRadius: 8,
+			shadowOffset: { width: 0, height: 2 },
+			elevation: 2,
+		},
+
+		// Action Button
+		actionButton: {
+			backgroundColor: colors.text.primary,
+			borderRadius: 24,
+			paddingVertical: 18,
+			paddingHorizontal: 40,
+			width: "100%",
+			alignItems: "center",
+			marginBottom: 40,
+			shadowColor: colors.surface.overlay,
+			shadowOpacity: 0.1,
+			shadowRadius: 6,
+			shadowOffset: { width: 0, height: 2 },
+			elevation: 3,
+		},
+
+		actionButtonDisabled: {
+			backgroundColor: colors.surface.tertiary,
+			shadowOpacity: 0,
+			elevation: 0,
+		},
+
+		actionButtonText: {
+			fontSize: 18,
+			fontWeight: "600",
+			color: colors.surface.primary,
+		},
+
+		// Modal Styles (kept for potential future use)
+		modalOverlay: {
+			flex: 1,
+			backgroundColor: colors.surface.overlay,
+			justifyContent: "center",
+			alignItems: "center",
+			padding: 20,
+		},
+
+		modalContent: {
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 20,
+			padding: 30,
+			width: "90%",
+			maxWidth: 320,
+			alignItems: "center",
+			gap: 20,
+		},
+
+		modalTitle: {
+			fontSize: 20,
+			fontWeight: "600",
+			color: colors.text.primary,
+		},
+
+		amountModalInput: {
+			fontSize: 48,
+			fontWeight: "300",
+			color: colors.text.primary,
+			textAlign: "center",
+			borderBottomWidth: 1,
+			borderBottomColor: colors.border.secondary,
+			paddingVertical: 10,
+			minWidth: 200,
+		},
+
+		modalButton: {
+			backgroundColor: colors.primary[800],
+			borderRadius: 12,
+			paddingVertical: 12,
+			paddingHorizontal: 24,
+		},
+
+		modalButtonText: {
+			fontSize: 16,
+			fontWeight: "600",
+			color: colors.text.inverse,
+		},
+
+		// Legacy Dropdown Styles (now unused)
+		dropdownContent: {
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 16,
+			margin: 20,
+			padding: 8,
+			shadowColor: "#000",
+			shadowOpacity: 0.15,
+			shadowRadius: 12,
+			shadowOffset: { width: 0, height: 4 },
+			elevation: 8,
+		},
+
+		dropdownItem: {
+			flexDirection: "row",
+			alignItems: "center",
+			paddingVertical: 16,
+			paddingHorizontal: 20,
+			gap: 12,
+		},
+
+		dropdownItemDisabled: {
+			opacity: 0.5,
+		},
+
+		dropdownItemText: {
+			fontSize: 16,
+			fontWeight: "500",
+			color: colors.text.primary,
+		},
+
+		dropdownItemTextDisabled: {
+			color: colors.status?.error || colors.primary[600],
+		},
+
+		// User search styles
+		searchResults: {
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 16,
+			margin: 20,
+			padding: 8,
+			shadowColor: "#000",
+			shadowOpacity: 0.15,
+			shadowRadius: 12,
+			shadowOffset: { width: 0, height: 4 },
+			elevation: 8,
+			maxHeight: 200,
+		},
+
+		searchResultItem: {
+			flexDirection: "row",
+			alignItems: "center",
+			paddingVertical: 16,
+			paddingHorizontal: 20,
+			gap: 12,
+		},
+
+		searchUserAvatar: {
+			width: 40,
+			height: 40,
+			borderRadius: 20,
+			backgroundColor: colors.primary[800],
+			alignItems: "center",
+			justifyContent: "center",
+		},
+
+		searchUserAvatarText: {
+			fontSize: 16,
+			fontWeight: "600",
+			color: colors.text.inverse,
+		},
+
+		searchUserInfo: {
+			flex: 1,
+		},
+
+		searchUserName: {
+			fontSize: 16,
+			fontWeight: "500",
+			color: colors.text.primary,
+		},
+
+		searchUserUsername: {
+			fontSize: 14,
+			color: colors.text.secondary,
+		},
+
+		// zkTLS and Review Window Row
+		zkTLSReviewRow: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "space-between",
+			gap: 16,
+			marginBottom: 16,
+			paddingHorizontal: 20,
+		},
+
+		// zkTLS Dropdown Styles
+		zkTLSSection: {
+			flex: 1,
+			alignItems: "stretch",
+			position: "relative",
+		},
+
+		reviewWindowSection: {
+			alignItems: "center",
+			width: 80,
+		},
+
+		hoursInputWrapper: {
+			flexDirection: "row",
+			alignItems: "center",
+			justifyContent: "center",
+			gap: 8,
+			width: 80,
+		},
+
+		hoursTextInput: {
+			flex: 1,
+			fontSize: 14,
+			color: colors.text.primary,
+			textAlign: "center",
+			padding: 0,
+		},
+
+		hoursLabel: {
+			fontSize: 14,
+			fontWeight: "500",
+			color: colors.text.secondary,
+		},
+
+		zkTLSChipButton: {
+			flexDirection: "row",
+			alignItems: "center",
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 12,
+			paddingVertical: 10,
+			paddingHorizontal: 12,
+			gap: 8,
+			borderWidth: 1,
+			borderColor: colors.primary[300] || colors.border.secondary,
+		},
+
+		zkTLSChipText: {
+			fontSize: 14,
+			fontWeight: "500",
+			flex: 1,
+		},
+	});

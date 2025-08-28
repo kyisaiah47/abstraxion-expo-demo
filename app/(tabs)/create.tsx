@@ -34,7 +34,6 @@ export default function CreateScreen() {
 	};
 
 	const handleSubmit = (payload: PaymentFormData) => {
-		console.log("Creating payment request:", payload);
 
 		// Generate request code
 		const code = generateRequestCode();

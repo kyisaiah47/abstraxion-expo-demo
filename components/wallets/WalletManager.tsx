@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { WalletType, ConnectedWallet } from '../../packages/shared/types';
+import { WalletType, ConnectedWallet } from '../../types/wallet';
 // Temporarily disabled - React prototype issue
 // import { AbstraxionConnector } from './AbstraxionConnector';
 // import { MetaMaskConnector } from './MetaMaskConnector';  
@@ -35,7 +35,6 @@ export const WalletManager: React.FC<WalletManagerProps> = ({ children }) => {
   // const keplrConnector = new KeplrConnector();
 
   const getConnector = (type: WalletType) => {
-    console.log(`Connector requested for: ${type} - temporarily disabled`);
     return null;
   };
 

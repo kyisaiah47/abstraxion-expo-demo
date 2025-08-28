@@ -68,9 +68,7 @@ export default function ProfileScreen() {
 	const confirmLogout = async () => {
 		setShowLogoutModal(false);
 		try {
-			console.log("Attempting to logout...");
 			await logout();
-			console.log("Logout successful");
 			router.replace("/");
 		} catch (error) {
 			console.error("Logout failed:", error);
@@ -126,7 +124,6 @@ export default function ProfileScreen() {
 				.single();
 
 			if (userError || !userData) {
-				console.log("User not found in database");
 				return;
 			}
 
@@ -156,7 +153,6 @@ export default function ProfileScreen() {
 					.single();
 
 				if (error || !userData) {
-					console.log("User not found in database");
 					setCurrentUser(null);
 					return;
 				}

@@ -65,10 +65,8 @@ function randomId() {
 
 async function createSimpleActivity() {
   try {
-    console.log('🚀 Creating simple social activity...');
     
     // 1. Create mock users
-    console.log('👥 Creating mock users...');
     const mockUserData = MOCK_USERS.map(user => ({
       id: crypto.randomUUID(),
       wallet_address: user.wallet,
@@ -86,10 +84,8 @@ async function createSimpleActivity() {
       console.error('❌ Error creating users:', usersError);
       return;
     }
-    console.log(`✅ Created ${MOCK_USERS.length} mock users!`);
 
     // 2. Create tasks between all users (including your real accounts)
-    console.log('📋 Creating tasks...');
     const allUsers = [
       ...REAL_USERS,
       ...MOCK_USERS.map(u => ({ handle: u.handle, wallet: u.wallet }))
@@ -128,19 +124,7 @@ async function createSimpleActivity() {
       console.error('❌ Error creating tasks:', tasksError);
       return;
     }
-    console.log(`✅ Created ${tasks.length} tasks!`);
 
-    console.log('\n🎉 SOCIAL ACTIVITY CREATED!');
-    console.log('='.repeat(50));
-    console.log(`👥 Mock Users: ${MOCK_USERS.length}`);
-    console.log(`📋 Tasks: ${tasks.length}`);
-    console.log('');
-    console.log('✨ Your accounts now have:');
-    console.log('  • Active payment history');
-    console.log('  • Transactions with other users'); 
-    console.log('  • Mix of completed and pending tasks');
-    console.log('  • Diverse task types and amounts');
-    console.log('='.repeat(50));
 
   } catch (error) {
     console.error('❌ Error:', error);

@@ -69,10 +69,8 @@ function getRandomPastDate(daysAgo: number = 30) {
 // Create mock tasks with realistic interactions
 async function createMockActivity() {
   try {
-    console.log('🚀 Creating vibrant social activity...');
     
     // Create mock user profiles (this might fail due to RLS, but that's ok)
-    console.log('👥 Creating mock user profiles...');
     const mockUserData = MOCK_USERS.map(user => ({
       id: crypto.randomUUID(),
       wallet_address: user.wallet,
@@ -91,17 +89,13 @@ async function createMockActivity() {
           .insert(userData);
         
         if (error) {
-          console.log(`⚠️  Could not create user ${userData.handle}: ${error.message}`);
         } else {
-          console.log(`✅ Created user: ${userData.handle}`);
         }
       } catch (e) {
-        console.log(`⚠️  Skipping user ${userData.handle} (likely exists)`);
       }
     }
 
     // Create diverse task activity
-    console.log('📋 Creating task activity...');
     const allUsers = [
       ...REAL_USERS.map(u => ({ username: u.username, wallet: u.wallet_address })),
       ...MOCK_USERS.map(u => ({ username: u.username, wallet: u.wallet }))
@@ -143,11 +137,9 @@ async function createMockActivity() {
     if (tasksError) {
       console.error('❌ Error creating tasks:', tasksError);
     } else {
-      console.log(`✅ Created ${tasks.length} tasks with diverse activity!`);
     }
 
     // Create activity feed entries
-    console.log('📱 Creating social activity feed...');
     const activities = tasks
       .filter(task => task.status === 'released')
       .map(task => ({
@@ -163,13 +155,10 @@ async function createMockActivity() {
       .insert(activities);
 
     if (activitiesError) {
-      console.log('⚠️  Could not create activity feed:', activitiesError.message);
     } else {
-      console.log(`✅ Created ${activities.length} activity feed entries!`);
     }
 
     // Create some notifications for your accounts
-    console.log('🔔 Creating notifications...');
     const notifications = [];
     
     // Get your user IDs
@@ -199,20 +188,10 @@ async function createMockActivity() {
         .insert(notifications);
 
       if (notifError) {
-        console.log('⚠️  Could not create notifications:', notifError.message);
       } else {
-        console.log(`✅ Created ${notifications.length} notifications!`);
       }
     }
 
-    console.log('\n🎉 MOCK SOCIAL ACTIVITY CREATED!');
-    console.log('='.repeat(50));
-    console.log(`📋 Tasks: ${tasks.length}`);
-    console.log(`👥 Mock Users: ${MOCK_USERS.length}`);
-    console.log(`📱 Activity Feed: ${activities.length}`);
-    console.log(`🔔 Notifications: ${notifications.length}`);
-    console.log('\n✨ Your app now has a vibrant social network feel!');
-    console.log('='.repeat(50));
 
   } catch (error) {
     console.error('❌ Error creating mock activity:', error);

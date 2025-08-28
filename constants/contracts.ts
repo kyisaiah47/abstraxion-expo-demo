@@ -158,9 +158,6 @@ export enum JobStatus {
 // Helper constants
 export const XION_DECIMALS = 1000000; // 1 XION = 1,000,000 uxion
 export const XION_DENOM = "uxion";
-// console.log("🔍 DEBUG: Contract address being used:", CONTRACT_CONFIG.address);
-// console.log(
 // 	"🔍 DEBUG: Environment variable:",
 // 	process.env.EXPO_PUBLIC_CONTRACT_ADDRESS
 // );
-// console.log("🔍 DEBUG: Full CONTRACT_CONFIG:", CONTRACT_CONFIG);

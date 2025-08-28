@@ -1,7 +1,7 @@
 import { AbstraxionProvider, useAbstraxion } from '@burnt-labs/abstraxion-react-native';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { Wallet, WalletType } from '../../packages/shared/types';
-import { SUPPORTED_CHAINS } from '../../packages/shared/chains';
+import { Wallet, WalletType } from '../../types/wallet';
+import { SUPPORTED_CHAINS } from '../../types/chains';
 import { WalletConnector } from './WalletConnector';
 
 export class AbstraxionConnector implements WalletConnector {
@@ -26,7 +26,6 @@ export class AbstraxionConnector implements WalletConnector {
 
       // Here you would integrate with your existing Abstraxion initialization
       // This is a placeholder that should be replaced with your actual Abstraxion client
-      console.log('Connecting to Abstraxion wallet...');
       
       // Mock implementation - replace with your actual Abstraxion connection logic
       const mockAddress = 'xion1...'; // This should come from your actual Abstraxion connection

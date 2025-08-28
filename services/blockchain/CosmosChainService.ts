@@ -1,8 +1,8 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice, StargateClient } from '@cosmjs/stargate';
 import { Coin } from '@cosmjs/amino';
-import { MultiChainBalance, TokenBalance } from '../../packages/shared/types';
-import { COSMOS_CHAINS } from '../../packages/shared/chains';
+import { MultiChainBalance, TokenBalance } from '../../types/wallet';
+import { COSMOS_CHAINS } from '../../types/chains';
 
 interface CosmosTransaction {
   from: string;
@@ -58,7 +58,6 @@ export class CosmosChainService {
         const client = await StargateClient.connect(config.rpc);
         this.clients.set(chainId, client);
 
-        console.log(`✅ Connected to ${chainId} at ${config.rpc}`);
       } catch (error) {
         console.warn(`Failed to connect to ${chainId}:`, error);
       }

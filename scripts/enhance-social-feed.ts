@@ -27,7 +27,6 @@ function getRandomRecentDate(hoursAgo = 72) {
 
 async function enhanceSocialFeed() {
   try {
-    console.log('🚀 Enhancing social feed with recent activity...');
 
     // Get all tasks and users
     const { data: tasks } = await supabase
@@ -40,12 +39,10 @@ async function enhanceSocialFeed() {
       .select('*');
 
     if (!tasks || !users) {
-      console.log('❌ No tasks or users found');
       return;
     }
 
     // Create activity feed entries
-    console.log('📱 Creating activity feed entries...');
     const activities = [];
     const verbs = ['created_task', 'accepted_task', 'submitted_proof', 'released_payment'];
     
@@ -79,11 +76,9 @@ async function enhanceSocialFeed() {
     if (activityError) {
       console.error('❌ Error creating activity feed:', activityError);
     } else {
-      console.log(`✅ Created ${activities.length} activity feed entries!`);
     }
 
     // Create notifications for your real accounts
-    console.log('🔔 Creating notifications...');
     const { data: realUsers } = await supabase
       .from('users')
       .select('*')
@@ -124,21 +119,9 @@ async function enhanceSocialFeed() {
       if (notifError) {
         console.error('❌ Error creating notifications:', notifError);
       } else {
-        console.log(`✅ Created ${notifications.length} notifications for your accounts!`);
       }
     }
 
-    console.log('\n🎉 SOCIAL FEED ENHANCED!');
-    console.log('='.repeat(50));
-    console.log(`📱 Activity Feed: ${activities.length} recent entries`);
-    console.log(`🔔 Notifications: ${realUsers ? realUsers.length * 6 : 0} for your accounts`);
-    console.log('');
-    console.log('✨ Now when you sign in, you\'ll see:');
-    console.log('  • Live activity feed with recent actions');
-    console.log('  • Personal notifications');
-    console.log('  • Rich transaction history');
-    console.log('  • Active social network atmosphere');
-    console.log('='.repeat(50));
 
   } catch (error) {
     console.error('❌ Error enhancing social feed:', error);

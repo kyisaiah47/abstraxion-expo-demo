@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 import { createPublicClient, createWalletClient, http, parseEther, formatEther } from 'viem';
 import { mainnet, polygon, bsc, arbitrum, avalanche } from 'viem/chains';
-import { MultiChainBalance, TokenBalance } from '../../packages/shared/types';
-import { EVM_CHAINS, CCIP_ROUTER_ADDRESSES } from '../../packages/shared/chains';
+import { MultiChainBalance, TokenBalance } from '../../types/wallet';
+import { EVM_CHAINS, CCIP_ROUTER_ADDRESSES } from '../../types/chains';
 
 interface EVMTransaction {
   from: string;

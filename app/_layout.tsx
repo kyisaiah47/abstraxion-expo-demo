@@ -67,10 +67,6 @@ function NavigationWrapper() {
 					name="(tabs)"
 					options={{ headerShown: false }}
 				/>
-				<Stack.Screen
-					name="create"
-					options={{ headerShown: false }}
-				/>
 			</Stack>
 			<StatusBar style={isDarkMode ? "light" : "auto"} />
 		</NavigationThemeProvider>

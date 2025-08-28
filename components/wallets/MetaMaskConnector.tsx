@@ -1,7 +1,7 @@
 import { MetaMaskSDK, SDKProvider } from '@metamask/sdk-react-native';
 import { ethers } from 'ethers';
-import { Wallet, WalletType, ChainType } from '../../packages/shared/types';
-import { SUPPORTED_CHAINS, isEVMChain } from '../../packages/shared/chains';
+import { Wallet, WalletType, ChainType } from '../../types/wallet';
+import { SUPPORTED_CHAINS, isEVMChain } from '../../types/chains';
 import { WalletConnector } from './WalletConnector';
 
 export class MetaMaskConnector implements WalletConnector {

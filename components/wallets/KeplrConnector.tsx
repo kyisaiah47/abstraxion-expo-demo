@@ -1,8 +1,8 @@
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GasPrice } from '@cosmjs/stargate';
 import { Keplr } from '@keplr-wallet/types';
-import { Wallet, WalletType, ChainType } from '../../packages/shared/types';
-import { SUPPORTED_CHAINS, COSMOS_CHAINS } from '../../packages/shared/chains';
+import { Wallet, WalletType, ChainType } from '../../types/wallet';
+import { SUPPORTED_CHAINS, COSMOS_CHAINS } from '../../types/chains';
 import { WalletConnector } from './WalletConnector';
 
 declare global {

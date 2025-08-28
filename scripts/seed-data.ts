@@ -184,7 +184,6 @@ async function uploadAvatar(userId: string, username: string): Promise<string | 
 }
 
 async function createTestUsers(): Promise<void> {
-  console.log('🔄 Creating test users...');
 
   for (const [role, userData] of Object.entries(TEST_USERS)) {
     try {
@@ -198,7 +197,6 @@ async function createTestUsers(): Promise<void> {
       let userId: string;
 
       if (existingUser) {
-        console.log(`✅ User ${role} already exists`);
         userId = existingUser.id;
       } else {
         // Create new user
@@ -219,7 +217,6 @@ async function createTestUsers(): Promise<void> {
         }
 
         userId = newUser.id;
-        console.log(`✅ Created user ${role}: ${userData.display_name}`);
       }
 
       // Upload avatar
@@ -232,7 +229,6 @@ async function createTestUsers(): Promise<void> {
             .eq('id', userId);
           
           userData.profile_picture = avatarUrl;
-          console.log(`✅ Uploaded avatar for ${role}`);
         }
       }
 
@@ -243,7 +239,6 @@ async function createTestUsers(): Promise<void> {
 }
 
 async function createTestTasks(): Promise<void> {
-  console.log('🔄 Creating test tasks...');
 
   for (const [type, taskData] of Object.entries(TEST_TASKS)) {
     try {
@@ -255,7 +250,6 @@ async function createTestTasks(): Promise<void> {
         .single();
 
       if (existingTask) {
-        console.log(`✅ Task ${type} already exists`);
         continue;
       }
 
@@ -279,7 +273,6 @@ async function createTestTasks(): Promise<void> {
         continue;
       }
 
-      console.log(`✅ Created ${type} task: ${taskData.description.substring(0, 50)}...`);
 
       // Create initial activity feed entry
       await supabase
@@ -304,7 +297,6 @@ async function createTestTasks(): Promise<void> {
 }
 
 async function createMockProofSubmissions(): Promise<void> {
-  console.log('🔄 Creating mock proof submissions...');
 
   // Submit proof for soft task
   try {
@@ -331,7 +323,6 @@ async function createMockProofSubmissions(): Promise<void> {
       })
       .eq('id', TEST_TASKS.soft.id);
 
-    console.log('✅ Submitted proof for soft task');
 
     // Activity feed entry
     await supabase
@@ -377,7 +368,6 @@ async function createMockProofSubmissions(): Promise<void> {
       })
       .eq('id', TEST_TASKS.zktls.id);
 
-    console.log('✅ Released zkTLS task instantly');
 
     // Activity feed entries
     await supabase
@@ -440,7 +430,6 @@ async function createMockProofSubmissions(): Promise<void> {
       })
       .eq('id', TEST_TASKS.hybrid.id);
 
-    console.log(`✅ Set hybrid task to pending release (expires in ${Math.round(TEST_TASKS.hybrid.review_window_secs / 60)} minutes)`);
 
     // Activity feed entry
     await supabase
@@ -464,7 +453,6 @@ async function createMockProofSubmissions(): Promise<void> {
 }
 
 async function createTestNotifications(): Promise<void> {
-  console.log('🔄 Creating test notifications...');
 
   // Get user IDs
   const { data: payerUser } = await supabase
@@ -555,11 +543,9 @@ async function createTestNotifications(): Promise<void> {
     }
   }
 
-  console.log(`✅ Created ${notifications.length} test notifications`);
 }
 
 async function clearExistingData(): Promise<void> {
-  console.log('🔄 Clearing existing test data...');
 
   try {
     // Delete in dependency order
@@ -569,16 +555,12 @@ async function clearExistingData(): Promise<void> {
     await supabase.from('tasks').delete().in('id', Object.values(TEST_TASKS).map(t => t.id));
     await supabase.from('users').delete().in('wallet_address', Object.values(TEST_USERS).map(u => u.wallet_address));
 
-    console.log('✅ Cleared existing test data');
   } catch (error) {
     console.error('❌ Failed to clear existing data:', error);
   }
 }
 
 async function printSummary(): Promise<void> {
-  console.log('\n' + '='.repeat(60));
-  console.log('🎉 SEED DATA SUMMARY');
-  console.log('='.repeat(60));
 
   // Count records
   const { count: userCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
@@ -586,27 +568,12 @@ async function printSummary(): Promise<void> {
   const { count: notificationCount } = await supabase.from('notifications').select('*', { count: 'exact', head: true });
   const { count: activityCount } = await supabase.from('activity_feed').select('*', { count: 'exact', head: true });
 
-  console.log(`👥 Users: ${userCount}`);
-  console.log(`📋 Tasks: ${taskCount}`);  
-  console.log(`🔔 Notifications: ${notificationCount}`);
-  console.log(`📈 Activity Entries: ${activityCount}`);
 
-  console.log('\n📋 TEST TASKS:');
-  console.log(`• Soft Task: ${TEST_TASKS.soft.id} (${TEST_TASKS.soft.amount} ${TEST_TASKS.soft.denom})`);
-  console.log(`• zkTLS Task: ${TEST_TASKS.zktls.id} (${TEST_TASKS.zktls.amount} ${TEST_TASKS.zktls.denom})`);
-  console.log(`• Hybrid Task: ${TEST_TASKS.hybrid.id} (${TEST_TASKS.hybrid.amount} ${TEST_TASKS.hybrid.denom})`);
 
-  console.log('\n👥 TEST USERS:');
-  console.log(`• Payer: ${TEST_USERS.payer.wallet_address}`);
-  console.log(`• Worker: ${TEST_USERS.worker.wallet_address}`);
 
-  console.log('\n✅ Demo data is ready! Run the app to see the test flows.');
-  console.log('='.repeat(60));
 }
 
 async function main(): Promise<void> {
-  console.log('🚀 ProofPay Seed Data Script');
-  console.log(`📡 Supabase URL: ${SUPABASE_URL}`);
 
   const args = process.argv.slice(2);
   const shouldClear = args.includes('--clear') || args.includes('-c');

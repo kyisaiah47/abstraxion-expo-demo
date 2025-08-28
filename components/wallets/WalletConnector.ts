@@ -1,5 +1,5 @@
 // Base interface for all wallet connectors
-import { Wallet, WalletType } from '../../packages/shared/types';
+import { Wallet, WalletType } from '../../types/wallet';
 
 export interface WalletConnector {
   type: WalletType;

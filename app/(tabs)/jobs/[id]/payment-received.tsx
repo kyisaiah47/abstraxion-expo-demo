@@ -20,7 +20,6 @@ export default function PaymentReceivedScreen() {
 	}
 
 	const handleShareProof = () => {
-		console.log("Proof of completion shared");
 	};
 
 	return (

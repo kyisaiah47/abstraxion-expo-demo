@@ -85,10 +85,8 @@ function randomId() {
 
 async function createRealisticActivity() {
   try {
-    console.log('🚀 Creating realistic social network activity...');
     
     // 1. Create mock user profiles
-    console.log('👥 Creating mock user profiles...');
     const mockUserData = MOCK_USERS.map(user => ({
       id: crypto.randomUUID(),
       wallet_address: user.wallet,
@@ -106,10 +104,8 @@ async function createRealisticActivity() {
       console.error('❌ Error creating users:', usersError);
       return;
     }
-    console.log(`✅ Created/updated ${MOCK_USERS.length} mock users!`);
 
     // 2. Create diverse task activity
-    console.log('📋 Creating task activity...');
     const allUsers = [
       ...REAL_USERS.map(u => ({ handle: u.handle, wallet: u.wallet_address })),
       ...MOCK_USERS.map(u => ({ handle: u.handle, wallet: u.wallet }))
@@ -164,10 +160,8 @@ async function createRealisticActivity() {
       console.error('❌ Error creating tasks:', tasksError);
       return;
     }
-    console.log(`✅ Created ${tasks.length} tasks with diverse activity!`);
 
     // 3. Create activity feed entries
-    console.log('📱 Creating activity feed...');
     const activities = [];
     
     tasks.forEach(task => {
@@ -225,11 +219,9 @@ async function createRealisticActivity() {
     if (activitiesError) {
       console.error('❌ Error creating activity feed:', activitiesError);
     } else {
-      console.log(`✅ Created ${activities.length} activity feed entries!`);
     }
 
     // 4. Create notifications for your accounts
-    console.log('🔔 Creating notifications...');
     const { data: yourUsers } = await supabase
       .from('users')
       .select('id, handle')
@@ -288,24 +280,9 @@ async function createRealisticActivity() {
       if (notifError) {
         console.error('❌ Error creating notifications:', notifError);
       } else {
-        console.log(`✅ Created ${notifications.length} notifications!`);
       }
     }
 
-    console.log('\n🎉 REALISTIC SOCIAL NETWORK CREATED!');
-    console.log('='.repeat(60));
-    console.log(`👥 Mock Users: ${MOCK_USERS.length}`);
-    console.log(`📋 Tasks: ${tasks.length}`);
-    console.log(`📱 Activity Feed: ${activities.length} entries`);
-    console.log(`🔔 Notifications: ${yourUsers ? yourUsers.length * 8 : 0}`);
-    console.log('');
-    console.log('✨ Your accounts now have:');
-    console.log('  • Rich payment history with other users');
-    console.log('  • Diverse task types (zkTLS, soft proof, hybrid)');
-    console.log('  • Active social feed with recent activity');
-    console.log('  • Personalized notifications');
-    console.log('  • Realistic transaction patterns');
-    console.log('='.repeat(60));
 
   } catch (error) {
     console.error('❌ Error creating realistic activity:', error);
