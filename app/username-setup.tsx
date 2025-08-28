@@ -69,20 +69,20 @@ export default function UsernameSetupScreen() {
 	const handleRegisterUsername = async () => {
 		if (!signingClient) {
 			Toast.show({
-				type: 'error',
-				text1: 'Error',
-				text2: 'Signing client not ready. Please try again.',
-				position: 'bottom',
+				type: "error",
+				text1: "Error",
+				text2: "Signing client not ready. Please try again.",
+				position: "bottom",
 			});
 			return;
 		}
 
 		if (!account?.bech32Address || !isValid) {
 			Toast.show({
-				type: 'error',
-				text1: 'Error',
-				text2: 'Invalid state for registration',
-				position: 'bottom',
+				type: "error",
+				text1: "Error",
+				text2: "Invalid state for registration",
+				position: "bottom",
 			});
 			return;
 		}
@@ -107,10 +107,10 @@ export default function UsernameSetupScreen() {
 			}
 
 			Toast.show({
-				type: 'error',
-				text1: 'Registration Failed',
-				text2: errorMsg || 'Please try again.',
-				position: 'bottom',
+				type: "error",
+				text1: "Registration Failed",
+				text2: errorMsg || "Please try again.",
+				position: "bottom",
 			});
 		}
 	};
@@ -126,26 +126,27 @@ export default function UsernameSetupScreen() {
 				try {
 					await login();
 					Toast.show({
-						type: 'success',
-						text1: 'Re-authentication',
-						text2: 'Successfully re-authenticated. Please check your wallet grants.',
-						position: 'bottom',
+						type: "success",
+						text1: "Re-authentication",
+						text2:
+							"Successfully re-authenticated. Please check your wallet grants.",
+						position: "bottom",
 					});
 				} catch (e) {
 					Toast.show({
-						type: 'error',
-						text1: 'Re-authentication Failed',
+						type: "error",
+						text1: "Re-authentication Failed",
 						text2: e instanceof Error ? e.message : String(e),
-						position: 'bottom',
+						position: "bottom",
 					});
 				}
 			}, 2000);
 		} catch (e) {
 			Toast.show({
-				type: 'error',
-				text1: 'Error',
+				type: "error",
+				text1: "Error",
 				text2: e instanceof Error ? e.message : String(e),
-				position: 'bottom',
+				position: "bottom",
 			});
 		}
 	};
@@ -459,9 +460,11 @@ const styles = StyleSheet.create({
 	},
 	displayNameInput: {
 		flex: 1,
-		...DesignSystem.typography.body.large,
 		color: DesignSystem.colors.text.primary,
-		padding: 0,
+		paddingHorizontal: 0,
+		fontSize: 16, // Explicitly set font size
+		lineHeight: 22, // Set line height to match placeholder
+		includeFontPadding: false,
 	},
 	inputContainer: {
 		flexDirection: "row",
@@ -471,8 +474,7 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
 		paddingHorizontal: DesignSystem.spacing.xl,
-		paddingVertical: DesignSystem.spacing.xl,
-		minHeight: 56,
+		paddingVertical: DesignSystem.spacing.lg,
 		...DesignSystem.shadows.sm,
 	},
 	atSymbol: {
@@ -482,9 +484,11 @@ const styles = StyleSheet.create({
 	},
 	usernameInput: {
 		flex: 1,
-		...DesignSystem.typography.body.large,
 		color: DesignSystem.colors.text.primary,
-		padding: 0,
+		paddingHorizontal: 0,
+		fontSize: 16, // Explicitly set font size
+		lineHeight: 22, // Set line height to match placeholder
+		includeFontPadding: false,
 	},
 	validationIcon: {
 		width: 24,
