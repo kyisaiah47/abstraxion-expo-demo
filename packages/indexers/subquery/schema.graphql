@@ -1,0 +1,168 @@
+type User @entity {
+  id: ID! # wallet address
+  address: String!
+  username: String
+  metadata: String
+  chain: String!
+  paymentsCreated: [Payment!]! @derivedFrom(field: "sender")
+  paymentsReceived: [Payment!]! @derivedFrom(field: "recipient")
+  proofSubmissions: [ProofSubmission!]! @derivedFrom(field: "submitter")
+  totalPaymentsSent: BigInt!
+  totalPaymentsReceived: BigInt!
+  totalAmountSent: BigInt!
+  totalAmountReceived: BigInt!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  RESOLVED
+}
+
+enum ProofType {
+  DELIVERY_RECEIPT
+  SERVICE_COMPLETION
+  DIGITAL_SIGNATURE
+  ZKTLS_PROOF
+  CUSTOM
+}
+
+type Payment @entity {
+  id: ID! # payment ID
+  paymentId: String!
+  sender: User!
+  recipient: User!
+  amount: BigInt!
+  denom: String! # token denomination (e.g. uxion, uosmo)
+  status: PaymentStatus!
+  proofType: ProofType!
+  proofData: String
+  proofSubmissions: [ProofSubmission!]! @derivedFrom(field: "payment")
+  disputes: [DisputeResolution!]! @derivedFrom(field: "payment")
+  ibcTransfers: [IBCTransfer!]! @derivedFrom(field: "payment")
+  chain: String!
+  contractAddress: String!
+  createdAt: Date!
+  completedAt: Date
+  cancelledAt: Date
+  disputedAt: Date
+  transactionHash: String!
+  blockHeight: BigInt!
+}
+
+type ProofSubmission @entity {
+  id: ID! # tx hash + event index
+  payment: Payment!
+  submitter: User!
+  proofType: ProofType!
+  proofData: String!
+  chain: String!
+  submittedAt: Date!
+  transactionHash: String!
+  blockHeight: BigInt!
+}
+
+type DisputeResolution @entity {
+  id: ID! # payment ID + dispute index
+  payment: Payment!
+  disputant: User!
+  reason: String!
+  resolved: Boolean!
+  resolution: String
+  resolvedBy: String # admin address
+  chain: String!
+  createdAt: Date!
+  resolvedAt: Date
+  transactionHash: String!
+}
+
+type IBCTransfer @entity {
+  id: ID! # packet sequence + source channel
+  payment: Payment
+  sourceChain: String!
+  destinationChain: String!
+  sourceChannel: String!
+  destinationChannel: String!
+  sender: String!
+  receiver: String!
+  amount: BigInt!
+  denom: String!
+  packetSequence: BigInt!
+  status: String! # "sent", "acknowledged", "timeout"
+  timeoutHeight: BigInt
+  timeoutTimestamp: BigInt
+  createdAt: Date!
+  acknowledgedAt: Date
+  transactionHash: String!
+  acknowledgmentTxHash: String
+}
+
+# Chain-specific daily statistics
+type DailyStats @entity {
+  id: ID! # chain + date in YYYY-MM-DD format
+  chain: String!
+  date: String!
+  totalPayments: BigInt!
+  totalVolume: BigInt!
+  totalUsers: BigInt!
+  averagePaymentSize: BigInt!
+  completedPayments: BigInt!
+  disputedPayments: BigInt!
+  ibcTransfers: BigInt!
+  uniqueActiveUsers: BigInt!
+}
+
+# Global protocol statistics per chain
+type ChainStats @entity {
+  id: ID! # chain name
+  chain: String!
+  totalPayments: BigInt!
+  totalVolume: BigInt!
+  totalUsers: BigInt!
+  totalProofSubmissions: BigInt!
+  totalDisputes: BigInt!
+  totalIBCTransfers: BigInt!
+  contractAddress: String!
+  lastUpdated: Date!
+}
+
+# Token/denomination statistics per chain
+type DenomStats @entity {
+  id: ID! # chain + denom
+  chain: String!
+  denom: String!
+  totalVolume: BigInt!
+  totalPayments: BigInt!
+  lastUpdated: Date!
+}
+
+# Contract events for debugging/monitoring
+type ContractEvent @entity {
+  id: ID! # tx hash + event index
+  chain: String!
+  contractAddress: String!
+  eventType: String! # action attribute value
+  attributes: String! # JSON string of all attributes
+  transactionHash: String!
+  blockHeight: BigInt!
+  timestamp: Date!
+}
+
+# IBC channel tracking
+type IBCChannel @entity {
+  id: ID! # chain + channel
+  chain: String!
+  channelId: String!
+  portId: String!
+  counterpartyChain: String
+  counterpartyChannel: String
+  counterpartyPort: String
+  state: String!
+  totalTransfers: BigInt!
+  totalVolume: BigInt!
+  lastActivity: Date
+}

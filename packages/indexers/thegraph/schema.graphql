@@ -1,0 +1,125 @@
+type User @entity {
+  id: ID! # wallet address
+  address: Bytes!
+  username: String!
+  metadata: Bytes!
+  paymentsCreated: [Payment!]! @derivedFrom(field: "sender")
+  paymentsReceived: [Payment!]! @derivedFrom(field: "recipient")
+  proofSubmissions: [ProofSubmission!]! @derivedFrom(field: "submitter")
+  totalPaymentsSent: BigInt!
+  totalPaymentsReceived: BigInt!
+  totalAmountSent: BigInt!
+  totalAmountReceived: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  RESOLVED
+}
+
+enum ProofType {
+  DELIVERY_RECEIPT
+  SERVICE_COMPLETION
+  DIGITAL_SIGNATURE
+  ZKTLS_PROOF
+  CUSTOM
+}
+
+type Payment @entity {
+  id: ID! # payment ID (bytes32)
+  paymentId: Bytes!
+  sender: User!
+  recipient: User!
+  amount: BigInt!
+  token: Bytes! # token contract address (0x0 for native)
+  status: PaymentStatus!
+  proofType: ProofType!
+  proofData: Bytes!
+  proofSubmissions: [ProofSubmission!]! @derivedFrom(field: "payment")
+  disputes: [DisputeResolution!]! @derivedFrom(field: "payment")
+  crossChainDestination: BigInt # chain selector for cross-chain payments
+  crossChainRecipient: Bytes # recipient address on destination chain
+  createdAt: BigInt!
+  completedAt: BigInt
+  cancelledAt: BigInt
+  disputedAt: BigInt
+  transactionHash: Bytes!
+  blockNumber: BigInt!
+}
+
+type ProofSubmission @entity {
+  id: ID! # tx hash + log index
+  payment: Payment!
+  submitter: User!
+  proofType: ProofType!
+  proofData: Bytes!
+  submittedAt: BigInt!
+  transactionHash: Bytes!
+  blockNumber: BigInt!
+}
+
+type DisputeResolution @entity {
+  id: ID! # payment ID + dispute index
+  payment: Payment!
+  disputant: User!
+  reason: String!
+  resolved: Boolean!
+  resolution: String
+  resolvedBy: Bytes # admin address
+  createdAt: BigInt!
+  resolvedAt: BigInt
+  transactionHash: Bytes!
+}
+
+type CrossChainPayment @entity {
+  id: ID! # payment ID
+  payment: Payment!
+  destinationChainSelector: BigInt!
+  destinationRecipient: Bytes!
+  ccipMessageId: Bytes
+  status: String! # "initiated", "confirmed", "failed"
+  initiatedAt: BigInt!
+  confirmedAt: BigInt
+  transactionHash: Bytes!
+}
+
+# Daily aggregated statistics
+type DailyStats @entity {
+  id: ID! # date in YYYY-MM-DD format
+  date: String!
+  totalPayments: BigInt!
+  totalVolume: BigInt!
+  totalUsers: BigInt!
+  averagePaymentSize: BigInt!
+  completedPayments: BigInt!
+  disputedPayments: BigInt!
+  crossChainPayments: BigInt!
+}
+
+# Global protocol statistics
+type ProtocolStats @entity {
+  id: ID! # "protocol-stats"
+  totalPayments: BigInt!
+  totalVolume: BigInt!
+  totalUsers: BigInt!
+  totalProofSubmissions: BigInt!
+  totalDisputes: BigInt!
+  totalCrossChainPayments: BigInt!
+  lastUpdated: BigInt!
+}
+
+# Token volume tracking
+type TokenStats @entity {
+  id: ID! # token contract address
+  token: Bytes!
+  symbol: String
+  decimals: Int
+  totalVolume: BigInt!
+  totalPayments: BigInt!
+  lastUpdated: BigInt!
+}

@@ -1,0 +1,78 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ProofPayEthereum
+    network: mainnet
+    source:
+      address: "0x0000000000000000000000000000000000000000" # Replace with actual deployed address
+      abi: ProofPay
+      startBlock: 0 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Payment
+        - User
+        - ProofSubmission
+        - DisputeResolution
+      abis:
+        - name: ProofPay
+          file: ./abis/ProofPay.json
+      eventHandlers:
+        - event: PaymentCreated(indexed bytes32,indexed address,indexed address,uint256,address,uint8)
+          handler: handlePaymentCreated
+        - event: PaymentCompleted(indexed bytes32,indexed address)
+          handler: handlePaymentCompleted
+        - event: PaymentCancelled(indexed bytes32,indexed address)
+          handler: handlePaymentCancelled
+        - event: PaymentDisputed(indexed bytes32,indexed address,string)
+          handler: handlePaymentDisputed
+        - event: ProofSubmitted(indexed bytes32,indexed address,uint8,bytes)
+          handler: handleProofSubmitted
+        - event: UserRegistered(indexed address,string,bytes)
+          handler: handleUserRegistered
+        - event: UserUpdated(indexed address,string,bytes)
+          handler: handleUserUpdated
+        - event: CrossChainPaymentInitiated(indexed bytes32,uint64,address,uint256)
+          handler: handleCrossChainPaymentInitiated
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: ProofPayPolygon
+    network: polygon
+    source:
+      address: "0x0000000000000000000000000000000000000000" # Replace with actual deployed address
+      abi: ProofPay
+      startBlock: 0 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Payment
+        - User
+        - ProofSubmission
+        - DisputeResolution
+      abis:
+        - name: ProofPay
+          file: ./abis/ProofPay.json
+      eventHandlers:
+        - event: PaymentCreated(indexed bytes32,indexed address,indexed address,uint256,address,uint8)
+          handler: handlePaymentCreated
+        - event: PaymentCompleted(indexed bytes32,indexed address)
+          handler: handlePaymentCompleted
+        - event: PaymentCancelled(indexed bytes32,indexed address)
+          handler: handlePaymentCancelled
+        - event: PaymentDisputed(indexed bytes32,indexed address,string)
+          handler: handlePaymentDisputed
+        - event: ProofSubmitted(indexed bytes32,indexed address,uint8,bytes)
+          handler: handleProofSubmitted
+        - event: UserRegistered(indexed address,string,bytes)
+          handler: handleUserRegistered
+        - event: UserUpdated(indexed address,string,bytes)
+          handler: handleUserUpdated
+        - event: CrossChainPaymentInitiated(indexed bytes32,uint64,address,uint256)
+          handler: handleCrossChainPaymentInitiated
+      file: ./src/mapping.ts

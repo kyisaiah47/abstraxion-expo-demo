@@ -1,13 +1,14 @@
 #!/usr/bin/env tsx
 
 /**
- * ProofPay Seed Data Script
+ * ProofPay Enhanced Seed Data Script
  * 
- * Creates realistic test data for demo and E2E testing:
- * - 2 test users (payer/worker) with avatars
- * - 1 Soft task with proof submission flow
- * - 1 zkTLS task with instant verification
- * - 1 Hybrid task with timer scenarios
+ * Creates comprehensive social payment ecosystem:
+ * - Real wallets (provided by user) + extensive fake friends network
+ * - Rich transaction history between all accounts
+ * - Diverse task types and proof scenarios
+ * - Realistic social activity feed
+ * - Friends/connections system
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -28,20 +29,72 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
-// Test users
-const TEST_USERS = {
-  payer: {
-    wallet_address: 'xion1payer123456789abcdef123456789abcdef1234',
-    username: 'alice_payer',
-    display_name: 'Alice (Payer)',
+// REAL WALLETS - Replace these with your actual wallet addresses
+const REAL_WALLETS = {
+  primary: {
+    wallet_address: 'REPLACE_WITH_YOUR_WALLET_1',
+    username: 'your_username',
+    display_name: 'Your Name',
     profile_picture: null as string | null,
   },
-  worker: {
-    wallet_address: 'xion1worker123456789abcdef123456789abcdef1234',
-    username: 'bob_worker', 
-    display_name: 'Bob (Worker)',
+  secondary: {
+    wallet_address: 'REPLACE_WITH_YOUR_WALLET_2', 
+    username: 'your_alt_account',
+    display_name: 'Your Alt Account',
+    profile_picture: null as string | null,
+  },
+  tertiary: {
+    wallet_address: 'REPLACE_WITH_YOUR_WALLET_3',
+    username: 'your_business',
+    display_name: 'Your Business Account', 
     profile_picture: null as string | null,
   }
+};
+
+// Generate realistic fake wallet addresses
+function generateFakeWalletAddress(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'xion1';
+  for (let i = 0; i < 35; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// Fake friends with realistic profiles
+const FAKE_FRIENDS = [
+  { username: 'crypto_sarah', display_name: 'Sarah Chen', bio: '🌟 DeFi enthusiast | NFT collector' },
+  { username: 'dev_marcus', display_name: 'Marcus Rodriguez', bio: '💻 Full-stack dev | Building the future' },
+  { username: 'artist_kim', display_name: 'Kim Taylor', bio: '🎨 Digital artist | Minting dreams' },
+  { username: 'trader_alex', display_name: 'Alex Johnson', bio: '📈 Day trader | HODL life' },
+  { username: 'gamer_riley', display_name: 'Riley Park', bio: '🎮 GameFi pioneer | P2E warrior' },
+  { username: 'chef_maria', display_name: 'Maria Santos', bio: '👩‍🍳 Food blogger | Crypto curious' },
+  { username: 'fitness_jake', display_name: 'Jake Thompson', bio: '💪 Personal trainer | Blockchain believer' },
+  { username: 'music_zoe', display_name: 'Zoe Williams', bio: '🎵 Musician | NFT music creator' },
+  { username: 'photo_dan', display_name: 'Daniel Lee', bio: '📸 Photographer | Web3 explorer' },
+  { username: 'writer_emma', display_name: 'Emma Davis', bio: '✍️ Content creator | DAO contributor' },
+  { username: 'student_liam', display_name: 'Liam Wilson', bio: '🎓 CS student | Future builder' },
+  { username: 'travel_maya', display_name: 'Maya Patel', bio: '✈️ Travel blogger | Digital nomad' },
+  { username: 'yoga_zen', display_name: 'Zen Miller', bio: '🧘‍♀️ Yoga instructor | Mindful investor' },
+  { username: 'coffee_sam', display_name: 'Sam Brown', bio: '☕ Coffee roaster | Bean to blockchain' },
+  { username: 'bike_jordan', display_name: 'Jordan Taylor', bio: '🚴‍♂️ Cyclist | Green energy advocate' },
+  { username: 'book_avery', display_name: 'Avery Clark', bio: '📚 Librarian | Knowledge is power' },
+  { username: 'pet_casey', display_name: 'Casey Green', bio: '🐕 Pet groomer | Animal lover' },
+  { username: 'garden_robin', display_name: 'Robin White', bio: '🌱 Urban gardener | Sustainable living' },
+  { username: 'fix_terry', display_name: 'Terry Martinez', bio: '🔧 Handyperson | Problem solver' },
+  { username: 'design_sage', display_name: 'Sage Cooper', bio: '🎨 UX Designer | Human-centered design' },
+].map(friend => ({
+  ...friend,
+  wallet_address: generateFakeWalletAddress(),
+  profile_picture: null as string | null,
+}));
+
+// Test users - combine real wallets with fake friends  
+const ALL_USERS = {
+  ...REAL_WALLETS,
+  ...Object.fromEntries(
+    FAKE_FRIENDS.map((friend, index) => [`fake_${index}`, friend])
+  )
 };
 
 // Test tasks data

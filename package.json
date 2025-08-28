@@ -14,7 +14,17 @@
 		"demo:status": "./scripts/dev-stack.sh status",
 		"demo:logs": "./scripts/dev-stack.sh logs",
 		"seed": "tsx scripts/seed-data.ts",
-		"seed:clear": "tsx scripts/seed-data.ts --clear"
+		"seed:clear": "tsx scripts/seed-data.ts --clear",
+		"contracts:evm:compile": "cd packages/contracts-evm && npx hardhat compile",
+		"contracts:evm:test": "cd packages/contracts-evm && npx hardhat test",
+		"contracts:evm:deploy:localhost": "cd packages/contracts-evm && npx hardhat deploy --network localhost",
+		"contracts:evm:deploy:sepolia": "cd packages/contracts-evm && npx hardhat deploy --network sepolia",
+		"contracts:evm:deploy:polygon": "cd packages/contracts-evm && npx hardhat deploy --network polygon",
+		"contracts:cosmwasm:build": "cd packages/contracts-cosmwasm && cargo wasm",
+		"contracts:cosmwasm:test": "cd packages/contracts-cosmwasm && cargo test",
+		"contracts:cosmwasm:optimize": "cd packages/contracts-cosmwasm && docker run --rm -v \"$(pwd)\":/code --mount type=volume,source=\"$(basename \"$(pwd)\")_cache\",target=/code/target --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.13",
+		"security:contracts": "cd packages/contracts-evm && npx slither contracts/",
+		"security:audit": "npm audit && npm run security:contracts"
 	},
 	"jest": {
 		"preset": "jest-expo"
@@ -59,7 +69,17 @@
 		"react-native-screens": "~4.11.1",
 		"react-native-svg": "15.11.2",
 		"react-native-toast-message": "^2.3.3",
-		"react-native-webview": "13.13.5"
+		"react-native-webview": "13.13.5",
+		"@metamask/sdk-react-native": "^0.13.0",
+		"@walletconnect/react-native-compat": "^2.10.0",
+		"@walletconnect/modal-react-native": "^1.0.0-rc.10",
+		"@keplr-wallet/types": "^0.12.0",
+		"ethers": "^6.8.0",
+		"wagmi": "^2.5.0",
+		"viem": "^2.7.0",
+		"@tanstack/react-query": "^5.20.0",
+		"@apollo/client": "^3.9.0",
+		"graphql": "^16.8.0"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.25.2",

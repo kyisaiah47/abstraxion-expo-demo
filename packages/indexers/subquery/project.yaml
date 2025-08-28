@@ -1,0 +1,93 @@
+specVersion: 1.0.0
+version: 0.0.1
+name: proofpay-cosmos
+description: SubQuery indexer for ProofPay on Cosmos chains
+repository: https://github.com/your-org/proofpay-subquery
+
+schema:
+  file: ./schema.graphql
+
+network:
+  # XION Testnet configuration
+  chainId: xion-testnet-2
+  endpoint: 
+    - https://rpc.xion-testnet-2.burnt.com:443
+  port: 26657
+
+dataSources:
+  - kind: cosmos/Runtime
+    startBlock: 1
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        # Contract instantiation
+        - handler: handleContractInstantiation
+          kind: cosmos/MessageHandler
+          filter:
+            type: /cosmwasm.wasm.v1.MsgInstantiateContract
+            
+        # Payment creation
+        - handler: handlePaymentCreated
+          kind: cosmos/EventHandler
+          filter:
+            type: wasm
+            attributes:
+              - key: action
+                value: create_payment
+                
+        # Payment completion
+        - handler: handlePaymentCompleted
+          kind: cosmos/EventHandler
+          filter:
+            type: wasm
+            attributes:
+              - key: action
+                value: complete_payment
+                
+        # Payment cancellation
+        - handler: handlePaymentCancelled
+          kind: cosmos/EventHandler
+          filter:
+            type: wasm
+            attributes:
+              - key: action
+                value: cancel_payment
+                
+        # Payment dispute
+        - handler: handlePaymentDisputed
+          kind: cosmos/EventHandler
+          filter:
+            type: wasm
+            attributes:
+              - key: action
+                value: dispute_payment
+                
+        # Proof submission
+        - handler: handleProofSubmitted
+          kind: cosmos/EventHandler
+          filter:
+            type: wasm
+            attributes:
+              - key: action
+                value: submit_proof
+                
+        # User registration
+        - handler: handleUserRegistered
+          kind: cosmos/EventHandler
+          filter:
+            type: wasm
+            attributes:
+              - key: action
+                value: register_user
+                
+        # IBC transfer initiation
+        - handler: handleIBCTransferInitiated
+          kind: cosmos/EventHandler
+          filter:
+            type: ibc_transfer
+            
+        # IBC packet acknowledgment
+        - handler: handleIBCPacketAck
+          kind: cosmos/EventHandler
+          filter:
+            type: acknowledge_packet

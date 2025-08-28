@@ -18,6 +18,7 @@ import { useTheme, ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { useTaskSubscriptions, useNotificationSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import Toast from "react-native-toast-message";
+import { WalletManager } from "@/components/wallets/WalletManager";
 
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
@@ -95,11 +96,13 @@ export default function RootLayout() {
 		<>
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<ThemeProvider>
-					<AbstraxionProvider config={treasuryConfig}>
-						<AuthProvider>
-							<RealtimeWrapper />
-						</AuthProvider>
-					</AbstraxionProvider>
+					<WalletManager>
+						<AbstraxionProvider config={treasuryConfig}>
+							<AuthProvider>
+								<RealtimeWrapper />
+							</AuthProvider>
+						</AbstraxionProvider>
+					</WalletManager>
 					<Toast
 						config={{
 							success: (props) => <CustomToast {...props} />,
