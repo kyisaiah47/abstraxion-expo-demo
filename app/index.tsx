@@ -247,7 +247,7 @@ export default function OnboardingScreen() {
 							{/* Divider */}
 							<View style={styles.comparisonDivider} />
 
-							{/* Proof of Work Side */}
+							{/* ProofPay Side */}
 							<View style={styles.comparisonSide}>
 								<Text style={styles.comparisonHeader}>ProofPay</Text>
 								<View style={styles.comparisonList}>

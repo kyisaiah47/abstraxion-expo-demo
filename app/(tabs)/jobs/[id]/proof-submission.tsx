@@ -100,7 +100,7 @@ export default function ProofSubmissionSheet({
 			{verificationMethod === "manual" ? (
 				<>
 					<View style={styles.inputSection}>
-						<Text style={styles.inputLabel}>Proof of Work Completion</Text>
+						<Text style={styles.inputLabel}>Task Completion Proof</Text>
 						<TextInput
 							style={styles.textInput}
 							placeholder="Provide links, descriptions, or evidence of your completed work..."

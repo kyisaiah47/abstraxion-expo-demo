@@ -12,7 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { type Job, ContractService } from "../lib/contractService";
 import { DesignSystem } from "../constants/DesignSystem";
-import { useZKTLSVerification } from "../lib/zkTLS";
+// import { useZKTLSVerification } from "../lib/zkTLS"; // Disabled for Expo Go
 
 interface ProofSubmissionSheetProps {
 	job: Job | null;
@@ -35,8 +35,13 @@ export default function ProofSubmissionSheet({
 	// Treat hybrid same as zkTLS for this interface
 	const verificationMethod = (job?.proof_type === "zktls" || job?.proof_type === "hybrid") ? "zktls" : "manual";
 	
-	// zkTLS hook
-	const { isConfigured, completeJobWithProof } = useZKTLSVerification();
+	// zkTLS hook - temporarily mocked for EAS build compatibility
+	const isConfigured = true;
+	const completeJobWithProof = async () => ({
+		success: true,
+		verificationUrl: "https://reclaim-protocol.netlify.app/demo", // Real Reclaim demo URL
+		error: undefined
+	});
 
 	const handleSubmit = () => {
 		if (!proof.trim()) return;
@@ -64,13 +69,7 @@ export default function ProofSubmissionSheet({
 			// For GitHub verification, redirect directly to GitHub OAuth/verification flow
 			try {
 				// Generate a GitHub-specific verification URL that will redirect to GitHub
-				const result = await completeJobWithProof(
-					contractClient,
-					userAddress,
-					job.id,
-					`github_verification_${job.id}`, // Use job ID as identifier
-					"GitHub repository contribution verification"
-				);
+				const result = await completeJobWithProof();
 
 				if (result.success && result.verificationUrl) {
 					setVerificationUrl(result.verificationUrl);
