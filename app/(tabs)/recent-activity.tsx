@@ -19,7 +19,7 @@ import { DesignSystem } from "@/constants/DesignSystem";
 import { usePaymentHistory, useUserProfile, useSocialOperations } from "@/hooks/useSocialContract";
 import Toast from "react-native-toast-message";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import ProofSubmissionSheet from "./jobs/[id]/proof-submission";
+import ProofSubmissionSheet from "@/components/ProofSubmissionSheet";
 import { type Job } from "@/lib/contractService";
 import { createClient } from '@supabase/supabase-js';
 import dayjs from "dayjs";

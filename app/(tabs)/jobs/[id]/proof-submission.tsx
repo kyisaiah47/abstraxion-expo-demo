@@ -8,8 +8,7 @@ import {
 	ScrollView,
 } from "react-native";
 import { type Job, ContractService } from "../../../../lib/contractService";
-import ZKTLSVerification from "../../../../components/ZKTLSVerification";
-// ...existing code...
+import { DesignSystem } from "../../../../constants/DesignSystem";
 
 interface ProofSubmissionSheetProps {
 	job: Job | null;
@@ -290,5 +289,12 @@ const styles = StyleSheet.create({
 		...DesignSystem.typography.body.medium,
 		color: DesignSystem.colors.status.error,
 		textAlign: "center",
+	},
+	
+	// Missing styles
+	headline: {
+		...DesignSystem.typography.h2,
+		color: DesignSystem.colors.text.primary,
+		fontWeight: "600",
 	},
 });
