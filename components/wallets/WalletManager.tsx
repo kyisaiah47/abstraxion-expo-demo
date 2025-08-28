@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { WalletType, Wallet, ConnectedWallet } from '../../packages/shared/types';
-import { AbstraxionConnector } from './AbstraxionConnector';
-import { MetaMaskConnector } from './MetaMaskConnector';  
-import { WalletConnectConnector } from './WalletConnectConnector';
-import { KeplrConnector } from './KeplrConnector';
+import { WalletType, ConnectedWallet } from '../../packages/shared/types';
+// Temporarily disabled - React prototype issue
+// import { AbstraxionConnector } from './AbstraxionConnector';
+// import { MetaMaskConnector } from './MetaMaskConnector';  
+// import { WalletConnectConnector } from './WalletConnectConnector';
+// import { KeplrConnector } from './KeplrConnector';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface WalletContextType {
@@ -27,31 +28,24 @@ export const WalletManager: React.FC<WalletManagerProps> = ({ children }) => {
   const [activeWallet, setActiveWallet] = useState<ConnectedWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Wallet connectors
-  const abstraxionConnector = new AbstraxionConnector();
-  const metaMaskConnector = new MetaMaskConnector();
-  const walletConnectConnector = new WalletConnectConnector();
-  const keplrConnector = new KeplrConnector();
+  // Wallet connectors - temporarily disabled due to React prototype issue
+  // const abstraxionConnector = new AbstraxionConnector();
+  // const metaMaskConnector = new MetaMaskConnector();
+  // const walletConnectConnector = new WalletConnectConnector();
+  // const keplrConnector = new KeplrConnector();
 
   const getConnector = (type: WalletType) => {
-    switch (type) {
-      case WalletType.ABSTRAXION:
-        return abstraxionConnector;
-      case WalletType.METAMASK:
-        return metaMaskConnector;
-      case WalletType.WALLETCONNECT:
-        return walletConnectConnector;
-      case WalletType.KEPLR:
-        return keplrConnector;
-      default:
-        throw new Error(`Unknown wallet type: ${type}`);
-    }
+    console.log(`Connector requested for: ${type} - temporarily disabled`);
+    return null;
   };
 
   const connectWallet = async (type: WalletType): Promise<ConnectedWallet> => {
     setIsConnecting(true);
     try {
       const connector = getConnector(type);
+      if (!connector) {
+        throw new Error(`${type} wallet connector is temporarily disabled due to compatibility issues`);
+      }
       const wallet = await connector.connect();
       
       const connectedWallet: ConnectedWallet = {

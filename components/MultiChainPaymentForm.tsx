@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TextInput, TouchableOpacity } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { useWallet } from './wallets/WalletManager';
 import { chainService } from '../services/blockchain/ChainService';
-import { WalletType, PaymentParams, CrossChainParams } from '../packages/shared/types';
+import { WalletType, CrossChainParams } from '../packages/shared/types';
 import { SUPPORTED_CHAINS, getChainById } from '../packages/shared/chains';
 
 interface MultiChainPaymentFormProps {
@@ -122,13 +123,13 @@ export const MultiChainPaymentForm: React.FC<MultiChainPaymentFormProps> = ({
           <View style={styles.walletButtons}>
             <Text>Connect a wallet:</Text>
             {Object.values(WalletType).map((walletType) => (
-              <button
+              <TouchableOpacity
                 key={walletType}
                 onPress={() => handleWalletConnection(walletType)}
                 style={styles.walletButton}
               >
-                <Text>{walletType}</Text>
-              </button>
+                <Text style={styles.walletButtonText}>{walletType}</Text>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -140,7 +141,7 @@ export const MultiChainPaymentForm: React.FC<MultiChainPaymentFormProps> = ({
           {/* Recipient Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Recipient Address</Text>
-            <input
+            <TextInput
               style={styles.input}
               value={recipient}
               onChangeText={setRecipient}
@@ -151,7 +152,7 @@ export const MultiChainPaymentForm: React.FC<MultiChainPaymentFormProps> = ({
           {/* Amount Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Amount</Text>
-            <input
+            <TextInput
               style={styles.input}
               value={amount}
               onChangeText={setAmount}
@@ -163,7 +164,7 @@ export const MultiChainPaymentForm: React.FC<MultiChainPaymentFormProps> = ({
           {/* Chain Selector */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Destination Chain</Text>
-            <picker
+            <Picker
               selectedValue={selectedChain.chainId}
               onValueChange={(chainId) => {
                 const chain = getChainById(chainId);
@@ -177,7 +178,7 @@ export const MultiChainPaymentForm: React.FC<MultiChainPaymentFormProps> = ({
                   value={chain.chainId}
                 />
               ))}
-            </picker>
+            </Picker>
           </View>
 
           {/* Cross-Chain Fee Display */}
@@ -190,7 +191,7 @@ export const MultiChainPaymentForm: React.FC<MultiChainPaymentFormProps> = ({
           )}
 
           {/* Send Button */}
-          <button
+          <TouchableOpacity
             onPress={handlePayment}
             disabled={isProcessing || !recipient || !amount}
             style={[
@@ -205,7 +206,7 @@ export const MultiChainPaymentForm: React.FC<MultiChainPaymentFormProps> = ({
                 ? `Send Cross-Chain Payment`
                 : 'Send Payment'}
             </Text>
-          </button>
+          </TouchableOpacity>
 
           {/* Balance Display */}
           <View style={styles.balanceContainer}>
@@ -251,6 +252,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     marginTop: 5,
+  },
+  walletButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
   inputGroup: {
     marginBottom: 15,

@@ -16,11 +16,11 @@ All major components of the ProofPay multi-chain expansion have been successfull
 - **technical_architecture.md** - Updated technical specifications
 - **development_guide.md** - Developer onboarding guide
 
-#### 2. **Multi-Chain Smart Contracts**
-- **Solidity Contracts** (EVM chains) - Full ProofPay implementation
-- **CosmWasm Contracts** (Cosmos chains) - Complete payment system
-- **Cross-chain Integration** - CCIP (EVM) and IBC (Cosmos) support
-- **Contract Structure** - Organized in `/packages/contracts-evm` and `/packages/contracts-cosmos`
+#### 2. **Smart Contract Integration**
+- **Contract Interface Layer** - Services to interact with your separate contract project
+- **Multi-Chain Support** - Ready to connect to EVM and Cosmos contracts
+- **Cross-chain Integration** - CCIP (EVM) and IBC (Cosmos) support built-in
+- **Contract Address Configuration** - Environment-based contract address management
 
 #### 3. **Wallet Integration System**
 - **4 Wallet Connectors**: MetaMask, WalletConnect, Keplr, Abstraxion
@@ -40,11 +40,10 @@ All major components of the ProofPay multi-chain expansion have been successfull
 - **GraphQL Clients** - Multi-chain Apollo Client setup
 - **React Hooks** - Custom hooks for easy data fetching
 
-#### 6. **Deployment & Migration**
-- **Deployment Scripts** - Automated contract deployment for all chains
-- **Migration Tools** - XION data migration with validation
+#### 6. **Configuration & Setup**
 - **Environment Configuration** - Complete .env template with all chains
-- **Validation Scripts** - Post-migration data integrity checks
+- **Contract Address Management** - Easy configuration for your deployed contracts
+- **GraphQL Endpoint Configuration** - Connect to The Graph and SubQuery indexers
 
 #### 7. **Frontend Components**
 - **ChainSwitcher** - UI component for switching between chains
@@ -135,13 +134,12 @@ cp .env.example .env
 npm install
 ```
 
-### 3. **Deploy Smart Contracts**
+### 3. **Configure Contract Addresses**
 ```bash
-# Deploy to specific networks
-node scripts/deploy-all.js polygon xion-testnet
-
-# Or deploy to all networks
-node scripts/deploy-all.js ethereum polygon bsc arbitrum avalanche xion-testnet osmosis neutron juno
+# Update .env with your deployed contract addresses from your separate contract project
+# EXPO_PUBLIC_ETHEREUM_PROOFPAY_ADDRESS=0x...
+# EXPO_PUBLIC_XION_PROOFPAY_ADDRESS=xion1...
+# etc.
 ```
 
 ### 4. **Set Up Indexing**
@@ -161,19 +159,7 @@ npm install
 subql publish
 ```
 
-### 5. **Run Data Migration** (if migrating from legacy XION)
-```bash
-# Set migration environment variables
-export MIGRATION_WALLET_MNEMONIC="your twelve word phrase"
-
-# Run migration
-npx ts-node scripts/migration/migrate-xion-data.ts
-
-# Validate results
-npx ts-node scripts/migration/validate-migration.ts
-```
-
-### 6. **Start the Application**
+### 5. **Start the Application**
 ```bash
 npm start
 ```

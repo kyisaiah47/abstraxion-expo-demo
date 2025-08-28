@@ -18,7 +18,7 @@ import { useTheme, ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { useTaskSubscriptions, useNotificationSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import Toast from "react-native-toast-message";
-import { WalletManager } from "@/components/wallets/WalletManager";
+import { SimpleWalletManager } from "@/components/wallets/SimpleWalletManager";
 
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
@@ -43,9 +43,9 @@ const treasuryConfig = {
 };
 
 function RealtimeWrapper() {
-	// Initialize realtime subscriptions
-	useTaskSubscriptions();
-	useNotificationSubscriptions();
+	// Realtime subscriptions temporarily disabled for cleaner logs
+	// useTaskSubscriptions();
+	// useNotificationSubscriptions();
 	
 	return <NavigationWrapper />;
 }
@@ -96,13 +96,13 @@ export default function RootLayout() {
 		<>
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<ThemeProvider>
-					<WalletManager>
+					<SimpleWalletManager>
 						<AbstraxionProvider config={treasuryConfig}>
 							<AuthProvider>
 								<RealtimeWrapper />
 							</AuthProvider>
 						</AbstraxionProvider>
-					</WalletManager>
+					</SimpleWalletManager>
 					<Toast
 						config={{
 							success: (props) => <CustomToast {...props} />,

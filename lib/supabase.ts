@@ -476,7 +476,7 @@ export async function verifyWalletSignature(
   try {
     // TODO: Implement actual signature verification with XION/Cosmos SDK
     // For now, just return true as placeholder
-    console.log('Verifying signature for:', walletAddress);
+    // console.log('Verifying signature for:', walletAddress);
     return true;
   } catch (error) {
     console.error('Signature verification failed:', error);
