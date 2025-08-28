@@ -504,16 +504,16 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		>
 			{/* Recipient Username Input */}
 			<View style={styles.userSection}>
-				{recipientUser ? (
+				{selectedUser ? (
 					/* Selected User Chip */
 					<View style={styles.selectedUserChip}>
 						<View style={styles.chipAvatar}>
 							<Text style={styles.chipAvatarText}>
-								{(recipientUser.display_name || recipientUser.username).charAt(0).toUpperCase()}
+								{(selectedUser.display_name || selectedUser.username).charAt(0).toUpperCase()}
 							</Text>
 						</View>
 						<Text style={styles.chipUsername}>
-							{recipientUser.display_name || recipientUser.username}
+							{selectedUser.display_name || selectedUser.username}
 						</Text>
 						<Pressable
 							style={styles.chipRemoveButton}
