@@ -168,6 +168,16 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			});
 			return;
 		}
+		if (!recipientUser.wallet_address) {
+			Toast.show({
+				type: "error",
+				text1: "Error",
+				text2: "Recipient wallet address not found. They may need to complete their profile setup.",
+				position: "bottom",
+			});
+			return;
+		}
+		
 		if (formData.amount <= 0) {
 			Toast.show({
 				type: "error",
@@ -201,21 +211,21 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 			if (paymentType === "send_money") {
 				await sendDirectPayment(
-					payload.to_username,
+					recipientUser.username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
 			} else if (paymentType === "request_money") {
 				await createPaymentRequest(
-					payload.to_username,
+					recipientUser.username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
 			} else if (paymentType === "request_task") {
 				await createHelpRequest(
-					payload.to_username,
+					recipientUser.username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
@@ -244,6 +254,10 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 							? "Note: Requests should not require funds - this may be a contract issue."
 							: ""
 					}`
+				);
+			} else if (err?.message?.includes("User not found")) {
+				setFeedback(
+					`User "${recipient}" hasn't completed their ProofPay registration in the smart contract. They may need to finish their profile setup to receive payments.`
 				);
 			} else {
 				setFeedback(err?.message || "Transaction failed. Please try again.");
