@@ -20,7 +20,7 @@ const tabItems: TabBarItem[] = [
 		href: "/(tabs)/activity",
 		icon: "time-outline",
 		activeIcon: "time",
-		label: "Payments",
+		label: "Feed",
 	},
 	{
 		name: "create",

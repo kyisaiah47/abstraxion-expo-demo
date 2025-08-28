@@ -5,15 +5,17 @@ import {
 	StyleSheet,
 	ScrollView,
 	RefreshControl,
+	Modal,
+	ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import SophisticatedHeader from "@/components/SophisticatedHeader";
 import PaymentRow from "@/components/PaymentRow";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion-react-native";
+import { useAbstraxionAccount, useAbstraxionSigningClient } from "@burnt-labs/abstraxion-react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DesignSystem } from "@/constants/DesignSystem";
-import { usePaymentHistory, useUserProfile } from "@/hooks/useSocialContract";
+import { usePaymentHistory, useUserProfile, useSocialOperations } from "@/hooks/useSocialContract";
 import Toast from "react-native-toast-message";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import dayjs from "dayjs";
@@ -64,16 +66,37 @@ const createStyles = (colors: any) => StyleSheet.create({
 		textAlign: 'center',
 		lineHeight: 22,
 	},
+	overlay: {
+		flex: 1,
+		backgroundColor: 'rgba(0, 0, 0, 0.3)',
+	},
+	spinnerModal: {
+		padding: DesignSystem.spacing.xl,
+		borderRadius: DesignSystem.radius.xl,
+		borderWidth: 1,
+		alignItems: 'center',
+		gap: DesignSystem.spacing.md,
+		marginHorizontal: DesignSystem.spacing.xl,
+	},
+	spinnerText: {
+		...DesignSystem.typography.label.medium,
+		fontWeight: '500',
+	},
 });
 
 export default function RecentActivityScreen() {
 	const { data: account, logout } = useAbstraxionAccount();
+	const { client: signingClient } = useAbstraxionSigningClient();
 	const { colors } = useTheme();
 	const walletAddress = account?.bech32Address || "";
 	const { payments, refetch } = usePaymentHistory(walletAddress);
 	const { user: currentUser } = useUserProfile(walletAddress);
+	const { sendDirectPayment } = useSocialOperations(signingClient);
 	const [refreshing, setRefreshing] = useState(false);
 	const [showLogoutModal, setShowLogoutModal] = useState(false);
+	const [showPaymentModal, setShowPaymentModal] = useState(false);
+	const [selectedRequest, setSelectedRequest] = useState<any>(null);
+	const [sendingPayment, setSendingPayment] = useState(false);
 
 	const styles = createStyles(colors);
 
@@ -82,6 +105,8 @@ export default function RecentActivityScreen() {
 	console.log('  - Payments count:', payments?.length || 0);
 	console.log('  - Current user:', currentUser?.username);
 	console.log('  - First payment:', payments?.[0]);
+	console.log('  - Signing client available:', !!signingClient);
+	console.log('  - Account:', account);
 
 
 	const handleRefresh = async () => {
@@ -178,20 +203,49 @@ export default function RecentActivityScreen() {
 							</Text>
 							<View style={styles.paymentsList}>
 								{group.map((payment) => {
-									const isOutgoing = payment.from_username === currentUser?.username;
-									let transactionStatus: "Completed" | "Pending" | "Failed" = "Completed";
+									console.log('🔍 Payment debug:', {
+										id: payment.id,
+										payment_type: payment.payment_type,
+										status: payment.status,
+										from_username: payment.from_username,
+										to_username: payment.to_username,
+										currentUser: currentUser?.username,
+										description: payment.description
+									});
 									
-									// For payments in the activity feed, they're typically completed
-									// Only show pending for outgoing requests or actual pending transactions
-									if (payment.payment_type === 'request_money' && payment.status === "Pending") {
-										transactionStatus = "Pending";
-									} else if (payment.status === "Completed" || payment.payment_type === 'sent_money') {
-										transactionStatus = "Completed";
-									} else if (payment.status === "Failed") {
-										transactionStatus = "Failed";
+									let isOutgoing: boolean;
+									let otherUsername: string;
+									let actionText: string;
+									
+									if (payment.payment_type === 'request_money') {
+										// For money requests: from_username is the requester, to_username is the one being asked to pay
+										if (payment.from_username === currentUser?.username) {
+											// Current user made the request
+											isOutgoing = true;
+											otherUsername = payment.to_username;
+											actionText = "Requested from";
+										} else {
+											// Current user received the request (needs to pay)
+											isOutgoing = false;
+											otherUsername = payment.from_username;
+											actionText = "Request from";
+										}
 									} else {
-										transactionStatus = "Completed"; // Default for activity feed items
+										// For regular payments: from_username sent money to to_username
+										if (payment.from_username === currentUser?.username) {
+											// Current user sent money
+											isOutgoing = true;
+											otherUsername = payment.to_username;
+											actionText = "Sent to";
+										} else {
+											// Current user received money
+											isOutgoing = false;
+											otherUsername = payment.from_username;
+											actionText = "Received from";
+										}
 									}
+									
+									let transactionStatus: "Completed" | "Pending" | "Failed" = "Completed";
 									
 									let timeAgo = "";
 									if (
@@ -201,8 +255,6 @@ export default function RecentActivityScreen() {
 									) {
 										timeAgo = dayjs(payment.created_at).fromNow();
 									}
-									const otherUsername = isOutgoing ? payment.to_username : payment.from_username;
-									const actionText = isOutgoing ? "Sent to" : "Received from";
 									
 									// Create a nice display format with display name and @username
 									// For known users, show a friendly name, otherwise use the username
@@ -220,6 +272,22 @@ export default function RecentActivityScreen() {
 									const displayName = getDisplayName(otherUsername || '');
 									const formattedTitle = displayName;
 									
+									// Determine direction for display
+									let displayDirection: "in" | "out" | "request";
+									if (payment.payment_type === 'request_money' && payment.to_username === currentUser?.username && payment.status === "Pending") {
+										// User received a pending request - show as request button
+										displayDirection = "request";
+									} else if (isOutgoing) {
+										displayDirection = "out";
+									} else {
+										displayDirection = "in";
+									}
+									
+									const handleRequestPress = () => {
+										setSelectedRequest(payment);
+										setShowPaymentModal(true);
+									};
+									
 									return (
 										<PaymentRow
 											key={payment.id}
@@ -230,11 +298,10 @@ export default function RecentActivityScreen() {
 													? payment.amount / 1_000_000
 													: parseFloat(payment.amount) / 1_000_000
 											}
-											direction={
-												payment.from_username === currentUser?.username ? "out" : "in"
-											}
+											direction={displayDirection}
 											showStatus={false}
 											timeAgo={timeAgo}
+											onPress={displayDirection === "request" ? handleRequestPress : undefined}
 										/>
 									);
 								})}
@@ -256,6 +323,92 @@ export default function RecentActivityScreen() {
 				onConfirm={confirmLogout}
 				onCancel={() => setShowLogoutModal(false)}
 			/>
+
+			{sendingPayment ? (
+				<Modal
+					visible={sendingPayment}
+					transparent
+					animationType="fade"
+				>
+					<View style={[styles.overlay, { justifyContent: 'center', alignItems: 'center' }]}>
+						<View style={[styles.spinnerModal, { backgroundColor: colors.surface.secondary, borderColor: colors.border.primary }]}>
+							<ActivityIndicator size="large" color={colors.primary[700]} />
+							<Text style={[styles.spinnerText, { color: colors.text.primary }]}>
+								Sending Payment...
+							</Text>
+						</View>
+					</View>
+				</Modal>
+			) : (
+				<ConfirmationModal
+					visible={showPaymentModal}
+					title="Send Payment"
+					message={selectedRequest ? `Send ${(selectedRequest.amount / 1_000_000).toFixed(2)} XION to ${selectedRequest.from_username}?` : ""}
+					confirmText="Send"
+					cancelText="Cancel"
+					icon="paper-plane-outline"
+					onConfirm={async () => {
+						if (selectedRequest && currentUser && signingClient) {
+							setShowPaymentModal(false);
+							setSendingPayment(true);
+							try {
+								// Send the payment via smart contract
+								await sendDirectPayment(
+									selectedRequest.from_username,
+									selectedRequest.amount.toString(),
+									selectedRequest.description || "Payment request fulfillment",
+									walletAddress
+								);
+
+								// Update the existing request to be a completed sent_money transaction
+								const { supabase } = await import("@/lib/supabase");
+								await supabase
+									.from('activity_feed')
+									.update({ 
+										verb: 'sent_money',
+										status: 'Completed',
+										meta: {
+											...selectedRequest.meta,
+											status: 'completed',
+											fulfilled_at: new Date().toISOString()
+										}
+									})
+									.eq('id', selectedRequest.id);
+
+								setSelectedRequest(null);
+								setSendingPayment(false);
+								await refetch();
+								Toast.show({
+									type: 'success',
+									text1: 'Payment Sent!',
+									text2: `Sent ${(selectedRequest.amount / 1_000_000).toFixed(2)} XION`,
+									position: 'bottom',
+								});
+							} catch (error: any) {
+								console.error('Payment error:', error);
+								setSendingPayment(false);
+								Toast.show({
+									type: 'error',
+									text1: 'Payment Failed',
+									text2: error.message || 'Please try again',
+									position: 'bottom',
+								});
+							}
+						} else {
+							Toast.show({
+								type: 'error',
+								text1: 'Unable to Send',
+								text2: 'Wallet not connected properly',
+								position: 'bottom',
+							});
+						}
+					}}
+					onCancel={() => {
+						setShowPaymentModal(false);
+						setSelectedRequest(null);
+					}}
+				/>
+			)}
 		</SafeAreaView>
 	);
 }

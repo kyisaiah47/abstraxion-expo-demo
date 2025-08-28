@@ -5,6 +5,7 @@ import {
 	StyleSheet,
 	Pressable,
 	Modal,
+	ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -18,6 +19,7 @@ interface ConfirmationModalProps {
 	cancelText?: string;
 	confirmStyle?: "default" | "destructive";
 	icon?: keyof typeof Ionicons.glyphMap;
+	loading?: boolean;
 	onConfirm: () => void;
 	onCancel: () => void;
 }
@@ -30,6 +32,7 @@ export default function ConfirmationModal({
 	cancelText = "Cancel",
 	confirmStyle = "default",
 	icon = "alert-circle-outline",
+	loading = false,
 	onConfirm,
 	onCancel,
 }: ConfirmationModalProps) {
@@ -71,16 +74,25 @@ export default function ConfirmationModal({
 							style={[
 								styles.button,
 								styles.confirmButton,
-								confirmStyle === "destructive" && styles.destructiveButton
+								confirmStyle === "destructive" && styles.destructiveButton,
+								loading && styles.loadingButton
 							]}
-							onPress={onConfirm}
+							onPress={loading ? undefined : onConfirm}
+							disabled={loading}
 						>
-							<Text style={[
-								styles.confirmText,
-								confirmStyle === "destructive" && styles.destructiveText
-							]}>
-								{confirmText}
-							</Text>
+							{loading ? (
+								<ActivityIndicator 
+									size="small" 
+									color={confirmStyle === "destructive" ? colors.status?.error || '#DC2626' : colors.primary[700]} 
+								/>
+							) : (
+								<Text style={[
+									styles.confirmText,
+									confirmStyle === "destructive" && styles.destructiveText
+								]}>
+									{confirmText}
+								</Text>
+							)}
 						</Pressable>
 					</View>
 				</View>
@@ -162,5 +174,8 @@ const createStyles = (colors: any) =>
 		},
 		destructiveText: {
 			color: colors.status?.error || '#DC2626',
+		},
+		loadingButton: {
+			opacity: 0.7,
 		},
 	});

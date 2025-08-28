@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DesignSystem } from "@/constants/DesignSystem";
 import { ProofStatus } from "@/types/proofpay";
@@ -9,10 +9,11 @@ interface PaymentRowProps {
 	title: string;
 	subtitle: string;
 	amount: number;
-	direction: "in" | "out";
+	direction: "in" | "out" | "request";
 	status?: ProofStatus;
 	timeAgo: string;
 	showStatus?: boolean;
+	onPress?: () => void;
 }
 
 export default function PaymentRow({
@@ -23,15 +24,24 @@ export default function PaymentRow({
 	status,
 	timeAgo,
 	showStatus = true,
+	onPress,
 }: PaymentRowProps) {
 	const getDirectionIcon = () => {
-		return direction === "in" ? "arrow-down" : "arrow-up";
+		switch (direction) {
+			case "in": return "arrow-down";
+			case "out": return "arrow-up"; 
+			case "request": return "hand-left";
+			default: return "arrow-up";
+		}
 	};
 
 	const getDirectionColor = () => {
-		return direction === "in"
-			? DesignSystem.colors.status.success
-			: DesignSystem.colors.text.secondary;
+		switch (direction) {
+			case "in": return DesignSystem.colors.status.success;
+			case "out": return DesignSystem.colors.text.secondary;
+			case "request": return DesignSystem.colors.status.warning;
+			default: return DesignSystem.colors.text.secondary;
+		}
 	};
 
 	return (
@@ -58,9 +68,23 @@ export default function PaymentRow({
 			</View>
 
 			<View style={styles.rightSection}>
-				<Text style={[styles.amount, { color: getDirectionColor() }]}>
-					{direction === "in" ? "+" : "-"}{amount.toFixed(2)} XION
-				</Text>
+				{direction === "request" ? (
+					<Pressable 
+						style={[styles.requestButton, { backgroundColor: getDirectionColor() + "20", borderColor: getDirectionColor() }]}
+						onPress={onPress}
+					>
+						<Text style={[styles.requestButtonText, { color: getDirectionColor() }]}>
+							Send
+						</Text>
+						<Text style={[styles.requestAmountText, { color: getDirectionColor() }]}>
+							{amount.toFixed(2)} XION
+						</Text>
+					</Pressable>
+				) : (
+					<Text style={[styles.amount, { color: getDirectionColor() }]}>
+						{direction === "in" ? "+" : "-"}{amount.toFixed(2)} XION
+					</Text>
+				)}
 				{showStatus && status && <StatusPill status={status} />}
 			</View>
 		</View>
@@ -126,5 +150,25 @@ const styles = StyleSheet.create({
 	amount: {
 		...DesignSystem.typography.label.large,
 		fontWeight: "600",
+	},
+
+	requestButton: {
+		paddingHorizontal: DesignSystem.spacing.md,
+		paddingVertical: DesignSystem.spacing.sm,
+		borderRadius: DesignSystem.radius.md,
+		borderWidth: 1,
+		alignItems: "center",
+	},
+
+	requestButtonText: {
+		...DesignSystem.typography.label.small,
+		fontWeight: "600",
+		textAlign: "center",
+	},
+
+	requestAmountText: {
+		...DesignSystem.typography.label.small,
+		fontWeight: "600",
+		textAlign: "center",
 	},
 });
