@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { PaymentFormData, PaymentType, ProofType } from "@/types/proofpay";
 import {
 	useAbstraxionAccount,
@@ -80,6 +81,15 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 	const [reviewWindow, setReviewWindow] = useState(24);
 	const [showZkTLSModal, setShowZkTLSModal] = useState(false);
 	const [selectedZkTLSOption, setSelectedZkTLSOption] = useState("custom");
+	const [showCompletionView, setShowCompletionView] = useState(false);
+	const [completionData, setCompletionData] = useState<{
+		type: 'payment' | 'request';
+		txHash?: string;
+		requestId?: string;
+		amount: number;
+		recipient: string;
+		paymentType: string;
+	} | null>(null);
 
 	// Wallet and contract hooks
 	const { data: account, isConnected } = useAbstraxionAccount();
@@ -236,13 +246,27 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				result = { id: requestId, type: 'request' };
 			}
 
-			// Show appropriate success message
+			// Show completion view for all successful actions
 			if (result?.type === 'request') {
-				setFeedback(`Request sent successfully! Request ID: ${result.id.slice(0, 8)}`);
+				setCompletionData({
+					type: 'request',
+					requestId: result.id,
+					amount: formData.amount,
+					recipient: recipientUser.display_name || recipientUser.username,
+					paymentType: paymentType
+				});
+				setShowCompletionView(true);
 			} else {
 				const txHash = result?.transactionHash || result?.txhash || result?.hash;
 				if (txHash) {
-					setFeedback(`Transaction successful! TX: ${txHash.slice(0, 8)}...${txHash.slice(-6)}`);
+					setCompletionData({
+						type: 'payment',
+						txHash: txHash,
+						amount: formData.amount,
+						recipient: recipientUser.display_name || recipientUser.username,
+						paymentType: paymentType
+					});
+					setShowCompletionView(true);
 					
 					// Store blockchain transaction in database for activity feed
 					try {
@@ -381,6 +405,97 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 		(!selectedUser && userLoading);
 
 	const styles = createStyles(colors);
+
+	// Show completion view instead of form when completed
+	if (showCompletionView && completionData) {
+		return (
+			<View style={styles.completionContainer}>
+				<View style={styles.completionContent}>
+					{/* Big checkmark icon */}
+					<View style={styles.checkmarkContainer}>
+						<Ionicons 
+							name="checkmark-circle" 
+							size={80} 
+							color={colors.status?.success || colors.primary[700]} 
+						/>
+					</View>
+					
+					{/* Success message */}
+					<Text style={[styles.completionTitle, { color: colors.text.primary }]}>
+						{completionData.type === 'payment' ? 'Payment Sent!' : 'Request Sent!'}
+					</Text>
+					
+					{/* Transaction details */}
+					<View style={styles.completionDetails}>
+						<Text style={[styles.completionAmount, { color: colors.text.primary }]}>
+							{completionData.amount} XION
+						</Text>
+						<Text style={[styles.completionRecipient, { color: colors.text.secondary }]}>
+							to {completionData.recipient}
+						</Text>
+					</View>
+					
+					{/* Transaction/Request ID */}
+					{completionData.txHash && (
+						<View style={styles.txHashContainer}>
+							<Text style={[styles.txHashLabel, { color: colors.text.tertiary }]}>
+								Transaction Hash
+							</Text>
+							<Text style={[styles.txHashValue, { color: colors.text.secondary }]}>
+								{completionData.txHash.slice(0, 8)}...{completionData.txHash.slice(-6)}
+							</Text>
+						</View>
+					)}
+					
+					{completionData.requestId && (
+						<View style={styles.txHashContainer}>
+							<Text style={[styles.txHashLabel, { color: colors.text.tertiary }]}>
+								Request ID
+							</Text>
+							<Text style={[styles.txHashValue, { color: colors.text.secondary }]}>
+								{completionData.requestId.slice(0, 8)}
+							</Text>
+						</View>
+					)}
+					
+					{/* Action buttons */}
+					<View style={styles.completionActions}>
+						<Pressable 
+							style={[styles.completionButton, { backgroundColor: colors.primary[700] }]}
+							onPress={() => {
+								setShowCompletionView(false);
+								setCompletionData(null);
+								// Reset form
+								setRecipient("");
+								setSelectedUser(null);
+								setFormData({
+									type: paymentType,
+									amount: 0,
+									description: "",
+									proofType: "soft",
+								});
+								setAmountText("");
+								setFeedback(null);
+							}}
+						>
+							<Text style={[styles.completionButtonText, { color: colors.text.inverse }]}>
+								Create Another
+							</Text>
+						</Pressable>
+						
+						<Pressable 
+							style={[styles.completionButtonSecondary, { borderColor: colors.border.secondary }]}
+							onPress={() => router.push("/(tabs)/activity")}
+						>
+							<Text style={[styles.completionButtonSecondaryText, { color: colors.text.primary }]}>
+								View Activity
+							</Text>
+						</Pressable>
+					</View>
+				</View>
+			</View>
+		);
+	}
 
 	return (
 		<ScrollView
@@ -1339,5 +1454,114 @@ const createStyles = (colors: any) =>
 			fontSize: 14,
 			fontWeight: "500",
 			flex: 1,
+		},
+
+		// Completion View Styles
+		completionContainer: {
+			flex: 1,
+			backgroundColor: colors.surface.primary,
+			justifyContent: "center",
+			alignItems: "center",
+			padding: 20,
+		},
+
+		completionContent: {
+			alignItems: "center",
+			gap: 24,
+			width: "100%",
+			maxWidth: 320,
+		},
+
+		checkmarkContainer: {
+			marginBottom: 8,
+		},
+
+		completionTitle: {
+			fontSize: 28,
+			fontWeight: "600",
+			textAlign: "center",
+			marginBottom: 8,
+		},
+
+		completionDetails: {
+			alignItems: "center",
+			gap: 12,
+			width: "100%",
+		},
+
+		completionAmount: {
+			fontSize: 24,
+			fontWeight: "500",
+			color: colors.text.primary,
+			textAlign: "center",
+		},
+
+		completionRecipient: {
+			fontSize: 16,
+			color: colors.text.secondary,
+			textAlign: "center",
+		},
+
+		txHashContainer: {
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 12,
+			padding: 16,
+			width: "100%",
+			alignItems: "center",
+			gap: 8,
+			borderWidth: 1,
+			borderColor: colors.border.secondary,
+		},
+
+		txHashLabel: {
+			fontSize: 14,
+			fontWeight: "500",
+			color: colors.text.secondary,
+		},
+
+		txHashValue: {
+			fontSize: 12,
+			color: colors.text.primary,
+			fontFamily: "monospace",
+			textAlign: "center",
+		},
+
+		completionActions: {
+			flexDirection: "row",
+			gap: 12,
+			width: "100%",
+			marginTop: 16,
+		},
+
+		completionButton: {
+			flex: 1,
+			backgroundColor: colors.text.primary,
+			borderRadius: 24,
+			paddingVertical: 16,
+			paddingHorizontal: 24,
+			alignItems: "center",
+		},
+
+		completionButtonText: {
+			fontSize: 16,
+			fontWeight: "600",
+			color: colors.surface.primary,
+		},
+
+		completionButtonSecondary: {
+			flex: 1,
+			backgroundColor: colors.surface.elevated,
+			borderRadius: 24,
+			paddingVertical: 16,
+			paddingHorizontal: 24,
+			alignItems: "center",
+			borderWidth: 1,
+			borderColor: colors.border.secondary,
+		},
+
+		completionButtonSecondaryText: {
+			fontSize: 16,
+			fontWeight: "500",
+			color: colors.text.primary,
 		},
 	});

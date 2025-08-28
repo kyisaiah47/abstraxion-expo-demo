@@ -249,7 +249,7 @@ export default function OnboardingScreen() {
 
 							{/* Proof of Work Side */}
 							<View style={styles.comparisonSide}>
-								<Text style={styles.comparisonHeader}>Proof of Work</Text>
+								<Text style={styles.comparisonHeader}>ProofPay</Text>
 								<View style={styles.comparisonList}>
 									<View style={styles.comparisonItem}>
 										<Ionicons

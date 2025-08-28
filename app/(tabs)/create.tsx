@@ -58,11 +58,6 @@ export default function CreateScreen() {
 			position: 'bottom',
 			visibilityTime: 4000,
 		});
-		
-		// Automatically show QR modal for sharing
-		setTimeout(() => {
-			setShowQRModal(true);
-		}, 1000);
 	};
 
 	const renderQRModal = () => (
