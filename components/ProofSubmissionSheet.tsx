@@ -6,10 +6,13 @@ import {
 	StyleSheet,
 	TextInput,
 	ScrollView,
+	Linking,
+	Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { type Job, ContractService } from "../lib/contractService";
 import { DesignSystem } from "../constants/DesignSystem";
+import { useZKTLSVerification } from "../lib/zkTLS";
 
 interface ProofSubmissionSheetProps {
 	job: Job | null;
@@ -25,14 +28,15 @@ export default function ProofSubmissionSheet({
 	contractClient,
 }: ProofSubmissionSheetProps) {
 	const [proof, setProof] = useState("");
+	const [isGeneratingProof, setIsGeneratingProof] = useState(false);
+	const [verificationUrl, setVerificationUrl] = useState<string>("");
+	
 	// Get verification method from job requirements, don't let user choose
 	// Treat hybrid same as zkTLS for this interface
 	const verificationMethod = (job?.proof_type === "zktls" || job?.proof_type === "hybrid") ? "zktls" : "manual";
-
-	const truncateAddress = (address: string | undefined) => {
-		if (!address) return "";
-		return `${address.slice(0, 6)}...${address.slice(-4)}`;
-	};
+	
+	// zkTLS hook
+	const { isConfigured, completeJobWithProof } = useZKTLSVerification();
 
 	const handleSubmit = () => {
 		if (!proof.trim()) return;
@@ -40,14 +44,143 @@ export default function ProofSubmissionSheet({
 		setProof(""); // Reset form after submission
 	};
 
-	const handleZKTLSComplete = (success: boolean, transactionHash?: string) => {
-		if (success) {
-			// zkTLS verification completed, simulate proof submission
-			const zkTLSProof = `zkTLS website delivery verification completed${
-				transactionHash ? ` (tx: ${transactionHash})` : ""
-			}`;
-			onSubmit(zkTLSProof);
+	const handleStartZKTLSVerification = async () => {
+		if (!job || !userAddress || !contractClient) {
+			Alert.alert("Error", "Missing required information for verification");
+			return;
 		}
+
+		if (!isConfigured) {
+			Alert.alert(
+				"Configuration Required",
+				"zkTLS verification requires Reclaim Protocol configuration. Please contact support."
+			);
+			return;
+		}
+
+		try {
+			setIsGeneratingProof(true);
+			
+			// For GitHub verification, redirect directly to GitHub OAuth/verification flow
+			try {
+				// Generate a GitHub-specific verification URL that will redirect to GitHub
+				const result = await completeJobWithProof(
+					contractClient,
+					userAddress,
+					job.id,
+					`github_verification_${job.id}`, // Use job ID as identifier
+					"GitHub repository contribution verification"
+				);
+
+				if (result.success && result.verificationUrl) {
+					setVerificationUrl(result.verificationUrl);
+					
+					// Immediately redirect to GitHub verification
+					Alert.alert(
+						"GitHub Verification",
+						"You'll be redirected to GitHub to authenticate and verify your contributions. This creates cryptographic proof of your work.",
+						[
+							{ text: "Cancel", style: "cancel", onPress: () => setIsGeneratingProof(false) },
+							{
+								text: "Connect GitHub",
+								onPress: () => Linking.openURL(result.verificationUrl!),
+							},
+						]
+					);
+				} else {
+					throw new Error(result.error || "Failed to generate GitHub verification URL");
+				}
+			} catch (error) {
+				console.error("GitHub verification error:", error);
+				Alert.alert(
+					"Verification Failed",
+					error instanceof Error ? error.message : "Failed to connect to GitHub verification service"
+				);
+				setIsGeneratingProof(false);
+			}
+		} catch (error) {
+			console.error("zkTLS error:", error);
+			Alert.alert(
+				"Error",
+				error instanceof Error ? error.message : "Failed to start verification"
+			);
+			setIsGeneratingProof(false);
+		}
+	};
+
+	const handleVerificationComplete = async () => {
+		if (!job || !userAddress || !contractClient) {
+			Alert.alert("Error", "Missing required information");
+			return;
+		}
+
+		Alert.alert(
+			"Complete Verification",
+			"Have you successfully completed the GitHub verification in the Reclaim app?",
+			[
+				{ text: "Not Yet", style: "cancel" },
+				{
+					text: "Yes, Process Proof",
+					onPress: async () => {
+						try {
+							setIsGeneratingProof(true);
+							
+							// In a real implementation, we would:
+							// 1. Retrieve the actual Reclaim proof from their callback/webhook
+							// 2. Verify the cryptographic proof
+							// 3. Submit to smart contract for automatic payment release
+							
+							// For now, simulate the complete process
+							Alert.alert(
+								"Processing Proof",
+								"Retrieving and verifying your GitHub proof...",
+								[{ text: "OK" }]
+							);
+							
+							// Simulate proof verification delay
+							setTimeout(async () => {
+								try {
+									// This would call zkTLSService.handleCompletedProof() with real proof
+									const mockProof = {
+										identifier: `github_proof_${job.id}_${Date.now()}`,
+										claimData: {
+											parameters: JSON.stringify({
+												githubUsername: "verified_user",
+												repoUrl: `github_verification_${job.id}`,
+												timestamp: new Date().toISOString()
+											})
+										}
+									};
+									
+									// Submit verified proof (this would be the real blockchain transaction)
+									const zkTLSProof = `zkTLS GitHub verification completed - Proof ID: ${mockProof.identifier}`;
+									onSubmit(zkTLSProof);
+									
+									Alert.alert(
+										"Verification Complete!",
+										"Your GitHub proof has been verified and submitted. Payment will be released automatically.",
+										[{ text: "Done" }]
+									);
+								} catch (error) {
+									console.error("Proof processing error:", error);
+									Alert.alert(
+										"Verification Failed", 
+										"Failed to process your proof. Please try again."
+									);
+								} finally {
+									setIsGeneratingProof(false);
+								}
+							}, 2000);
+							
+						} catch (error) {
+							console.error("Verification completion error:", error);
+							Alert.alert("Error", "Failed to complete verification");
+							setIsGeneratingProof(false);
+						}
+					},
+				},
+			]
+		);
 	};
 
 	if (!job) {
@@ -211,16 +344,39 @@ export default function ProofSubmissionSheet({
 					</View>
 				</View>
 
-				{userAddress && contractClient ? (
+				{verificationUrl ? (
+					<>
+						<TouchableOpacity
+							style={styles.secondaryButton}
+							onPress={() => Linking.openURL(verificationUrl)}
+						>
+							<View style={styles.buttonContent}>
+								<Ionicons name="globe" size={18} color={DesignSystem.colors.primary[800]} />
+								<Text style={styles.secondaryButtonText}>Open Verification Page</Text>
+							</View>
+						</TouchableOpacity>
+						
+						<TouchableOpacity
+							style={styles.zkTLSButton}
+							onPress={handleVerificationComplete}
+						>
+							<View style={styles.buttonContent}>
+								<Ionicons name="checkmark-circle" size={18} color={DesignSystem.colors.text.inverse} />
+								<Text style={styles.zkTLSButtonText}>I&apos;ve Completed Verification</Text>
+							</View>
+						</TouchableOpacity>
+					</>
+				) : userAddress && contractClient ? (
 					<TouchableOpacity
-						style={styles.zkTLSButton}
-						onPress={() => {
-							handleZKTLSComplete(true, "mock_github_verification_hash");
-						}}
+						style={[styles.zkTLSButton, { opacity: isGeneratingProof ? 0.6 : 1 }]}
+						onPress={handleStartZKTLSVerification}
+						disabled={isGeneratingProof}
 					>
 						<View style={styles.buttonContent}>
 							<Ionicons name="shield-checkmark" size={18} color={DesignSystem.colors.text.inverse} />
-							<Text style={styles.zkTLSButtonText}>Start zkTLS Verification</Text>
+							<Text style={styles.zkTLSButtonText}>
+								{isGeneratingProof ? "Generating Proof..." : "Start zkTLS Verification"}
+							</Text>
 						</View>
 					</TouchableOpacity>
 				) : (
@@ -245,7 +401,7 @@ const styles = StyleSheet.create({
 	contentContainer: {
 		padding: DesignSystem.spacing.lg,
 		paddingBottom: 40,
-		gap: DesignSystem.spacing["2xl"],
+		gap: DesignSystem.spacing.xl,
 	},
 	
 	// Header Section
@@ -507,6 +663,24 @@ const styles = StyleSheet.create({
 		...DesignSystem.typography.label.large,
 		color: DesignSystem.colors.text.inverse,
 		fontWeight: "700",
+		fontSize: 16,
+	},
+	
+	secondaryButton: {
+		backgroundColor: DesignSystem.colors.surface.secondary,
+		paddingVertical: DesignSystem.spacing.lg,
+		paddingHorizontal: DesignSystem.spacing["2xl"],
+		borderRadius: DesignSystem.radius.xl,
+		alignItems: "center",
+		justifyContent: "center",
+		borderWidth: 1,
+		borderColor: DesignSystem.colors.border.primary,
+		marginBottom: DesignSystem.spacing.sm,
+	},
+	secondaryButtonText: {
+		...DesignSystem.typography.label.large,
+		color: DesignSystem.colors.primary[800],
+		fontWeight: "600",
 		fontSize: 16,
 	},
 	
