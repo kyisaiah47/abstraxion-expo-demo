@@ -9,7 +9,7 @@ interface PaymentRowProps {
 	title: string;
 	subtitle: string;
 	amount: number;
-	direction: "in" | "out" | "request";
+	direction: "in" | "out" | "request" | "task_created" | "task_received";
 	status?: ProofStatus;
 	timeAgo: string;
 	showStatus?: boolean;
@@ -31,6 +31,8 @@ export default function PaymentRow({
 			case "in": return "arrow-down";
 			case "out": return "arrow-up"; 
 			case "request": return "hand-left";
+			case "task_created": return "briefcase";
+			case "task_received": return "briefcase-outline";
 			default: return "arrow-up";
 		}
 	};
@@ -40,62 +42,73 @@ export default function PaymentRow({
 			case "in": return DesignSystem.colors.status.success;
 			case "out": return DesignSystem.colors.text.secondary;
 			case "request": return DesignSystem.colors.status.warning;
+			case "task_created": return DesignSystem.colors.text.secondary;
+			case "task_received": return DesignSystem.colors.status.info; // Blue for incoming money opportunity
 			default: return DesignSystem.colors.text.secondary;
 		}
 	};
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.leftSection}>
-				<View
-					style={[
-						styles.iconContainer,
-						{ backgroundColor: getDirectionColor() + "20" },
-					]}
-				>
-					<Ionicons
-						name={getDirectionIcon()}
-						size={20}
-						color={getDirectionColor()}
-					/>
-				</View>
-
-				<View style={styles.textContainer}>
-					<Text style={styles.title}>{title}</Text>
-					<Text style={styles.subtitle}>{subtitle}</Text>
-					<Text style={styles.timeAgo}>{timeAgo}</Text>
-				</View>
-			</View>
-
-			<View style={styles.rightSection}>
-				{direction === "request" ? (
-					<Pressable 
-						style={[styles.requestButton, { backgroundColor: getDirectionColor() + "20", borderColor: getDirectionColor() }]}
-						onPress={onPress}
+		<View style={[styles.container, direction === "task_received" && styles.taskContainer]}>
+			<View style={styles.topRow}>
+				<View style={styles.leftSection}>
+					<View
+						style={[
+							styles.iconContainer,
+							{ backgroundColor: getDirectionColor() + "20" },
+						]}
 					>
-						<Text style={[styles.requestButtonText, { color: getDirectionColor() }]}>
-							Send
+						<Ionicons
+							name={getDirectionIcon()}
+							size={20}
+							color={getDirectionColor()}
+						/>
+					</View>
+
+					<View style={styles.textContainer}>
+						<Text style={styles.title}>{title}</Text>
+						<Text style={styles.subtitle}>{subtitle}</Text>
+						<Text style={styles.timeAgo}>{timeAgo}</Text>
+					</View>
+				</View>
+
+				<View style={styles.rightSection}>
+					{direction === "request" ? (
+						<Pressable 
+							style={[styles.requestButton, { backgroundColor: getDirectionColor() + "20", borderColor: getDirectionColor() }]}
+							onPress={onPress}
+						>
+							<Text style={[styles.requestButtonText, { color: getDirectionColor() }]}>
+								Send
+							</Text>
+							<Text style={[styles.requestAmountText, { color: getDirectionColor() }]}>
+								{amount.toFixed(2)} XION
+							</Text>
+						</Pressable>
+					) : direction === "task_received" || direction === "request" ? null : (
+						<Text style={[styles.amount, { color: getDirectionColor() }]}>
+							{direction === "in" ? "+" : direction === "task_created" ? "" : "-"}{amount.toFixed(2)} XION
 						</Text>
-						<Text style={[styles.requestAmountText, { color: getDirectionColor() }]}>
-							{amount.toFixed(2)} XION
-						</Text>
-					</Pressable>
-				) : (
-					<Text style={[styles.amount, { color: getDirectionColor() }]}>
-						{direction === "in" ? "+" : "-"}{amount.toFixed(2)} XION
-					</Text>
-				)}
-				{showStatus && status && <StatusPill status={status} />}
+					)}
+					{showStatus && status && <StatusPill status={status} />}
+				</View>
 			</View>
+			{direction === "task_received" && (
+				<Pressable 
+					style={[styles.taskButtonRow, { backgroundColor: getDirectionColor() + "10", borderColor: getDirectionColor() }]}
+					onPress={onPress}
+				>
+					<Text style={[styles.taskButtonRowText, { color: getDirectionColor() }]}>
+						Submit Proof • Earn {amount.toFixed(2)} XION
+					</Text>
+				</Pressable>
+			)}
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "space-between",
 		paddingVertical: DesignSystem.spacing.lg,
 		paddingHorizontal: DesignSystem.spacing["2xl"],
 		backgroundColor: DesignSystem.colors.surface.elevated,
@@ -104,6 +117,16 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: DesignSystem.colors.border.secondary,
 		...DesignSystem.shadows.sm,
+	},
+
+	taskContainer: {
+		paddingBottom: DesignSystem.spacing.md,
+	},
+
+	topRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
 	},
 
 	leftSection: {
@@ -168,6 +191,45 @@ const styles = StyleSheet.create({
 
 	requestAmountText: {
 		...DesignSystem.typography.label.small,
+		fontWeight: "600",
+		textAlign: "center",
+	},
+
+	taskButton: {
+		paddingHorizontal: DesignSystem.spacing.sm,
+		paddingVertical: DesignSystem.spacing.xs,
+		borderRadius: DesignSystem.radius.sm,
+		borderWidth: 1,
+		alignItems: "center",
+		minWidth: 80,
+	},
+
+	taskButtonText: {
+		...DesignSystem.typography.caption,
+		fontWeight: "600",
+		textAlign: "center",
+		fontSize: 11,
+	},
+
+	taskAmountText: {
+		...DesignSystem.typography.label.medium,
+		fontWeight: "600",
+		textAlign: "center",
+		fontSize: 13,
+	},
+
+	taskButtonRow: {
+		marginTop: DesignSystem.spacing.md,
+		paddingVertical: DesignSystem.spacing.md,
+		paddingHorizontal: DesignSystem.spacing.lg,
+		borderRadius: DesignSystem.radius.md,
+		borderWidth: 1,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+
+	taskButtonRowText: {
+		...DesignSystem.typography.label.medium,
 		fontWeight: "600",
 		textAlign: "center",
 	},

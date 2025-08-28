@@ -232,6 +232,19 @@ export default function RecentActivityScreen() {
 											otherUsername = payment.from_username;
 											actionText = "Request from";
 										}
+									} else if (payment.payment_type === 'created_task') {
+										// For task creation: from_username created task for to_username
+										if (payment.from_username === currentUser?.username) {
+											// Current user created the task
+											isOutgoing = true;
+											otherUsername = payment.to_username;
+											actionText = "Created task for";
+										} else {
+											// Current user received the task
+											isOutgoing = false;
+											otherUsername = payment.from_username;
+											actionText = "Task from";
+										}
 									} else {
 										// For regular payments: from_username sent money to to_username
 										if (payment.from_username === currentUser?.username) {
@@ -280,10 +293,17 @@ export default function RecentActivityScreen() {
 									}
 
 									// Determine direction for display
-									let displayDirection: "in" | "out" | "request";
+									let displayDirection: "in" | "out" | "request" | "task_created" | "task_received";
 									if (payment.payment_type === 'request_money' && payment.to_username === currentUser?.username && payment.status === "Pending") {
 										// User received a pending request - show as request button
 										displayDirection = "request";
+									} else if (payment.payment_type === 'created_task') {
+										// Task creation/assignment
+										if (isOutgoing) {
+											displayDirection = "task_created";
+										} else {
+											displayDirection = "task_received";
+										}
 									} else if (isOutgoing) {
 										displayDirection = "out";
 									} else {
@@ -301,6 +321,18 @@ export default function RecentActivityScreen() {
 										setSelectedRequest(payment);
 										setShowPaymentModal(true);
 									};
+
+									const handleTaskPress = () => {
+										console.log('🔍 Selected task for proof submission:', {
+											id: payment.id,
+											payment_type: payment.payment_type,
+											description: payment.description,
+											amount: payment.amount,
+											meta: payment.meta
+										});
+										// Navigate to proof submission screen
+										router.push(`/jobs/${payment.id}/proof-submission`);
+									};
 									
 									return (
 										<PaymentRow
@@ -315,7 +347,13 @@ export default function RecentActivityScreen() {
 											direction={displayDirection}
 											showStatus={false}
 											timeAgo={timeAgo}
-											onPress={displayDirection === "request" ? handleRequestPress : undefined}
+											onPress={
+												displayDirection === "request" 
+													? handleRequestPress 
+													: displayDirection === "task_received" 
+														? handleTaskPress 
+														: undefined
+											}
 										/>
 									);
 								})}

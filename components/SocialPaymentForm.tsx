@@ -247,7 +247,7 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						.from('activity_feed')
 						.insert({
 							actor: currentUser.username,
-							verb: paymentType === 'request_money' ? 'request_money' : 'request_task',
+							verb: paymentType === 'request_money' ? 'request_money' : 'created_task',
 							meta: {
 								amount: parseFloat(formData.amount) * 1000000, // Convert to uxion
 								description: formData.description,
