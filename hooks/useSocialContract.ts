@@ -367,27 +367,27 @@ export function usePaymentHistory(walletAddress: string) {
 		try {
 			const { supabase } = await import("@/lib/supabase");
 			
-			// Fetch transactions where user is either sender or receiver
-			const { data: transactions, error: dbError } = await supabase
-				.from('transactions')
+			// Fetch activity feed entries for this user
+			const { data: activities, error: dbError } = await supabase
+				.from('activity_feed')
 				.select('*')
-				.or(`from_user.eq.${walletAddress},to_user.eq.${walletAddress}`)
+				.eq('actor', walletAddress)
 				.order('created_at', { ascending: false });
 
 			if (dbError) {
 				throw new Error(dbError.message);
 			}
 
-			// Convert transactions to Payment format for compatibility
-			const paymentsData = transactions?.map(transaction => ({
-				id: transaction.id,
-				amount: transaction.amount,
-				description: transaction.description,
-				payment_type: transaction.payment_type,
-				status: transaction.status === 'completed' ? 'Completed' : 'Pending',
-				from_username: transaction.from_user,
-				to_username: transaction.to_username,
-				created_at: transaction.created_at,
+			// Convert activity feed to Payment format for compatibility
+			const paymentsData = activities?.map(activity => ({
+				id: activity.id,
+				amount: activity.meta?.amount || 0,
+				description: activity.meta?.description || activity.verb,
+				payment_type: activity.verb,
+				status: activity.meta?.status === 'pending' ? 'Pending' : 'Completed',
+				from_username: activity.actor,
+				to_username: activity.meta?.to_username || '',
+				created_at: activity.created_at,
 			})) || [];
 
 			setPayments(paymentsData);
