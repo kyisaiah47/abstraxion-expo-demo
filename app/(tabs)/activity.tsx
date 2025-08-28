@@ -91,7 +91,6 @@ const createStyles = (colors: any) => StyleSheet.create({
 export default function PaymentsScreen() {
 	const { data: account, logout } = useAbstraxionAccount();
 	const { colors } = useTheme();
-	// TODO: Replace with actual user profile fetch logic
 	const walletAddress = account?.bech32Address || "";
 	const { payments, refetch } = usePaymentHistory(walletAddress);
 	const [refreshing, setRefreshing] = React.useState(false);
@@ -315,6 +314,7 @@ export default function PaymentsScreen() {
 							}}
 						/>
 					}
+					nestedScrollEnabled={true}
 				>
 					<BalanceCard
 						total={userBalance.total}
@@ -389,6 +389,7 @@ export default function PaymentsScreen() {
 					style={styles.scrollView}
 					contentContainerStyle={styles.scrollContent}
 					showsVerticalScrollIndicator={false}
+					nestedScrollEnabled={true}
 				>
 					<SocialFeed activities={socialActivity} />
 					<View style={styles.bottomSpacer} />

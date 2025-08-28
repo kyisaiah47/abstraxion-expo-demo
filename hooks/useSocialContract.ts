@@ -241,7 +241,7 @@ export function useUserFriends(username: string) {
 	const [error, setError] = useState<string | null>(null);
 
 	const fetch = useCallback(async () => {
-		if (!username || !['isaiah_kim', 'mayathedesigner'].includes(username)) {
+		if (!username) {
 			setFriends([]);
 			return;
 		}
@@ -367,28 +367,27 @@ export function usePaymentHistory(walletAddress: string) {
 		try {
 			const { supabase } = await import("@/lib/supabase");
 			
-			// Fetch tasks where user is either payer or worker
-			const { data: tasks, error: dbError } = await supabase
-				.from('tasks')
+			// Fetch transactions where user is either sender or receiver
+			const { data: transactions, error: dbError } = await supabase
+				.from('transactions')
 				.select('*')
-				.or(`payer.eq.${walletAddress},worker.eq.${walletAddress}`)
+				.or(`from_user.eq.${walletAddress},to_user.eq.${walletAddress}`)
 				.order('created_at', { ascending: false });
 
 			if (dbError) {
 				throw new Error(dbError.message);
 			}
 
-			// Convert tasks to Payment format for compatibility
-			const paymentsData = tasks?.map(task => ({
-				id: task.id,
-				amount: task.amount,
-				description: task.description,
-				payment_type: task.task_type,
-				status: task.status === 'released' ? 'Completed' : 
-				        task.status === 'pending_release' ? 'Pending' : 'Pending',
-				from_username: task.payer,
-				to_username: task.worker,
-				created_at: task.created_at,
+			// Convert transactions to Payment format for compatibility
+			const paymentsData = transactions?.map(transaction => ({
+				id: transaction.id,
+				amount: transaction.amount,
+				description: transaction.description,
+				payment_type: transaction.payment_type,
+				status: transaction.status === 'completed' ? 'Completed' : 'Pending',
+				from_username: transaction.from_user,
+				to_username: transaction.to_username,
+				created_at: transaction.created_at,
 			})) || [];
 
 			setPayments(paymentsData);

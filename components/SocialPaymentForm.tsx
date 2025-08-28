@@ -209,30 +209,82 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				proof_type: formData.proofType,
 			};
 
+			let result;
 			if (paymentType === "send_money") {
-				await sendDirectPayment(
+				// Actual blockchain transaction
+				result = await sendDirectPayment(
 					recipientUser.username,
 					payload.amount,
 					payload.description,
 					account.bech32Address
 				);
-			} else if (paymentType === "request_money") {
-				await createPaymentRequest(
-					recipientUser.username,
-					payload.amount,
-					payload.description,
-					account.bech32Address
-				);
-			} else if (paymentType === "request_task") {
-				await createHelpRequest(
-					recipientUser.username,
-					payload.amount,
-					payload.description,
-					account.bech32Address
-				);
+			} else if (paymentType === "request_money" || paymentType === "request_task") {
+				// Just create database entry for requests - no blockchain transaction
+				const { supabase } = await import("@/lib/supabase");
+				const { data: { user } } = await supabase.auth.getUser();
+				
+				if (!user) {
+					throw new Error("User not authenticated");
+				}
+
+				const { data, error } = await supabase.from('payment_requests').insert({
+					from_user: account.bech32Address,
+					from_username: user.user_metadata?.username || "",
+					to_user: recipientUser.wallet_address,
+					to_username: recipientUser.username,
+					amount: formData.amount,
+					description: formData.description,
+					request_type: paymentType,
+					proof_type: formData.proofType,
+					status: "pending",
+					created_at: new Date().toISOString(),
+					created_by: user.id
+				}).select().single();
+
+				if (error) {
+					throw new Error(error.message);
+				}
+
+				result = { id: data.id, type: 'request' };
 			}
 
-			setFeedback("Transaction submitted successfully!");
+			// Show appropriate success message
+			if (result?.type === 'request') {
+				setFeedback(`Request sent successfully! Request ID: ${result.id.slice(0, 8)}`);
+			} else {
+				const txHash = result?.transactionHash || result?.txhash || result?.hash;
+				if (txHash) {
+					setFeedback(`Transaction successful! TX: ${txHash.slice(0, 8)}...${txHash.slice(-6)}`);
+					
+					// Store blockchain transaction in database for activity feed
+					try {
+						const { supabase } = await import("@/lib/supabase");
+						const { data: { user } } = await supabase.auth.getUser();
+						
+						if (user) {
+							await supabase.from('transactions').insert({
+								id: txHash,
+								from_user: account.bech32Address,
+								to_user: recipientUser.wallet_address,
+								to_username: recipientUser.username,
+								amount: formData.amount,
+								description: formData.description,
+								payment_type: paymentType,
+								proof_type: formData.proofType,
+								status: "completed",
+								created_at: new Date().toISOString(),
+								created_by: user.id
+							});
+						}
+					} catch (dbError) {
+						console.error("Error storing transaction in database:", dbError);
+						// Don't fail the whole transaction if database storage fails
+					}
+				} else {
+					setFeedback("Transaction submitted successfully!");
+				}
+			}
+			
 			onSubmit(formData);
 		} catch (err: any) {
 			console.error("💥 Transaction failed:", err);
