@@ -20,9 +20,10 @@ import { useTaskSubscriptions, useNotificationSubscriptions } from "@/hooks/useR
 import Toast from "react-native-toast-message";
 import { SimpleWalletManager } from "@/components/wallets/SimpleWalletManager";
 
+import CustomToast from "@/components/CustomToast";
+
 import { Buffer } from "buffer";
 import crypto from "react-native-quick-crypto";
-import CustomToast from "@/components/CustomToast";
 // @ts-ignore
 global.crypto = crypto;
 global.Buffer = Buffer;
