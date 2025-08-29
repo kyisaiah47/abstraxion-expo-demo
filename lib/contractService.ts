@@ -20,16 +20,23 @@ export interface TreasuryStatus {
 
 // Minimal TreasuryService stub (previously from treasuryOfficial)
 export class TreasuryService {
-	constructor(account: any, client: any, treasuryAddress: string, contractAddress: string) {
+	constructor(
+		account: any,
+		client: any,
+		treasuryAddress: string,
+		contractAddress: string
+	) {
 		// Minimal stub implementation
 	}
 
-	async getTreasuryStatus(): Promise<TreasuryStatus & { isConnected: boolean; canSponsorGas: boolean }> {
+	async getTreasuryStatus(): Promise<
+		TreasuryStatus & { isConnected: boolean; canSponsorGas: boolean }
+	> {
 		return {
 			balance: "0",
 			isActive: false,
 			isConnected: false,
-			canSponsorGas: false
+			canSponsorGas: false,
 		};
 	}
 
@@ -125,7 +132,6 @@ export class ContractService {
 			);
 			return result.payments || [];
 		} catch (error) {
-
 			return [];
 		}
 	}
@@ -138,7 +144,6 @@ export class ContractService {
 			);
 			return result.payment;
 		} catch (error) {
-
 			return null;
 		}
 	}
@@ -151,7 +156,6 @@ export class ContractService {
 			);
 			return result.payments || [];
 		} catch (error) {
-
 			return [];
 		}
 	}
@@ -164,7 +168,6 @@ export class ContractService {
 			);
 			return result.payments || [];
 		} catch (error) {
-
 			return [];
 		}
 	}
@@ -177,7 +180,6 @@ export class ContractService {
 			);
 			return result.jobs || [];
 		} catch (error) {
-
 			return [];
 		}
 	}
@@ -190,8 +192,11 @@ export class ContractService {
 		memo?: string
 	): Promise<any> {
 		try {
-
-			const msg = CONTRACT_MESSAGES.SEND_PAYMENT(receiverAddress, amount, memo || "");
+			const msg = CONTRACT_MESSAGES.SEND_PAYMENT(
+				receiverAddress,
+				amount,
+				memo || ""
+			);
 
 			const funds = [{ denom: XION_DENOM, amount: amount.toString() }];
 
@@ -208,9 +213,7 @@ export class ContractService {
 
 			return result;
 		} catch (error) {
-
 			if (error instanceof Error) {
-
 			}
 			throw error;
 		}
@@ -222,7 +225,6 @@ export class ContractService {
 		message: string;
 	}> {
 		try {
-
 			// Test with EXACT CLI message format - pure object
 			const msg = { send_payment: { receiver: "xion1...", amount: "1000000" } };
 
@@ -245,9 +247,7 @@ export class ContractService {
 					success: true,
 					message: `Payment sent successfully! Transaction: ${result1.transactionHash}`,
 				};
-			} catch (error1: any) {
-
-			}
+			} catch (error1: any) {}
 
 			// Try without memo
 
@@ -265,9 +265,7 @@ export class ContractService {
 					success: true,
 					message: `Payment sent successfully! Transaction: ${result2.transactionHash}`,
 				};
-			} catch (error2: any) {
-
-			}
+			} catch (error2: any) {}
 
 			// Try with empty string memo
 
@@ -285,13 +283,10 @@ export class ContractService {
 				message: `Payment sent successfully! Transaction: ${result.transactionHash}`,
 			};
 		} catch (error: any) {
-
 			if (error.message.includes("unauthorized")) {
-
 			}
 
 			if (error.message.includes("unknown request")) {
-
 			}
 
 			return {
@@ -302,7 +297,6 @@ export class ContractService {
 	} // Test just contract connectivity
 	async testContractQuery(): Promise<any> {
 		try {
-
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
 				{ get_users: {} }
@@ -310,7 +304,6 @@ export class ContractService {
 
 			return result;
 		} catch (error) {
-
 			throw error;
 		}
 	}
@@ -318,13 +311,10 @@ export class ContractService {
 	// Test client properties and methods
 	async testClientDebugging(): Promise<any> {
 		try {
-
 			// Check if this is a GranteeSignerClient
 			if (this.client.constructor.name === "GranteeSignerClient") {
-
 				// Check grantee address
 				if ("granterAddress" in this.client) {
-
 				}
 				if ("granteeAddress" in this.client) {
 					const currentGrantee = (this.client as any).granteeAddress;
@@ -332,37 +322,31 @@ export class ContractService {
 					// Check if grantee address matches our grants
 					const expectedGrantee = "xion1n3kghawhgssp0mqtzwx48ks7xpervvka4cqtzp";
 					if (currentGrantee !== expectedGrantee) {
-
 						return {
 							success: false,
 							message: `Grantee address changed from ${expectedGrantee} to ${currentGrantee}. Need new grants!`,
 						};
 					} else {
-
 					}
 				}
 			}
 
 			// Try to check client configuration
 			if ("chainId" in this.client) {
-
 			}
 
 			if ("rpcEndpoint" in this.client) {
-
 			}
 
 			// Test if we can get account info
 
 			return { success: true, message: "Client debugging complete" };
 		} catch (error) {
-
 			return { success: false, message: `Client debugging failed: ${error}` };
 		}
 	} // Test execute without funds (like accepting a job)
 	async testExecuteWithoutFunds(): Promise<any> {
 		try {
-
 			// Try to accept job 1 (this doesn't require funds)
 			const msg = { accept_job: { job_id: 1 } };
 
@@ -376,7 +360,6 @@ export class ContractService {
 
 			return result;
 		} catch (error) {
-
 			throw error;
 		}
 	}
@@ -389,7 +372,6 @@ export class ContractService {
 		try {
 			// Try Treasury first if available
 			if (this.treasuryService) {
-
 				return await this.treasuryService.executeJobAcceptance(jobId);
 			}
 
@@ -409,7 +391,6 @@ export class ContractService {
 				usedTreasury: false,
 			};
 		} catch (error: any) {
-
 			return {
 				success: false,
 				error: error.message || "Failed to accept job",
@@ -428,7 +409,6 @@ export class ContractService {
 		try {
 			// Try Treasury first if available
 			if (this.treasuryService) {
-
 				return await this.treasuryService.executeProofSubmission(
 					jobId,
 					proofText
@@ -451,7 +431,6 @@ export class ContractService {
 				usedTreasury: false,
 			};
 		} catch (error: any) {
-
 			return {
 				success: false,
 				error: error.message || "Failed to submit proof",
@@ -467,7 +446,6 @@ export class ContractService {
 		try {
 			// Try Treasury first if available
 			if (this.treasuryService) {
-
 				return await this.treasuryService.executeProofAcceptance(jobId);
 			}
 
@@ -487,7 +465,6 @@ export class ContractService {
 				usedTreasury: false,
 			};
 		} catch (error: any) {
-
 			return {
 				success: false,
 				error: error.message || "Failed to accept proof",
@@ -503,7 +480,6 @@ export class ContractService {
 		try {
 			// Try Treasury first if available
 			if (this.treasuryService) {
-
 				return await this.treasuryService.executeProofRejection(jobId);
 			}
 
@@ -523,7 +499,6 @@ export class ContractService {
 				usedTreasury: false,
 			};
 		} catch (error: any) {
-
 			return {
 				success: false,
 				error: error.message || "Failed to reject proof",
@@ -539,7 +514,6 @@ export class ContractService {
 		try {
 			// Try Treasury first if available
 			if (this.treasuryService) {
-
 				return await this.treasuryService.executeJobCancellation(jobId);
 			}
 
@@ -559,7 +533,6 @@ export class ContractService {
 				usedTreasury: false,
 			};
 		} catch (error: any) {
-
 			return {
 				success: false,
 				error: error.message || "Failed to cancel job",
@@ -587,7 +560,6 @@ export class ContractService {
 			const status = await this.treasuryService.getTreasuryStatus();
 			return status.isConnected && status.canSponsorGas;
 		} catch (error) {
-
 			return false;
 		}
 	}
@@ -671,7 +643,6 @@ export class ContractService {
 		message: string;
 	}> {
 		try {
-
 			// Get current grantee address from the client
 			const granteeAddress = (this.client as any).granteeAddress;
 
@@ -707,7 +678,6 @@ export class ContractService {
 					"Direct grant creation from app requires using Abstraxion's grant flow. Use CLI method instead.",
 			};
 		} catch (error: any) {
-
 			return {
 				success: false,
 				message: `Failed to create grant: ${error.message || "Unknown error"}`,
@@ -720,7 +690,6 @@ export class ContractService {
 	 */
 	async testDirectSigning(): Promise<{ success: boolean; message: string }> {
 		try {
-
 			// Check if we can access the raw signer
 			if ("signer" in this.client) {
 				const signer = (this.client as any).signer;
@@ -730,7 +699,6 @@ export class ContractService {
 					const accounts = await signer.accounts();
 
 					if (accounts.length > 0) {
-
 						return {
 							success: true,
 							message:
@@ -742,7 +710,6 @@ export class ContractService {
 
 			return { success: false, message: "Cannot access direct signer" };
 		} catch (error: any) {
-
 			return {
 				success: false,
 				message: `Direct signing test failed: ${
@@ -761,18 +728,14 @@ export class ContractService {
 		message: string;
 	}> {
 		try {
-
 			// Check if client has the necessary methods for authorization
 			if ("granterAddress" in this.client) {
-
 			}
 
 			// First, try a simple query to ensure basic connection works
 			try {
 				const queryResult = await this.queryJobs();
-
 			} catch (queryError) {
-
 				return { success: false, message: "Basic query connection failed" };
 			}
 
@@ -801,7 +764,6 @@ export class ContractService {
 					message: "Grants appear to be working! Transaction succeeded.",
 				};
 			} catch (executeError: any) {
-
 				if (executeError.message?.includes("unauthorized")) {
 					return {
 						success: false,
@@ -821,7 +783,6 @@ export class ContractService {
 				} else if (
 					executeError.message?.includes("Client cannot accept own job")
 				) {
-
 					return {
 						success: true,
 						message:
@@ -835,7 +796,6 @@ export class ContractService {
 				}
 			}
 		} catch (error: any) {
-
 			return {
 				success: false,
 				message: `Grant creation failed: ${error.message || "Unknown error"}`,
@@ -890,7 +850,6 @@ export class ContractService {
 		message: string;
 	}> {
 		try {
-
 			// Test with a simple job posting - this proves Treasury authorization works
 			const description = `Treasury authorization test job - ${Date.now()}`;
 			const msg = CONTRACT_MESSAGES.POST_JOB(description);
@@ -917,11 +876,8 @@ export class ContractService {
 				message: `Treasury authorization works! Job posted via Treasury. Transaction: ${result.transactionHash}`,
 			};
 		} catch (error: any) {
-
 			if (error.message.includes("unauthorized")) {
-
 			} else if (error.message.includes("unknown variant")) {
-
 				return {
 					success: true,
 					message:
@@ -942,7 +898,6 @@ export class ContractService {
 		jobId?: number;
 	}> {
 		try {
-
 			const description = `Test job created with Treasury authorization! Created at ${new Date().toISOString()}`;
 			const escrowAmount = "1000000"; // 1 XION
 
@@ -982,9 +937,7 @@ export class ContractService {
 						}
 					}
 				}
-			} catch (e) {
-
-			}
+			} catch (e) {}
 
 			return {
 				success: true,
@@ -994,7 +947,6 @@ export class ContractService {
 				jobId,
 			};
 		} catch (error: any) {
-
 			if (error.message?.includes("unauthorized")) {
 				return {
 					success: false,
@@ -1015,7 +967,6 @@ export class ContractService {
 		message: string;
 	}> {
 		try {
-
 			// Test query access - this proves Treasury authorization for read operations
 			const result = await this.client.queryContractSmart(
 				CONTRACT_CONFIG.address,
@@ -1029,7 +980,6 @@ export class ContractService {
 				} jobs. Treasury authorization is working perfectly!`,
 			};
 		} catch (error: any) {
-
 			if (error.message?.includes("unauthorized")) {
 				return {
 					success: false,
@@ -1048,12 +998,9 @@ export class ContractService {
 	// Add wallet disconnection functionality
 	async disconnectWallet(): Promise<void> {
 		try {
-
 			// Clear cached wallet connections
 			this.account = { bech32Address: "" };
-
 		} catch (error) {
-
 			throw error;
 		}
 	}
@@ -1061,15 +1008,12 @@ export class ContractService {
 	// Clear cached wallet-contract connections
 	async clearCachedConnections(): Promise<void> {
 		try {
-
 			// Logic to clear cached connections (e.g., localStorage, sessionStorage, etc.)
 			if (typeof window !== "undefined") {
 				localStorage.removeItem("walletConnection");
 				sessionStorage.removeItem("walletConnection");
 			}
-
 		} catch (error) {
-
 			throw error;
 		}
 	}
@@ -1077,13 +1021,10 @@ export class ContractService {
 	// Ensure wallet reconnects to the new contract
 	async reconnectWallet(): Promise<void> {
 		try {
-
 			await this.disconnectWallet();
 			await this.clearCachedConnections();
 			// Logic to reconnect wallet (e.g., using the new contract address)
-
 		} catch (error) {
-
 			throw error;
 		}
 	}
@@ -1091,11 +1032,8 @@ export class ContractService {
 	// Update wallet permission screen to show social payment permissions
 	async updateWalletPermissions(): Promise<void> {
 		try {
-
 			// Logic to update wallet permissions (e.g., request new permissions)
-
 		} catch (error) {
-
 			throw error;
 		}
 	}
@@ -1103,11 +1041,8 @@ export class ContractService {
 	// Update Abstraxion configuration to use the new contract address
 	async updateAbstraxionConfig(): Promise<void> {
 		try {
-
 			// Logic to update Abstraxion client configuration
-
 		} catch (error) {
-
 			throw error;
 		}
 	}
