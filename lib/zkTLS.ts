@@ -96,10 +96,10 @@ export class ZKTLSService {
 			const config: WebsiteVerificationConfig = {
 				providerId: RECLAIM_CONFIG.providerId || "http",
 				params: {
-					// GitHub Pull Request Merged parameters
-					"ownerLogin": "your-github-username", // GitHub username
-					"name": "your-repo-name", // Repository name  
-					"resourcePath": "/pull/123" // Pull request path
+					// GitHub Pull Request Merged parameters - these should be dynamically set by the caller
+					"ownerLogin": deliveryUrl?.includes('github.com') ? deliveryUrl.split('/')[3] : "placeholder", 
+					"name": deliveryUrl?.includes('github.com') ? deliveryUrl.split('/')[4] : "placeholder",
+					"resourcePath": deliveryUrl?.includes('/pull/') ? '/' + deliveryUrl.split('/').slice(5).join('/') : "/pull/1"
 				},
 				context: {
 					contextAddress: "0x0000000000000000000000000000000000000000", // placeholder
