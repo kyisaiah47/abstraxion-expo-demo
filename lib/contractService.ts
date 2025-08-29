@@ -273,9 +273,23 @@ export class ContractService {
 				for (const event of result.events) {
 					if (event.type === 'wasm' && event.attributes) {
 						for (const attr of event.attributes) {
-							if (attr.key === 'job_id') {
+							if (attr.key === 'task_id') {
 								jobId = parseInt(attr.value);
 								break;
+							}
+						}
+					}
+				}
+				
+				// Fallback to job_id in case contract uses different key
+				if (!jobId) {
+					for (const event of result.events) {
+						if (event.type === 'wasm' && event.attributes) {
+							for (const attr of event.attributes) {
+								if (attr.key === 'job_id') {
+									jobId = parseInt(attr.value);
+									break;
+								}
 							}
 						}
 					}
@@ -287,7 +301,6 @@ export class ContractService {
 				jobId: jobId
 			};
 		} catch (error) {
-			console.error("PostJob error:", error);
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : "Failed to create job"
@@ -303,20 +316,28 @@ export class ContractService {
 				}
 			};
 
+			console.log("🔓 Approving task for job:", jobId);
+			console.log("📋 Contract message:", JSON.stringify(msg, null, 2));
+
 			const result = await this.client.execute(
 				this.account.bech32Address,
 				CONTRACT_CONFIG.address,
 				msg,
 				"auto",
-				`Accept proof for job ${jobId}`
+				`Approve task ${jobId}`
 			);
+
+			console.log("✅ Task approved successfully:", {
+				transactionHash: result.transactionHash,
+				events: result.events?.length || 0
+			});
 
 			return { success: true };
 		} catch (error) {
-			console.error("AcceptProof error:", error);
+			console.error("❌ ApproveTask error:", error);
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : "Failed to accept proof"
+				error: error instanceof Error ? error.message : "Failed to approve task"
 			};
 		}
 	}
@@ -551,9 +572,16 @@ export class ContractService {
 				return await this.treasuryService.executeProofAcceptance(jobId);
 			}
 
-			// Fallback to direct payment
+			// Fallback to direct payment with correct message format
+			const msg = {
+				approve_task: {
+					task_id: jobId
+				}
+			};
 
-			const msg = CONTRACT_MESSAGES.ACCEPT_PROOF(jobId);
+			console.log("🔓 Treasury fallback - Approving task for job:", jobId);
+			console.log("📋 Contract message:", JSON.stringify(msg, null, 2));
+
 			const result = await this.client.execute(
 				this.account.bech32Address,
 				CONTRACT_CONFIG.address,
@@ -561,12 +589,18 @@ export class ContractService {
 				"auto"
 			);
 
+			console.log("✅ Task approved successfully via Treasury fallback:", {
+				transactionHash: result.transactionHash,
+				usedTreasury: false,
+			});
+
 			return {
 				success: true,
 				transactionHash: result.transactionHash,
 				usedTreasury: false,
 			};
 		} catch (error: any) {
+			console.error("❌ Treasury fallback ApproveTask error:", error);
 			return {
 				success: false,
 				error: error.message || "Failed to accept proof",

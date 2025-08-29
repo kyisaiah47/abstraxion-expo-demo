@@ -175,7 +175,8 @@ export default function RootLayout() {
 					<Toast
 						config={{
 							success: (props) => <CustomToast {...props} />,
-							// You can also override 'error', 'info', etc if you want
+							info: (props) => <CustomToast {...props} />,
+							error: (props) => <CustomToast {...props} />,
 						}}
 					/>
 				</ThemeProvider>

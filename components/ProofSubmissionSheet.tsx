@@ -43,13 +43,30 @@ export default function ProofSubmissionSheet({
 		setProof(""); // Reset form after submission
 	};
 
-	// Debug function to bypass Reclaim and simulate successful zkTLS verification
+	// Debug function to bypass Reclaim but execute real blockchain payment release
 	const handleDebugZKTLSVerification = async () => {
+		if (!job || !userAddress || !contractClient) {
+			Alert.alert("Error", "Missing required information for verification");
+			return;
+		}
+
 		setIsGeneratingProof(true);
 		
-		// Simulate a successful zkTLS proof
-		const mockZkTLSProof = `zkTLS GitHub verification completed - Proof ID: debug_${Date.now()}`;
-		onSubmit(mockZkTLSProof);
+		try {
+			// Simulate zkTLS proof generation (2-3 seconds)
+			await new Promise(resolve => setTimeout(resolve, 2500));
+			
+			// Create mock zkTLS proof (bypasses Reclaim)
+			const mockZkTLSProof = `zkTLS GitHub verification completed - Proof ID: debug_${Date.now()}`;
+			
+			// But call the REAL blockchain to release payment
+			// This will trigger the actual escrow release via handleProofSubmit
+			onSubmit(mockZkTLSProof);
+			
+		} catch (error) {
+			console.error("Debug verification error:", error);
+			Alert.alert("Debug Error", error instanceof Error ? error.message : "Debug verification failed");
+		}
 		
 		setIsGeneratingProof(false);
 	};

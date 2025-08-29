@@ -276,7 +276,6 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 							position: 'bottom',
 						});
 					} catch (escrowError) {
-						console.error("Blockchain escrow error:", escrowError);
 						Toast.show({
 							type: 'error',
 							text1: 'Escrow Failed',
@@ -291,21 +290,30 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 				try {
 					const { supabaseServiceClient } = await import("@/lib/supabase");
 
+					// For tasks, we don't use the legacy tasks table - blockchain is the source of truth
+					const insertData = {
+						actor: currentUser.username,
+						verb: paymentType === 'request_money' ? 'request_money' : 'created_task',
+						meta: {
+							amount: parseFloat(formData.amount) * 1000000, // Convert to uxion
+							description: formData.description,
+							to_username: recipientUser.username,
+							request_id: requestId,
+							status: 'pending',
+							proof_type: formData.proofType,
+							blockchain_task_id: blockchainJobId // Store blockchain task ID in meta for tasks
+						}
+					};
+
+					// Only set task_id for money requests (which use legacy tasks table)
+					// For created_task, we store blockchain_task_id in meta instead
+					if (paymentType === 'request_money') {
+						insertData.task_id = blockchainJobId;
+					}
+
 					const { data, error } = await supabaseServiceClient
 						.from('activity_feed')
-						.insert({
-							actor: currentUser.username,
-							verb: paymentType === 'request_money' ? 'request_money' : 'created_task',
-							task_id: blockchainJobId, // Link to blockchain job for tasks
-							meta: {
-								amount: parseFloat(formData.amount) * 1000000, // Convert to uxion
-								description: formData.description,
-								to_username: recipientUser.username,
-								request_id: requestId,
-								status: 'pending',
-								proof_type: formData.proofType
-							}
-						})
+						.insert(insertData)
 						.select()
 						.single();
 
@@ -315,7 +323,6 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 
 					result = { id: requestId, type: 'request', data };
 				} catch (dbError) {
-					console.error('Database error:', dbError);
 					throw new Error(`Failed to save request: ${dbError.message}`);
 				}
 			}
@@ -373,9 +380,6 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 			
 			onSubmit(formData);
 		} catch (err: any) {
-			console.error("💥 Transaction failed:", err);
-			console.error("💥 Error message:", err?.message);
-			console.error("💥 Full error:", err);
 
 			// Check if it's a contract method not found error
 			if (

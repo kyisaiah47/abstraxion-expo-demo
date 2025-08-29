@@ -138,10 +138,12 @@ export const CONTRACT_MESSAGES = {
 		},
 	}),
 
-	SUBMIT_ZKTLS_PROOF: (jobId: number, proof: string) => ({
+	SUBMIT_ZKTLS_PROOF: (taskId: number, proof: string, zkProofHash: string, proofBlobOrRef: string) => ({
 		submit_zktls_proof: {
-			job_id: jobId,
+			task_id: taskId,
 			proof,
+			zk_proof_hash: zkProofHash,
+			proof_blob_or_ref: proofBlobOrRef,
 		},
 	}),
 };

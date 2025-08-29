@@ -45,12 +45,6 @@ export default function ProfileScreen() {
 	const [unreadCount, setUnreadCount] = useState(0);
 	const [showZkTLSModal, setShowZkTLSModal] = useState(false);
 	const [showLogoutModal, setShowLogoutModal] = useState(false);
-	const [userStats, setUserStats] = useState({
-		totalTasks: 0,
-		completedTasks: 0,
-		totalEarned: 0,
-		averageRating: 0,
-	});
 
 	// Theme and auth context
 	const { user } = useAuth();
@@ -81,67 +75,11 @@ export default function ProfileScreen() {
 		}
 	};
 
-	// Fetch user stats and notifications
-	const fetchUserStats = async () => {
+	// Fetch notifications count
+	const fetchNotificationCount = async () => {
 		if (!user?.walletAddress) return;
 
 		try {
-			// Get legacy tasks from tasks table
-			const { data: legacyTasks, error: tasksError } = await supabase
-				.from("tasks")
-				.select("*")
-				.or(`payer.eq.${user.walletAddress},worker.eq.${user.walletAddress}`);
-			
-			// Get new tasks from activity_feed table
-			const { data: activityTasks, error: activityError } = await supabase
-				.from("activity_feed")
-				.select("*")
-				.eq("verb", "created_task")
-				.or(`actor.eq.${currentUser?.username},meta->>to_username.eq.${currentUser?.username}`);
-
-			if (tasksError) {
-				console.error("Error fetching legacy tasks:", tasksError);
-			}
-			if (activityError) {
-				console.error("Error fetching activity tasks:", activityError);
-			}
-
-			// Combine legacy and new task data
-			const allLegacyTasks = legacyTasks || [];
-			const allActivityTasks = activityTasks || [];
-			
-			// Calculate stats from legacy tasks table
-			const legacyTotalTasks = allLegacyTasks.length;
-			const legacyCompletedTasks = allLegacyTasks.filter((task) => task.status === "released").length;
-			const legacyEarned = allLegacyTasks
-				.filter((task) => task.status === "released" && task.worker === user.walletAddress)
-				.reduce((sum, task) => sum + parseFloat(task.amount) / 1000000, 0);
-			
-			// Calculate stats from activity_feed tasks
-			const activityTotalTasks = allActivityTasks.length;
-			const activityCompletedTasks = allActivityTasks.filter(
-				(task) => task.meta?.status === "released" || task.meta?.status === "verified"
-			).length;
-			const activityEarned = allActivityTasks
-				.filter(
-					(task) => 
-						(task.meta?.status === "released" || task.meta?.status === "verified") &&
-						task.meta?.to_username === currentUser?.username
-				)
-				.reduce((sum, task) => sum + (parseFloat(task.meta?.amount || "0") / 1000000), 0);
-
-			// Combine totals
-			const totalTasks = legacyTotalTasks + activityTotalTasks;
-			const completedTasks = legacyCompletedTasks + activityCompletedTasks;
-			const totalEarned = legacyEarned + activityEarned;
-
-			setUserStats({
-				totalTasks,
-				completedTasks,
-				totalEarned,
-				averageRating: 4.8, // Placeholder for now
-			});
-
 			// Get unread notifications count
 			const { data: userData, error: userError } = await supabase
 				.from("users")
@@ -163,7 +101,7 @@ export default function ProfileScreen() {
 				setUnreadCount(count || 0);
 			}
 		} catch (error) {
-			console.error("Error fetching user stats:", error);
+			console.error("Error fetching notifications:", error);
 		}
 	};
 
@@ -199,9 +137,11 @@ export default function ProfileScreen() {
 		loadUserData();
 	}, [walletAddress]);
 
-	// Fetch user stats and notifications
+	// Fetch notifications when user is available
 	useEffect(() => {
-		fetchUserStats();
+		if (user?.walletAddress) {
+			fetchNotificationCount();
+		}
 	}, [user?.walletAddress]);
 
 	const menuSections = [
@@ -438,73 +378,6 @@ export default function ProfileScreen() {
 					</View>
 				</View>
 
-				{/* Stats Card */}
-				<View
-					style={[
-						styles.statsCard,
-						{
-							backgroundColor: colors.surface.secondary,
-							borderColor: colors.border.primary,
-						},
-					]}
-				>
-					<View style={styles.statsRow}>
-						<View style={styles.statItem}>
-							<Text style={[styles.statValue, { color: colors.text.primary }]}>
-								{userStats.totalTasks}
-							</Text>
-							<Text
-								style={[styles.statLabel, { color: colors.text.secondary }]}
-							>
-								Total Tasks
-							</Text>
-						</View>
-						<View style={styles.statItem}>
-							<Text
-								style={[
-									styles.statValue,
-									{ color: colors.status?.success || "#059669" },
-								]}
-							>
-								{userStats.completedTasks}
-							</Text>
-							<Text
-								style={[styles.statLabel, { color: colors.text.secondary }]}
-							>
-								Completed
-							</Text>
-						</View>
-						<View style={styles.statItem}>
-							<Text style={[styles.statValue, { color: colors.text.primary }]}>
-								${userStats.totalEarned.toFixed(1)}
-							</Text>
-							<Text
-								style={[styles.statLabel, { color: colors.text.secondary }]}
-							>
-								Earned
-							</Text>
-						</View>
-						<View style={styles.statItem}>
-							<View style={styles.ratingContainer}>
-								<Text
-									style={[styles.statValue, { color: colors.text.primary }]}
-								>
-									{userStats.averageRating.toFixed(1)}
-								</Text>
-								<Ionicons
-									name="star"
-									size={16}
-									color="#F59E0B"
-								/>
-							</View>
-							<Text
-								style={[styles.statLabel, { color: colors.text.secondary }]}
-							>
-								Rating
-							</Text>
-						</View>
-					</View>
-				</View>
 
 				{/* Menu Sections */}
 				{menuSections.map(renderMenuSection)}
@@ -706,41 +579,6 @@ const createStyles = (colors: any) =>
 			fontSize: 10,
 		},
 
-		// Stats Card Styles
-		statsCard: {
-			borderRadius: DesignSystem.radius.xl,
-			padding: DesignSystem.spacing.xl,
-			marginBottom: DesignSystem.spacing["3xl"],
-			borderWidth: 1,
-			...DesignSystem.shadows.sm,
-		},
-
-		statsRow: {
-			flexDirection: "row",
-			justifyContent: "space-between",
-		},
-
-		statItem: {
-			alignItems: "center",
-			flex: 1,
-		},
-
-		statValue: {
-			...DesignSystem.typography.h3,
-			fontWeight: "700",
-			marginBottom: 4,
-		},
-
-		statLabel: {
-			...DesignSystem.typography.body.small,
-			textAlign: "center",
-		},
-
-		ratingContainer: {
-			flexDirection: "row",
-			alignItems: "center",
-			gap: 4,
-		},
 
 		bottomSpacer: {
 			height: 140, // Space for tab bar
