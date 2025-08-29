@@ -222,10 +222,34 @@ export class ContractService {
 	async postJob(
 		description: string,
 		amount: number,
-		proofType: string = 'soft'
+		proofType: string = 'soft',
+		toUsername: string
 	): Promise<{ success: boolean; jobId?: number; error?: string }> {
 		try {
-			const msg = CONTRACT_MESSAGES.POST_JOB(description);
+			// Map frontend proof types to contract proof types
+			const contractProofType = (() => {
+				switch (proofType.toLowerCase()) {
+					case 'zktls': return 'ZkTLS';
+					case 'soft': return 'Soft';
+					case 'manual': return 'Manual';
+					case 'hybrid': return 'Hybrid';
+					default: return 'Soft';
+				}
+			})();
+
+			const msg = {
+				create_task: {
+					description: description,
+					proof_type: contractProofType,
+					to_username: toUsername,
+					amount: {
+						denom: XION_DENOM,
+						amount: (amount * XION_DECIMALS).toString()
+					},
+					deadline_ts: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days from now in seconds
+					endpoint: "" // Optional endpoint for zkTLS verification
+				}
+			};
 
 			const funds = [
 				{
@@ -273,7 +297,11 @@ export class ContractService {
 
 	async acceptProof(jobId: number): Promise<{ success: boolean; error?: string }> {
 		try {
-			const msg = CONTRACT_MESSAGES.ACCEPT_PROOF(jobId);
+			const msg = {
+				approve_task: {
+					task_id: jobId
+				}
+			};
 
 			const result = await this.client.execute(
 				this.account.bech32Address,

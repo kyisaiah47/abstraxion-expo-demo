@@ -259,7 +259,8 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 						const jobResult = await contractService.postJob(
 							formData.description,
 							parseFloat(formData.amount), // Amount in XION
-							formData.proofType || 'soft'
+							formData.proofType || 'soft',
+							recipientUser.username // to_username field
 						);
 						
 						if (!jobResult.success) {

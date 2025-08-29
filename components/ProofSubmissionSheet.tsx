@@ -43,6 +43,17 @@ export default function ProofSubmissionSheet({
 		setProof(""); // Reset form after submission
 	};
 
+	// Debug function to bypass Reclaim and simulate successful zkTLS verification
+	const handleDebugZKTLSVerification = async () => {
+		setIsGeneratingProof(true);
+		
+		// Simulate a successful zkTLS proof
+		const mockZkTLSProof = `zkTLS GitHub verification completed - Proof ID: debug_${Date.now()}`;
+		onSubmit(mockZkTLSProof);
+		
+		setIsGeneratingProof(false);
+	};
+
 	const handleStartZKTLSVerification = async () => {
 		if (!job || !userAddress || !contractClient) {
 			Alert.alert("Error", "Missing required information for verification");
@@ -270,18 +281,34 @@ export default function ProofSubmissionSheet({
 				</View>
 
 				{userAddress && contractClient ? (
-					<TouchableOpacity
-						style={[styles.zkTLSButton, { opacity: isGeneratingProof ? 0.6 : 1 }]}
-						onPress={handleStartZKTLSVerification}
-						disabled={isGeneratingProof}
-					>
-						<View style={styles.buttonContent}>
-							<Ionicons name="shield-checkmark" size={18} color={DesignSystem.colors.text.inverse} />
-							<Text style={styles.zkTLSButtonText}>
-								{isGeneratingProof ? "Generating Proof..." : "Start zkTLS Verification"}
-							</Text>
-						</View>
-					</TouchableOpacity>
+					<>
+						{/* Debug bypass button */}
+						<TouchableOpacity
+							style={[styles.debugButton]}
+							onPress={handleDebugZKTLSVerification}
+							disabled={isGeneratingProof}
+						>
+							<View style={styles.buttonContent}>
+								<Ionicons name="bug" size={18} color="#FF6B35" />
+								<Text style={styles.debugButtonText}>
+									DEBUG: Simulate zkTLS Success
+								</Text>
+							</View>
+						</TouchableOpacity>
+						
+						<TouchableOpacity
+							style={[styles.zkTLSButton, { opacity: isGeneratingProof ? 0.6 : 1 }]}
+							onPress={handleStartZKTLSVerification}
+							disabled={isGeneratingProof}
+						>
+							<View style={styles.buttonContent}>
+								<Ionicons name="shield-checkmark" size={18} color={DesignSystem.colors.text.inverse} />
+								<Text style={styles.zkTLSButtonText}>
+									{isGeneratingProof ? "Generating Proof..." : "Start zkTLS Verification"}
+								</Text>
+							</View>
+						</TouchableOpacity>
+					</>
 				) : (
 					<View style={styles.errorCard}>
 						<Ionicons name="warning" size={24} color={DesignSystem.colors.status.error} />
@@ -567,6 +594,25 @@ const styles = StyleSheet.create({
 		color: DesignSystem.colors.text.inverse,
 		fontWeight: "700",
 		fontSize: 16,
+	},
+	
+	debugButton: {
+		backgroundColor: "#FF6B3520", // Light orange background
+		borderWidth: 2,
+		borderColor: "#FF6B35",
+		borderStyle: "dashed",
+		paddingVertical: DesignSystem.spacing.lg,
+		paddingHorizontal: DesignSystem.spacing.xl,
+		borderRadius: DesignSystem.radius.lg,
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: DesignSystem.spacing.md,
+	},
+	debugButtonText: {
+		...DesignSystem.typography.label.medium,
+		color: "#FF6B35",
+		fontWeight: "600",
+		fontSize: 14,
 	},
 	
 	secondaryButton: {
