@@ -219,6 +219,80 @@ export class ContractService {
 		}
 	}
 
+	async postJob(
+		description: string,
+		amount: number,
+		proofType: string = 'soft'
+	): Promise<{ success: boolean; jobId?: number; error?: string }> {
+		try {
+			const msg = CONTRACT_MESSAGES.POST_JOB(description);
+
+			const funds = [
+				{
+					denom: XION_DENOM,
+					amount: (amount * XION_DECIMALS).toString(), // Convert XION to uxion
+				},
+			];
+
+			const result = await this.client.execute(
+				this.account.bech32Address,
+				CONTRACT_CONFIG.address,
+				msg,
+				"auto",
+				`Job: ${description}`,
+				funds
+			);
+
+			// Extract job ID from transaction events
+			let jobId;
+			if (result.events) {
+				for (const event of result.events) {
+					if (event.type === 'wasm' && event.attributes) {
+						for (const attr of event.attributes) {
+							if (attr.key === 'job_id') {
+								jobId = parseInt(attr.value);
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			return {
+				success: true,
+				jobId: jobId
+			};
+		} catch (error) {
+			console.error("PostJob error:", error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Failed to create job"
+			};
+		}
+	}
+
+	async acceptProof(jobId: number): Promise<{ success: boolean; error?: string }> {
+		try {
+			const msg = CONTRACT_MESSAGES.ACCEPT_PROOF(jobId);
+
+			const result = await this.client.execute(
+				this.account.bech32Address,
+				CONTRACT_CONFIG.address,
+				msg,
+				"auto",
+				`Accept proof for job ${jobId}`
+			);
+
+			return { success: true };
+		} catch (error) {
+			console.error("AcceptProof error:", error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Failed to accept proof"
+			};
+		}
+	}
+
 	// Add test function for minimal format
 	async testSendPaymentMinimal(): Promise<{
 		success: boolean;

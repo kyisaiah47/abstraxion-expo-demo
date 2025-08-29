@@ -149,7 +149,7 @@ export default function RecentActivityScreen() {
 			
 			const supabase = createClient(
 				process.env.EXPO_PUBLIC_SUPABASE_URL!,
-				process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+				process.env.EXPO_PUBLIC_SUPABASE_SERVICE_KEY!
 			);
 			
 			// Detect if this is a zkTLS proof and check verification method
@@ -157,7 +157,7 @@ export default function RecentActivityScreen() {
 			const proofType = selectedTask.meta?.proof_type;
 			
 			// Pure zkTLS = auto verify, Hybrid = submit for manual review with zkTLS proof
-			const newStatus = (isZkTLSProof && proofType === 'zktls') ? 'verified' : 'proof_submitted';
+			let newStatus = (isZkTLSProof && proofType === 'zktls') ? 'verified' : 'proof_submitted';
 			
 			// Determine verification type based on proof type and submission method
 			let verificationType: 'zktls_automated' | 'manual' | 'hybrid' = 'manual';
@@ -167,6 +167,49 @@ export default function RecentActivityScreen() {
 				verificationType = 'hybrid';
 			} else {
 				verificationType = 'manual';
+			}
+
+			// For tasks with blockchain job_id, submit proof to blockchain
+			if (selectedTask.task_id && isZkTLSProof) {
+				try {
+					Toast.show({
+						type: 'info',
+						text1: 'Submitting to Blockchain',
+						text2: 'Processing zkTLS proof on chain...',
+						position: 'bottom',
+					});
+
+					const { ContractService } = await import("@/lib/contractService");
+					const contractService = new ContractService(account, signingClient);
+					
+					// For pure zkTLS, auto-accept the proof to release payment immediately
+					if (proofType === 'zktls') {
+						const acceptResult = await contractService.acceptProof(selectedTask.task_id);
+						
+						if (acceptResult.success) {
+							newStatus = 'released'; // Payment released
+							
+							Toast.show({
+								type: 'success',
+								text1: 'Payment Released!',
+								text2: 'zkTLS proof verified, funds transferred',
+								position: 'bottom',
+							});
+						} else {
+							throw new Error(`Failed to release payment: ${acceptResult.error}`);
+						}
+					}
+					
+				} catch (blockchainError) {
+					console.error("Blockchain operation error:", blockchainError);
+					Toast.show({
+						type: 'error',
+						text1: 'Blockchain Error', 
+						text2: blockchainError instanceof Error ? blockchainError.message : 'Failed blockchain operation',
+						position: 'bottom',
+					});
+					// Continue with database update even if blockchain fails
+				}
 			}
 
 			// Update the original task activity with proof submission
@@ -182,7 +225,6 @@ export default function RecentActivityScreen() {
 
 			// Debug log
 			console.log("🔧 Database update data:", JSON.stringify(updateData, null, 2));
-			alert(`DB Update: status=${newStatus}, verificationType=${verificationType}, taskId=${selectedTask.id}`);
 
 			const { error: updateError } = await supabase
 				.from('activity_feed')
@@ -191,18 +233,19 @@ export default function RecentActivityScreen() {
 
 			if (updateError) {
 				console.error("Database update error:", updateError);
-				alert(`DB Error: ${JSON.stringify(updateError)}`);
+				Toast.show({
+					type: 'error',
+					text1: 'DB Update Failed',
+					text2: updateError.message,
+					position: 'bottom',
+				});
 				throw new Error("Failed to update task status");
-			} else {
-				alert("DB Update successful!");
 			}
 			
 			setShowProofModal(false);
 			setSelectedTask(null);
 			await refetch();
 			
-			// Debug: Check if the data was updated after refetch
-			alert(`After refetch - payments count: ${payments?.length || 0}`);
 			
 			const isAutoVerified = isZkTLSProof && proofType === 'zktls';
 			

@@ -76,11 +76,6 @@ export default function ProofSubmissionSheet({
 						const zkTLSProof = `zkTLS GitHub verification completed - Proof ID: ${result.proof.identifier}`;
 						onSubmit(zkTLSProof);
 						
-						Alert.alert(
-							"Verification Complete!",
-							"Your GitHub proof has been verified and submitted. Payment will be released automatically.",
-							[{ text: "Done" }]
-						);
 						setIsGeneratingProof(false);
 					} else {
 						// This shouldn't happen with Reclaim's in-app SDK, but handle gracefully

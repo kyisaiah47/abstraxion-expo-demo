@@ -86,28 +86,54 @@ export default function ProfileScreen() {
 		if (!user?.walletAddress) return;
 
 		try {
-			// Get user tasks statistics
-			const { data: tasks, error: tasksError } = await supabase
+			// Get legacy tasks from tasks table
+			const { data: legacyTasks, error: tasksError } = await supabase
 				.from("tasks")
 				.select("*")
 				.or(`payer.eq.${user.walletAddress},worker.eq.${user.walletAddress}`);
+			
+			// Get new tasks from activity_feed table
+			const { data: activityTasks, error: activityError } = await supabase
+				.from("activity_feed")
+				.select("*")
+				.eq("verb", "created_task")
+				.or(`actor.eq.${currentUser?.username},meta->>to_username.eq.${currentUser?.username}`);
 
 			if (tasksError) {
-				console.error("Error fetching tasks:", tasksError);
-				return;
+				console.error("Error fetching legacy tasks:", tasksError);
+			}
+			if (activityError) {
+				console.error("Error fetching activity tasks:", activityError);
 			}
 
-			const totalTasks = tasks?.length || 0;
-			const completedTasks =
-				tasks?.filter((task) => task.status === "released").length || 0;
-			const totalEarned =
-				tasks
-					?.filter(
-						(task) =>
-							task.status === "released" && task.worker === user.walletAddress
-					)
-					.reduce((sum, task) => sum + parseFloat(task.amount) / 1000000, 0) ||
-				0;
+			// Combine legacy and new task data
+			const allLegacyTasks = legacyTasks || [];
+			const allActivityTasks = activityTasks || [];
+			
+			// Calculate stats from legacy tasks table
+			const legacyTotalTasks = allLegacyTasks.length;
+			const legacyCompletedTasks = allLegacyTasks.filter((task) => task.status === "released").length;
+			const legacyEarned = allLegacyTasks
+				.filter((task) => task.status === "released" && task.worker === user.walletAddress)
+				.reduce((sum, task) => sum + parseFloat(task.amount) / 1000000, 0);
+			
+			// Calculate stats from activity_feed tasks
+			const activityTotalTasks = allActivityTasks.length;
+			const activityCompletedTasks = allActivityTasks.filter(
+				(task) => task.meta?.status === "released" || task.meta?.status === "verified"
+			).length;
+			const activityEarned = allActivityTasks
+				.filter(
+					(task) => 
+						(task.meta?.status === "released" || task.meta?.status === "verified") &&
+						task.meta?.to_username === currentUser?.username
+				)
+				.reduce((sum, task) => sum + (parseFloat(task.meta?.amount || "0") / 1000000), 0);
+
+			// Combine totals
+			const totalTasks = legacyTotalTasks + activityTotalTasks;
+			const completedTasks = legacyCompletedTasks + activityCompletedTasks;
+			const totalEarned = legacyEarned + activityEarned;
 
 			setUserStats({
 				totalTasks,

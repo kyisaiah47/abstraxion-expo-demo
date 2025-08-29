@@ -233,21 +233,69 @@ export default function SocialPaymentForm(props: SocialPaymentFormProps) {
 					throw new Error("Current user profile not found");
 				}
 
-				// Add request to activity feed
+				// Generate request ID
+				const requestId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+					const r = Math.random() * 16 | 0;
+					const v = c == 'x' ? r : (r & 0x3 | 0x8);
+					return v.toString(16);
+				});
+
+				let blockchainJobId = null;
+				
+				// For tasks, create blockchain job with escrow first
+				if (paymentType === "request_task") {
+					try {
+						Toast.show({
+							type: 'info',
+							text1: 'Creating Escrow',
+							text2: 'Setting up blockchain escrow job...',
+							position: 'bottom',
+						});
+
+						const { ContractService } = await import("@/lib/contractService");
+						const contractService = new ContractService(account, signingClient);
+						
+						// Create blockchain job with escrowed payment
+						const jobResult = await contractService.postJob(
+							formData.description,
+							parseFloat(formData.amount), // Amount in XION
+							formData.proofType || 'soft'
+						);
+						
+						if (!jobResult.success) {
+							throw new Error(`Failed to create blockchain job: ${jobResult.error}`);
+						}
+						
+						blockchainJobId = jobResult.jobId;
+						
+						Toast.show({
+							type: 'success', 
+							text1: 'Escrow Created',
+							text2: `${formData.amount} XION escrowed successfully`,
+							position: 'bottom',
+						});
+					} catch (escrowError) {
+						console.error("Blockchain escrow error:", escrowError);
+						Toast.show({
+							type: 'error',
+							text1: 'Escrow Failed',
+							text2: escrowError instanceof Error ? escrowError.message : 'Failed to create escrow',
+							position: 'bottom',
+						});
+						throw escrowError;
+					}
+				}
+
+				// Add request/task to activity feed
 				try {
 					const { supabaseServiceClient } = await import("@/lib/supabase");
-					
-					const requestId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-						const r = Math.random() * 16 | 0;
-						const v = c == 'x' ? r : (r & 0x3 | 0x8);
-						return v.toString(16);
-					});
 
 					const { data, error } = await supabaseServiceClient
 						.from('activity_feed')
 						.insert({
 							actor: currentUser.username,
 							verb: paymentType === 'request_money' ? 'request_money' : 'created_task',
+							task_id: blockchainJobId, // Link to blockchain job for tasks
 							meta: {
 								amount: parseFloat(formData.amount) * 1000000, // Convert to uxion
 								description: formData.description,

@@ -103,7 +103,7 @@ export default function PaymentRow({
 					)}
 				</View>
 			</View>
-			{direction === "task_received" && (
+			{direction === "task_received" && status !== "verified" && (
 				<Pressable 
 					style={[styles.taskButtonRow, { backgroundColor: getDirectionColor() + "10", borderColor: getDirectionColor() }]}
 					onPress={onPress}
