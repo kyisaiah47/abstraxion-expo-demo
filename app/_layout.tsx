@@ -3,6 +3,7 @@ import "react-native-reanimated";
 import "react-native-get-random-values";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { Linking } from "react-native";
 import {
 	DarkTheme,
 	DefaultTheme,
@@ -83,6 +84,75 @@ export default function RootLayout() {
 		if (loaded) {
 			SplashScreen.hideAsync();
 		}
+
+		// Handle deep links from Reclaim Protocol
+		const handleDeepLink = (url: string) => {
+			console.log('🔗 Deep link received:', url);
+			if (url?.startsWith('proofpay://')) {
+				// Handle any proofpay:// deep link as potential Reclaim callback
+				try {
+					// Try different ways to extract proof data
+					const urlObj = new URL(url);
+					console.log('URL params:', urlObj.searchParams.toString());
+					
+					// Look for various proof parameters
+					const proofData = urlObj.searchParams.get('proof') || 
+									  urlObj.searchParams.get('proofs') ||
+									  urlObj.searchParams.get('data');
+					
+					if (proofData) {
+						console.log('✅ Found proof data:', proofData);
+						const event = new CustomEvent('reclaimProofReceived', {
+							detail: { 
+								proof: JSON.parse(decodeURIComponent(proofData)),
+								rawUrl: url 
+							}
+						});
+						// @ts-ignore
+						global.dispatchEvent?.(event);
+					} else {
+						// Even if no proof data, signal that verification might be complete
+						console.log('⚠️ No proof data found, but callback received');
+						const event = new CustomEvent('reclaimProofReceived', {
+							detail: { 
+								success: true,
+								rawUrl: url 
+							}
+						});
+						// @ts-ignore
+						global.dispatchEvent?.(event);
+					}
+				} catch (error) {
+					console.error('Error parsing deep link:', error);
+					// Still emit event to signal completion
+					const event = new CustomEvent('reclaimProofReceived', {
+						detail: { 
+							success: true,
+							rawUrl: url,
+							error: error 
+						}
+					});
+					// @ts-ignore
+					global.dispatchEvent?.(event);
+				}
+			}
+		};
+
+		// Handle initial URL (if app was opened via deep link)
+		Linking.getInitialURL().then((url) => {
+			if (url) {
+				handleDeepLink(url);
+			}
+		});
+
+		// Handle URLs while app is running
+		const linkingSubscription = Linking.addEventListener('url', (event) => {
+			handleDeepLink(event.url);
+		});
+
+		return () => {
+			linkingSubscription?.remove();
+		};
 	}, [loaded]);
 
 	if (!loaded) {

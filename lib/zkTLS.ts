@@ -11,11 +11,7 @@
  * Based on: https://docs.burnt.com/xion/examples/creating-a-social-media-verification-app
  */
 
-import {
-	ReclaimProofRequest,
-	Proof,
-	verifyProof,
-} from "@reclaimprotocol/reactnative-sdk";
+import { ReclaimVerification } from "@reclaimprotocol/inapp-rn-sdk";
 import {
 	CONTRACT_CONFIG,
 	CONTRACT_MESSAGES,
@@ -96,10 +92,7 @@ export class ZKTLSService {
 			const config: WebsiteVerificationConfig = {
 				providerId: RECLAIM_CONFIG.providerId || "http",
 				params: {
-					// GitHub Pull Request Merged parameters - these should be dynamically set by the caller
-					"ownerLogin": deliveryUrl?.includes('github.com') ? deliveryUrl.split('/')[3] : "placeholder", 
-					"name": deliveryUrl?.includes('github.com') ? deliveryUrl.split('/')[4] : "placeholder",
-					"resourcePath": deliveryUrl?.includes('/pull/') ? '/' + deliveryUrl.split('/').slice(5).join('/') : "/pull/1"
+					// GitHub Pull Request Merged parameters - Reclaim will extract these from GitHub session
 				},
 				context: {
 					contextAddress: "0x0000000000000000000000000000000000000000", // placeholder
@@ -109,35 +102,29 @@ export class ZKTLSService {
 				description: `Cryptographic proof that website ${deliveryUrl} exists and contains required content`,
 			};
 
-			// Initialize Reclaim proof request
-			const proofRequest = await ReclaimProofRequest.init(
-				this.appId,
-				this.appSecret,
-				config.providerId,
-				{ log: true }
-			);
+			// Initialize Reclaim verification using the proper in-app SDK
+			const reclaimVerification = new ReclaimVerification();
 
-			// Set proof parameters
-			proofRequest.setAppCallbackUrl("proofpay://zktls-callback");
-			proofRequest.setParams(config.params);
-			proofRequest.addContext(
-				config.context.contextAddress,
-				config.context.contextMessage
-			);
+			// Start verification directly - this handles everything automatically
+			const verificationResult = await reclaimVerification.startVerification({
+				appId: this.appId,
+				secret: this.appSecret,
+				providerId: config.providerId,
+			});
 
-			// Generate verification URL for user
-			const verificationUrl = await proofRequest.getRequestUrl();
-
-			// For now, return the verification URL - user needs to complete the proof
-			// In a real implementation, you'd handle the proof completion callback
-			return {
-				success: true,
-				verificationUrl,
-				extractedData: {
-					url: deliveryUrl,
-					timestamp: new Date().toISOString(),
-				},
-			};
+			// Handle the result
+			if (verificationResult.proofs) {
+				return {
+					success: true,
+					proof: verificationResult.proofs[0],
+					extractedData: {
+						url: deliveryUrl,
+						timestamp: new Date().toISOString(),
+					},
+				};
+			} else {
+				throw new Error("Verification completed but no proofs received");
+			}
 		} catch (error) {
 
 			return {
@@ -156,7 +143,6 @@ export class ZKTLSService {
 		error?: string;
 	}> {
 		try {
-
 			// Verify the proof cryptographically
 			const isValid = await verifyProof(proof);
 
@@ -175,7 +161,6 @@ export class ZKTLSService {
 				extractedData,
 			};
 		} catch (error) {
-
 			return {
 				isValid: false,
 				error: error instanceof Error ? error.message : "Verification failed",

@@ -46,6 +46,26 @@ export function ZKTLSVerification({
 		"input"
 	);
 
+	// Listen for Reclaim proof completion
+	React.useEffect(() => {
+		const handleReclaimProof = (event: any) => {
+			const proof = event.detail?.proof;
+			if (proof) {
+				console.log('✅ Proof received from Reclaim:', proof);
+				setStep("complete");
+				onVerificationComplete(true, proof.identifier || 'proof-completed');
+			}
+		};
+
+		// @ts-ignore
+		global.addEventListener?.('reclaimProofReceived', handleReclaimProof);
+		
+		return () => {
+			// @ts-ignore
+			global.removeEventListener?.('reclaimProofReceived', handleReclaimProof);
+		};
+	}, [onVerificationComplete]);
+
 	const templateOptions = [
 		{ key: "landing_page", label: "Landing Page" },
 		{ key: "blog_post", label: "Blog Post" },
@@ -116,21 +136,10 @@ export function ZKTLSVerification({
 				expectedContent.trim() || undefined
 			);
 
-			if (result.success && result.verificationUrl) {
-				setVerificationUrl(result.verificationUrl);
-				setStep("verification");
-
-				Alert.alert(
-					"Verification Required",
-					"A verification URL has been generated. You need to complete the verification process to prove your website delivery.",
-					[
-						{ text: "Cancel", style: "cancel" },
-						{
-							text: "Open Verification",
-							onPress: () => Linking.openURL(result.verificationUrl!),
-						},
-					]
-				);
+			if (result.success && result.proof) {
+				// Verification completed successfully with the in-app SDK
+				setStep("complete");
+				onVerificationComplete(true, result.proof.identifier || 'verification-complete');
 			} else {
 				throw new Error(result.error || "Failed to generate proof");
 			}
