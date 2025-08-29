@@ -43,33 +43,6 @@ export default function ProofSubmissionSheet({
 		setProof(""); // Reset form after submission
 	};
 
-	// Debug function to bypass Reclaim but execute real blockchain payment release
-	const handleDebugZKTLSVerification = async () => {
-		if (!job || !userAddress || !contractClient) {
-			Alert.alert("Error", "Missing required information for verification");
-			return;
-		}
-
-		setIsGeneratingProof(true);
-		
-		try {
-			// Simulate zkTLS proof generation (2-3 seconds)
-			await new Promise(resolve => setTimeout(resolve, 2500));
-			
-			// Create mock zkTLS proof (bypasses Reclaim)
-			const mockZkTLSProof = `zkTLS GitHub verification completed - Proof ID: debug_${Date.now()}`;
-			
-			// But call the REAL blockchain to release payment
-			// This will trigger the actual escrow release via handleProofSubmit
-			onSubmit(mockZkTLSProof);
-			
-		} catch (error) {
-			console.error("Debug verification error:", error);
-			Alert.alert("Debug Error", error instanceof Error ? error.message : "Debug verification failed");
-		}
-		
-		setIsGeneratingProof(false);
-	};
 
 	const handleStartZKTLSVerification = async () => {
 		if (!job || !userAddress || !contractClient) {
@@ -299,20 +272,6 @@ export default function ProofSubmissionSheet({
 
 				{userAddress && contractClient ? (
 					<>
-						{/* Debug bypass button */}
-						<TouchableOpacity
-							style={[styles.debugButton]}
-							onPress={handleDebugZKTLSVerification}
-							disabled={isGeneratingProof}
-						>
-							<View style={styles.buttonContent}>
-								<Ionicons name="bug" size={18} color="#FF6B35" />
-								<Text style={styles.debugButtonText}>
-									DEBUG: Simulate zkTLS Success
-								</Text>
-							</View>
-						</TouchableOpacity>
-						
 						<TouchableOpacity
 							style={[styles.zkTLSButton, { opacity: isGeneratingProof ? 0.6 : 1 }]}
 							onPress={handleStartZKTLSVerification}
@@ -613,24 +572,6 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 	},
 	
-	debugButton: {
-		backgroundColor: "#FF6B3520", // Light orange background
-		borderWidth: 2,
-		borderColor: "#FF6B35",
-		borderStyle: "dashed",
-		paddingVertical: DesignSystem.spacing.lg,
-		paddingHorizontal: DesignSystem.spacing.xl,
-		borderRadius: DesignSystem.radius.lg,
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: DesignSystem.spacing.md,
-	},
-	debugButtonText: {
-		...DesignSystem.typography.label.medium,
-		color: "#FF6B35",
-		fontWeight: "600",
-		fontSize: 14,
-	},
 	
 	secondaryButton: {
 		backgroundColor: DesignSystem.colors.surface.secondary,
