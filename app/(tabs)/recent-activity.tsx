@@ -159,28 +159,50 @@ export default function RecentActivityScreen() {
 			// Pure zkTLS = auto verify, Hybrid = submit for manual review with zkTLS proof
 			const newStatus = (isZkTLSProof && proofType === 'zktls') ? 'verified' : 'proof_submitted';
 			
+			// Determine verification type based on proof type and submission method
+			let verificationType: 'zktls_automated' | 'manual' | 'hybrid' = 'manual';
+			if (isZkTLSProof && proofType === 'zktls') {
+				verificationType = 'zktls_automated';
+			} else if (isZkTLSProof && proofType === 'hybrid') {
+				verificationType = 'hybrid';
+			} else {
+				verificationType = 'manual';
+			}
+
 			// Update the original task activity with proof submission
+			const updateData = {
+				meta: {
+					...selectedTask.meta,
+					status: newStatus,
+					proof: proof,
+					submitted_at: new Date().toISOString(),
+					verification_type: verificationType
+				}
+			};
+
+			// Debug log
+			console.log("🔧 Database update data:", JSON.stringify(updateData, null, 2));
+			alert(`DB Update: status=${newStatus}, verificationType=${verificationType}, taskId=${selectedTask.id}`);
+
 			const { error: updateError } = await supabase
 				.from('activity_feed')
-				.update({
-					meta: {
-						...selectedTask.meta,
-						status: newStatus,
-						proof: proof,
-						submitted_at: new Date().toISOString(),
-						...(isZkTLSProof && { verification_type: 'zktls_automated' })
-					}
-				})
+				.update(updateData)
 				.eq('id', selectedTask.id);
 
 			if (updateError) {
 				console.error("Database update error:", updateError);
+				alert(`DB Error: ${JSON.stringify(updateError)}`);
 				throw new Error("Failed to update task status");
+			} else {
+				alert("DB Update successful!");
 			}
 			
 			setShowProofModal(false);
 			setSelectedTask(null);
 			await refetch();
+			
+			// Debug: Check if the data was updated after refetch
+			alert(`After refetch - payments count: ${payments?.length || 0}`);
 			
 			const isAutoVerified = isZkTLSProof && proofType === 'zktls';
 			
@@ -416,7 +438,10 @@ export default function RecentActivityScreen() {
 													: parseFloat(payment.amount) / 1_000_000
 											}
 											direction={displayDirection}
-											showStatus={false}
+											showStatus={true}
+											status={payment.meta?.status}
+											verificationType={payment.meta?.verification_type}
+											proofType={payment.meta?.proof_type}
 											timeAgo={timeAgo}
 											onPress={
 												displayDirection === "request" 
