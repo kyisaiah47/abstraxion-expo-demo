@@ -6,7 +6,7 @@ import {
 	TREASURY_CONFIG,
 } from "../constants/contracts";
 
-// Treasury types (previously from treasuryOfficial)
+// Treasury types (previouslyy from treasuryOfficial)
 export interface TreasuryExecuteResult {
 	success: boolean;
 	transactionHash?: string;
