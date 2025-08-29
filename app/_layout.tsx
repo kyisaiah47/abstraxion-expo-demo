@@ -1,9 +1,11 @@
 // app/_layout.tsx
 import "react-native-reanimated";
 import "react-native-get-random-values";
+
+console.log("🚀 APP STARTING - This should show in terminal");
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { Linking } from "react-native";
+import { Linking, Alert } from "react-native";
 import {
 	DarkTheme,
 	DefaultTheme,

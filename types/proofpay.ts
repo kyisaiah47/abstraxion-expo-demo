@@ -2,7 +2,7 @@
 export type ProofStatus = "Proof Confirmed" | "Awaiting Proof" | "Payment Sent";
 export type PaymentType = "request_task" | "request_money" | "send_money";
 export type ProofType = "soft" | "zktls" | "hybrid";
-export type TaskStatus = "pending" | "proof_submitted" | "pending_release" | "released" | "disputed" | "refunded";
+export type TaskStatus = "pending" | "proof_submitted" | "verified" | "pending_release" | "released" | "disputed" | "refunded";
 export type FriendshipStatus = "pending" | "accepted" | "declined";
 
 export interface Payment {

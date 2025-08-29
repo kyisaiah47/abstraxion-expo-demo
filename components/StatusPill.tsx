@@ -6,9 +6,11 @@ import { ProofStatus, TaskStatus } from "@/types/proofpay";
 
 interface StatusPillProps {
 	status: ProofStatus | TaskStatus;
+	verificationType?: 'zktls_automated' | 'manual' | 'hybrid';
+	proofType?: 'zktls' | 'hybrid' | 'manual';
 }
 
-export default function StatusPill({ status }: StatusPillProps) {
+export default function StatusPill({ status, verificationType, proofType }: StatusPillProps) {
 	const getStatusConfig = (status: ProofStatus | TaskStatus) => {
 		switch (status) {
 			// Legacy ProofStatus cases
@@ -42,7 +44,21 @@ export default function StatusPill({ status }: StatusPillProps) {
 				return {
 					color: DesignSystem.colors.status.warning,
 					backgroundColor: DesignSystem.colors.status.warning + "20",
-					icon: "document-outline" as keyof typeof Ionicons.glyphMap,
+					icon: verificationType === 'zktls_automated' 
+						? "shield" as keyof typeof Ionicons.glyphMap 
+						: "document-outline" as keyof typeof Ionicons.glyphMap,
+					text: verificationType === 'zktls_automated' 
+						? "zkTLS Submitted" 
+						: "Awaiting Review"
+				};
+			case "verified":
+				return {
+					color: "#10B981", // Emerald green for verified
+					backgroundColor: "#10B981" + "20",
+					icon: "shield-checkmark" as keyof typeof Ionicons.glyphMap,
+					text: verificationType === 'zktls_automated' 
+						? "Auto Verified" 
+						: "Verified"
 				};
 			case "pending_release":
 				return {
@@ -109,7 +125,9 @@ export default function StatusPill({ status }: StatusPillProps) {
 				size={12}
 				color={config.color}
 			/>
-			<Text style={[styles.text, { color: config.color }]}>{status}</Text>
+			<Text style={[styles.text, { color: config.color }]}>
+				{config.text || status}
+			</Text>
 		</View>
 	);
 }

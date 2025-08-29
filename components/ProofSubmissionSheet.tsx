@@ -29,7 +29,6 @@ export default function ProofSubmissionSheet({
 }: ProofSubmissionSheetProps) {
 	const [proof, setProof] = useState("");
 	const [isGeneratingProof, setIsGeneratingProof] = useState(false);
-	const [verificationUrl, setVerificationUrl] = useState<string>("");
 	
 	// Get verification method from job requirements, don't let user choose
 	// Treat hybrid same as zkTLS for this interface
@@ -61,28 +60,39 @@ export default function ProofSubmissionSheet({
 		try {
 			setIsGeneratingProof(true);
 			
-			// For GitHub verification, redirect directly to GitHub OAuth/verification flow
+			// Start GitHub verification via Reclaim
 			try {
-				// Generate a GitHub-specific verification URL that will redirect to GitHub
-				const result = await completeJobWithProof();
+				const result = await completeJobWithProof(
+					contractClient,
+					userAddress || '',
+					job?.id || 0,
+					proof.trim() || 'https://github.com/example/repo/pull/1',
+					'GitHub Pull Request verification'
+				);
 
-				if (result.success && result.verificationUrl) {
-					setVerificationUrl(result.verificationUrl);
-					
-					// Immediately redirect to GitHub verification
-					Alert.alert(
-						"GitHub Verification",
-						"You'll be redirected to GitHub to authenticate and verify your contributions. This creates cryptographic proof of your work.",
-						[
-							{ text: "Cancel", style: "cancel", onPress: () => setIsGeneratingProof(false) },
-							{
-								text: "Connect GitHub",
-								onPress: () => Linking.openURL(result.verificationUrl!),
-							},
-						]
-					);
+				if (result.success) {
+					if (result.proof) {
+						// Verification completed immediately with proof
+						const zkTLSProof = `zkTLS GitHub verification completed - Proof ID: ${result.proof.identifier}`;
+						onSubmit(zkTLSProof);
+						
+						Alert.alert(
+							"Verification Complete!",
+							"Your GitHub proof has been verified and submitted. Payment will be released automatically.",
+							[{ text: "Done" }]
+						);
+						setIsGeneratingProof(false);
+					} else {
+						// This shouldn't happen with Reclaim's in-app SDK, but handle gracefully
+						Alert.alert(
+							"Verification In Progress",
+							"GitHub verification was started. Please check your Reclaim app and return when complete.",
+							[{ text: "OK" }]
+						);
+						setIsGeneratingProof(false);
+					}
 				} else {
-					throw new Error(result.error || "Failed to generate GitHub verification URL");
+					throw new Error(result.error || "Failed to start GitHub verification");
 				}
 			} catch (error) {
 				console.error("GitHub verification error:", error);
@@ -102,80 +112,6 @@ export default function ProofSubmissionSheet({
 		}
 	};
 
-	const handleVerificationComplete = async () => {
-		if (!job || !userAddress || !contractClient) {
-			Alert.alert("Error", "Missing required information");
-			return;
-		}
-
-		Alert.alert(
-			"Complete Verification",
-			"Have you successfully completed the GitHub verification in the Reclaim app?",
-			[
-				{ text: "Not Yet", style: "cancel" },
-				{
-					text: "Yes, Process Proof",
-					onPress: async () => {
-						try {
-							setIsGeneratingProof(true);
-							
-							// In a real implementation, we would:
-							// 1. Retrieve the actual Reclaim proof from their callback/webhook
-							// 2. Verify the cryptographic proof
-							// 3. Submit to smart contract for automatic payment release
-							
-							// For now, simulate the complete process
-							Alert.alert(
-								"Processing Proof",
-								"Retrieving and verifying your GitHub proof...",
-								[{ text: "OK" }]
-							);
-							
-							// Simulate proof verification delay
-							setTimeout(async () => {
-								try {
-									// This would call zkTLSService.handleCompletedProof() with real proof
-									const mockProof = {
-										identifier: `github_proof_${job.id}_${Date.now()}`,
-										claimData: {
-											parameters: JSON.stringify({
-												githubUsername: "verified_user",
-												repoUrl: `github_verification_${job.id}`,
-												timestamp: new Date().toISOString()
-											})
-										}
-									};
-									
-									// Submit verified proof (this would be the real blockchain transaction)
-									const zkTLSProof = `zkTLS GitHub verification completed - Proof ID: ${mockProof.identifier}`;
-									onSubmit(zkTLSProof);
-									
-									Alert.alert(
-										"Verification Complete!",
-										"Your GitHub proof has been verified and submitted. Payment will be released automatically.",
-										[{ text: "Done" }]
-									);
-								} catch (error) {
-									console.error("Proof processing error:", error);
-									Alert.alert(
-										"Verification Failed", 
-										"Failed to process your proof. Please try again."
-									);
-								} finally {
-									setIsGeneratingProof(false);
-								}
-							}, 2000);
-							
-						} catch (error) {
-							console.error("Verification completion error:", error);
-							Alert.alert("Error", "Failed to complete verification");
-							setIsGeneratingProof(false);
-						}
-					},
-				},
-			]
-		);
-	};
 
 	if (!job) {
 		return (
@@ -338,29 +274,7 @@ export default function ProofSubmissionSheet({
 					</View>
 				</View>
 
-				{verificationUrl ? (
-					<>
-						<TouchableOpacity
-							style={styles.secondaryButton}
-							onPress={() => Linking.openURL(verificationUrl)}
-						>
-							<View style={styles.buttonContent}>
-								<Ionicons name="globe" size={18} color={DesignSystem.colors.primary[800]} />
-								<Text style={styles.secondaryButtonText}>Open Verification Page</Text>
-							</View>
-						</TouchableOpacity>
-						
-						<TouchableOpacity
-							style={styles.zkTLSButton}
-							onPress={handleVerificationComplete}
-						>
-							<View style={styles.buttonContent}>
-								<Ionicons name="checkmark-circle" size={18} color={DesignSystem.colors.text.inverse} />
-								<Text style={styles.zkTLSButtonText}>I&apos;ve Completed Verification</Text>
-							</View>
-						</TouchableOpacity>
-					</>
-				) : userAddress && contractClient ? (
+				{userAddress && contractClient ? (
 					<TouchableOpacity
 						style={[styles.zkTLSButton, { opacity: isGeneratingProof ? 0.6 : 1 }]}
 						onPress={handleStartZKTLSVerification}

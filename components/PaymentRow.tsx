@@ -14,6 +14,8 @@ interface PaymentRowProps {
 	timeAgo: string;
 	showStatus?: boolean;
 	onPress?: () => void;
+	verificationType?: 'zktls_automated' | 'manual' | 'hybrid';
+	proofType?: 'zktls' | 'hybrid' | 'manual';
 }
 
 export default function PaymentRow({
@@ -25,6 +27,8 @@ export default function PaymentRow({
 	timeAgo,
 	showStatus = true,
 	onPress,
+	verificationType,
+	proofType,
 }: PaymentRowProps) {
 	const getDirectionIcon = () => {
 		switch (direction) {
@@ -90,7 +94,13 @@ export default function PaymentRow({
 							{direction === "in" ? "+" : direction === "task_created" ? "" : "-"}{amount.toFixed(2)} XION
 						</Text>
 					)}
-					{showStatus && status && <StatusPill status={status} />}
+					{showStatus && status && (
+						<StatusPill 
+							status={status} 
+							verificationType={verificationType}
+							proofType={proofType}
+						/>
+					)}
 				</View>
 			</View>
 			{direction === "task_received" && (

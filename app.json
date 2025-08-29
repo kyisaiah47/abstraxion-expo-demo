@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "proofpay",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.proofpay.app",

@@ -152,15 +152,23 @@ export default function RecentActivityScreen() {
 				process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 			);
 			
+			// Detect if this is a zkTLS proof and check verification method
+			const isZkTLSProof = proof.includes('zkTLS GitHub verification completed');
+			const proofType = selectedTask.meta?.proof_type;
+			
+			// Pure zkTLS = auto verify, Hybrid = submit for manual review with zkTLS proof
+			const newStatus = (isZkTLSProof && proofType === 'zktls') ? 'verified' : 'proof_submitted';
+			
 			// Update the original task activity with proof submission
 			const { error: updateError } = await supabase
 				.from('activity_feed')
 				.update({
 					meta: {
 						...selectedTask.meta,
-						status: 'proof_submitted',
+						status: newStatus,
 						proof: proof,
-						submitted_at: new Date().toISOString()
+						submitted_at: new Date().toISOString(),
+						...(isZkTLSProof && { verification_type: 'zktls_automated' })
 					}
 				})
 				.eq('id', selectedTask.id);
@@ -174,10 +182,16 @@ export default function RecentActivityScreen() {
 			setSelectedTask(null);
 			await refetch();
 			
+			const isAutoVerified = isZkTLSProof && proofType === 'zktls';
+			
 			Toast.show({
 				type: 'success',
-				text1: 'Proof Submitted!',
-				text2: 'Your proof has been submitted for review.',
+				text1: isAutoVerified ? 'Task Verified!' : 'Proof Submitted!',
+				text2: isAutoVerified 
+					? 'Your task has been automatically verified and completed.'
+					: isZkTLSProof 
+						? 'Your zkTLS proof has been submitted for client review.'
+						: 'Your proof has been submitted for review.',
 				position: 'bottom',
 			});
 		} catch (error) {
