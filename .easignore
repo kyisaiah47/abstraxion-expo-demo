@@ -1,8 +1,56 @@
-node_modules
-.git
-.expo
-.claude
-ios/build
-android/build
+# Development dependencies
+node_modules/
+indexer/node_modules/
+mock-verifier/node_modules/
+
+# Version control
+.git/
+
+# Build artifacts
+.expo/
+ios/build/
+android/build/
+build/
+dist/
+*.ipa
+*.apk
+*.aab
+
+# Logs and temporary files
 *.log
+.expo/xcodebuild.log
+.expo/xcodebuild-error.log
+*.tmp
+
+# System files
 .DS_Store
+Thumbs.db
+
+# Development files
+.claude/
+scripts/
+*.md
+*.sql
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Package manager files
+yarn-error.log
+npm-debug.log*
+
+# iOS specific
+ios/Pods/
+Podfile.lock
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Coverage and test files
+coverage/
+__tests__/
+*.test.*
+*.spec.*
