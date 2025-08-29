@@ -96,8 +96,10 @@ export class ZKTLSService {
 			const config: WebsiteVerificationConfig = {
 				providerId: RECLAIM_CONFIG.providerId || "http",
 				params: {
-					url: deliveryUrl,
-					...(expectedContent && { expectedContent }),
+					// GitHub Pull Request Merged parameters
+					"ownerLogin": "your-github-username", // GitHub username
+					"name": "your-repo-name", // Repository name  
+					"resourcePath": "/pull/123" // Pull request path
 				},
 				context: {
 					contextAddress: "0x0000000000000000000000000000000000000000", // placeholder
@@ -116,7 +118,7 @@ export class ZKTLSService {
 			);
 
 			// Set proof parameters
-			proofRequest.setAppCallbackUrl("https://your-app.com/callback");
+			proofRequest.setAppCallbackUrl("proofpay://zktls-callback");
 			proofRequest.setParams(config.params);
 			proofRequest.addContext(
 				config.context.contextAddress,
